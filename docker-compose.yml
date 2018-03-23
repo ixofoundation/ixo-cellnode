@@ -6,12 +6,11 @@ services:
     build: .
     ports:
       - "5000:5000"
-    links:
-      - mongo
-    depends_on:
-      - mongo
-  mongo:
-    container_name: mongo
+    depends_on: 
+      - db
+      
+  db:
+    container_name: db
     image: mongo
     volumes:
       - ./data:/data/db
