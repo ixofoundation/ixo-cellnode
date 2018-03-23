@@ -15,7 +15,8 @@ const server = http.createServer(App);
 var mongoose = require('mongoose');
 //require('mongoose').Promise = global.Promise;
 
-mongoose.connect('mongodb://mongo:27017/pds')
+//mongoose.connect('mongodb://mongo:27017/pds')
+mongoose.connect('mongodb://localhost:27017/pds')
 //mongoose.connect(process.env.MONGODB_URI || '', { useMongoClient: true });
 
 

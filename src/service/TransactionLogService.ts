@@ -1,6 +1,6 @@
-import {EventEmitter}  from 'events';
-import {ITransactionModel, Transaction} from '../model/Transaction';
-import {ITransaction} from '../model/ITransaction';
+import { EventEmitter } from 'events';
+import { ITransactionModel, Transaction } from '../model/Transaction';
+import { ITransaction } from '../model/ITransaction';
 
 declare var Promise: any;
 
@@ -17,25 +17,39 @@ export class TransactionLogService {
   }
 
 
-  createTransaction(data: String, signatureType: String, signature: String, publicKey: String, emit = true): Promise<ITransactionModel>{
-    return new Promise(function(resolve: Function, reject: Function){
+  createTransaction(data: String, signatureType: String, signature: String, publicKey: String, emit = true): Promise<ITransactionModel> {
+    return new Promise(function (resolve: Function, reject: Function) {
       Transaction.create(
         {
-          "data": data, 
+          "data": data,
           "signatureType": signatureType,
-          "signature": signature, 
+          "signature": signature,
           "publicKey": publicKey
-        }, function(error: Error, newTransaction: ITransactionModel){
-         if(error){
-           console.log("Error is " + error);
-           reject(error);
-         }else{
-           resolve(newTransaction);
-         }
-      });
+        }, function (error: Error, newTransaction: ITransactionModel) {
+          if (error) {
+            console.log("Error is " + error);
+            reject(error);
+          } else {
+            resolve(newTransaction);
+          }
+        });
     });
   }
 
+  findTransaction(): Promise<ITransactionModel> {
+    return new Promise(function (resolve: Function, reject: Function) {
+      Transaction.find(
+        {}, function (error: Error, newTransaction: ITransactionModel) {
+          if (error) {
+            console.log("Error is " + error);
+            reject(error);
+          } else {
+            console.log("found transactions " + newTransaction)
+            resolve(newTransaction);
+          }
+        });
+    });
+  }
 }
 
 export default new TransactionLogService();

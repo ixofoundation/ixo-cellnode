@@ -7,8 +7,7 @@ import * as logger from './logger/Logger';
 
 import InitRouter from './routes/InitRouter';
 //import RequestRouter from './routes/RequestRouter';
-//import QueryRouter from './routes/QueryRouter';
-
+import QueryRouter from './routes/QueryRouter';
 
 class App {
 
@@ -39,7 +38,7 @@ class App {
 
     this.express.use('/api/init', InitRouter);
     //this.express.use('/api/request', RequestRouter);
-    //this.express.use('/api/query', QueryRouter);
+    this.express.use('/api/query', QueryRouter);
 
 
     this.express.use(logger.after);
