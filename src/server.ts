@@ -9,25 +9,20 @@ require('mongoose').Promise = global.Promise;
 
 // Set the port
 const port = normalizePort(process.env.PORT || '');
-//const port = normalizePort(5000);
 App.set('port', port);
 const server = http.createServer(App);
 
 // Connect to Mongo DB
-//Set mongoose Pormise
-//mongoose.connect('mongodb://db:27017/pds')
 //mongoose.connect('mongodb://localhost:27017/pds')
 mongoose.connect(process.env.MONGODB_URI || '');
 
 var db = mongoose.connection;
-//db.on('error', console.error.bind(console, 'Mongo connection error: Cannot start'));
 db.on('error', function (err: any) {
   // If first connect fails because mongod is down, try again later.
   // This is only needed for first connect, not for runtime reconnects.
   // See: https://github.com/Automattic/mongoose/issues/5169
   if (err.message && err.message.match(/failed to connect to server .* on first connect/)) {
       console.log(new Date(), String(err));
-
       // Wait for a bit, then try to connect again
       setTimeout(function () {
           console.log("Retrying first connect...");
