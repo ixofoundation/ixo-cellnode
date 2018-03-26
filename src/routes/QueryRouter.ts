@@ -10,7 +10,9 @@ export class QueryRouter extends AbstractRouter{
         let config = {};
     
         const handler = new QueryHandler();
-        this.register(config, "queryPds", handler.queryPds);
+        this.register(config, "queryTransactions", handler.queryTransactions);
+        this.register(config, "queryConfigs", handler.queryConfigs);
+        this.register(config, "queryCapabilities", handler.queryCapabilities);
         console.log('query router configured');
         return config;
       }

@@ -1,29 +1,34 @@
 import { Request } from "../handlers/Request";
 import { Config, IConfigModel, ConfigSchema } from '../model/Config';
-import transactionLog from '../service/TransactionLogService'
+import transactionLog from '../service/TransactionLogService';
+import config from '../service/ConfigurationService'
+import capabilities from '../service/CapabilitiesService'
 
 declare var Promise: any;
 
 export class QueryHandler {
 
-    // queryPds = (args: any) => {
-    //     var request = new Request(args);
-    //     console.log("find all transactions")
-    //     return new Promise((resolve: Function, reject: Function) => { 
-    //         //console.log("find all transactions")
-    //         resolve(transactionLog.findTransaction())    
-    //     });
-    // }
-
-    queryPds = (args: any) => {
+    queryTransactions = (args: any) => {
         var request = new Request(args);
-        console.log("query PDS")
-        return this.find({});
-      }
+        console.log("find all transactions")
+        return new Promise((resolve: Function, reject: Function) => { 
+            resolve(transactionLog.findTransaction())    
+        });
+    }
 
-      find = (criteria: any) => {
-        return Config.find(criteria)
-        .sort('-created')
-        .exec();
+    queryConfigs = (args: any) => {
+        var request = new Request(args);
+        console.log("find all transactions")
+        return new Promise((resolve: Function, reject: Function) => { 
+            resolve(config.findConfig())    
+        });
+    }
+
+    queryCapabilities = (args: any) => {
+        var request = new Request(args);
+        console.log("find all capabilities")
+        return new Promise((resolve: Function, reject: Function) => { 
+            resolve(capabilities.findCapabilities())    
+        });
     }
 }

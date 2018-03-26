@@ -1,12 +1,9 @@
 import { EventEmitter } from 'events';
 import { ITransactionModel, Transaction } from '../model/Transaction';
 import { ITransaction } from '../model/ITransaction';
+import { DocumentQuery } from 'mongoose';
 
 declare var Promise: any;
-
-/*
-Complete Stub of a blockchain simply here to create a transaction id
- */
 
 export class TransactionLogService {
 
@@ -36,20 +33,17 @@ export class TransactionLogService {
     });
   }
 
-  findTransaction(): Promise<ITransactionModel> {
-    return new Promise(function (resolve: Function, reject: Function) {
-      Transaction.find(
-        {}, function (error: Error, newTransaction: ITransactionModel) {
-          if (error) {
-            console.log("Error is " + error);
-            reject(error);
-          } else {
-            console.log("found transactions " + newTransaction)
-            resolve(newTransaction);
-          }
-        });
-    });
+  findTransaction(): any {
+    console.log("query transaction log")
+    return Transaction.find();
   }
+
+  // find = (criteria: any) => {
+  //   return Transaction.find(criteria)
+  //   .sort('-created')
+  //   .exec();
+  // }
+
 }
 
 export default new TransactionLogService();

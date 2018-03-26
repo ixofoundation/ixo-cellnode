@@ -8,7 +8,7 @@ export var ConfigSchema: Schema = new Schema({
 
     did: {
         type: String,
-        required: true,
+        //required: true,
         index: true
     }
     // auth_method: [{

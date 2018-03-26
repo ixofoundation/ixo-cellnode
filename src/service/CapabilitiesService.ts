@@ -33,6 +33,11 @@ export class CapabilitiesService {
     });
   }
 
+  findCapabilities(): any {
+    console.log("query capabilities")
+    return Capabilities.find();
+  }
+
 }
 
 export default new CapabilitiesService();

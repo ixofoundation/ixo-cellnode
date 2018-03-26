@@ -8,7 +8,7 @@ export var CapabilitiesSchema: Schema = new Schema({
 
     did: {
         type: String,
-        required : true,
+        //required : true,
         index: true
       },
     service: {

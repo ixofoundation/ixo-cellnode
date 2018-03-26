@@ -50,6 +50,9 @@ export class CryptoUtils {
     if((recoveredAddress != publicKey)){
       logger.base.debug("Signature failed - in: " + publicKey + " out: " + recoveredAddress);
     }
+
+    console.log("RECOVERD ADDR " + recoveredAddress);
+    console.log("PUBLIC KEY    " + publicKey);
     return (recoveredAddress == publicKey);
   }
 

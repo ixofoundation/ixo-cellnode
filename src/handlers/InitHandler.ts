@@ -5,6 +5,7 @@ import { IConfig } from '../model/IConfig';
 import transactionLog from '../service/TransactionLogService'
 import capabilities from "../service/CapabilitiesService";
 import {CryptoUtils} from '../crypto/Utils';
+import config from "../service/ConfigurationService";
 
 
 declare var Promise: any;
@@ -26,12 +27,21 @@ export class InitHandler {
                 request.authMethod = authMethod;
               }
 
-            Config.create(request);
+            config.createConfig(request);
             capabilities.createCapability(request.did, request.requestType);
+            console.log("SIGN THE PAYLOAD " + request.payload +  " WITH " + request.authMethod[0].secret_key);
+            var signedpayload = cryptoUtils.signECDSA(request.payload, request.authMethod[0].secret_key);
+            console.log("SIGNED PAYLOAD " + signedpayload);
+
             transactionLog.createTransaction(request.payload, 
                 request.authMethod[0].type, 
-                cryptoUtils.signECDSA(request.payload, request.authMethod[0].secret_key),
+                signedpayload,
                 request.authMethod[0].public_key);
+
+            request.signature.type = request.authMethod[0].type;
+            request.signature.signature = signedpayload;
+            request.signature.publicKey = request.authMethod[0].public_key;
+            console.log("IS THIS A VALID REQUEST " + request.verifySignature());
 
             resolve({
                     signatureType: request.authMethod[0].type,
