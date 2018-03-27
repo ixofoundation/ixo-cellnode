@@ -1,6 +1,6 @@
 import { IRequest } from './IRequest';
 import { CryptoUtils } from '../crypto/Utils';
-import { ValidationError } from "../errors/ValidationError";
+import { ValidationError } from "../error/ValidationError";
 
 var cryptoUtils = new CryptoUtils();
 
@@ -8,16 +8,25 @@ export class Request {
 
   payload: any;
   signature: any;
+
   did: string;
   authMethod: any;
   requestType: any;
   defaultData: any;
+  data: any;
 
 
   constructor(requestData: any) {
     console.log("Request data " + JSON.stringify(requestData));
     this.payload = JSON.stringify(requestData.payload);
     this.did = requestData.payload.did;
+
+    //data is used for transactional purposes
+    if (requestData.payload.data) {
+      this.data = requestData.payload.data;
+    }
+
+    //auth_method, request_type, default_data used for initial setup
     if (requestData.payload.auth_method) {
       this.authMethod = requestData.payload.auth_method;
     }
@@ -27,6 +36,8 @@ export class Request {
     if (requestData.payload.default_data) {
       this.defaultData = requestData.payload.default_data;
     }
+
+    //signature of transaction request
     if (requestData.signature) {
       this.signature = requestData.signature;
     }

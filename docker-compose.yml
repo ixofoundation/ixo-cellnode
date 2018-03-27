@@ -2,11 +2,13 @@ version: "2"
 services:
   app:
     container_name: app
+    image: trustlab/ixo-pds
     restart: always
     build: .
     ports:
       - "5000:5000"
-    depends_on: 
+    #depends_on: 
+    links:
       - db
       
   db:

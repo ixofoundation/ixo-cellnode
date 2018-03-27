@@ -30,7 +30,7 @@ export class ConfigurationService {
 
   findConfig(): any {
     console.log("query configs")
-    return Config.find();
+    return Config.findOne();
   }
   
 }
