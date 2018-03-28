@@ -2,8 +2,8 @@ import { Document, Schema, Model, model} from "mongoose";
 
 export interface ICapabilities{
 
-    did: String;
-    service: String;
+    capability: String;
+    requestType: String;
     // auth_method: [{
     //                 type: String,
     //                 public_key: String,

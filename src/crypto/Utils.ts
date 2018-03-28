@@ -2,6 +2,7 @@ import * as crypto from 'crypto';
 import * as logger from '../logger/Logger';
 import * as nacl from 'tweetnacl';
 import * as bs58 from 'bs58';
+import {SovrinUtils} from '../crypto/SovrinUtils';
 
 var ethUtil = require('ethereumjs-util');
 var ethereumWallet = require('ethereumjs-wallet');
@@ -18,8 +19,11 @@ export class CryptoUtils {
     {
       case "ECDSA": 
         return this.validateECDSASignature(data, signature, publicKey);
-      case "Ed25519":
-        return this.validateEd25519Signature(data, signature, publicKey);
+      case "ed25519-sha-256":
+        var sovrin = new SovrinUtils();
+        return sovrin.verifyDocumentSignature(signature, publicKey);
+        //return this.validateEd25519Signature(data, signature, publicKey);
+        
       default: 
         throw Error("Signature: '" + type + "' not supported");
       }

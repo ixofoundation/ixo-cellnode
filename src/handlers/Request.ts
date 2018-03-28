@@ -10,9 +10,9 @@ export class Request {
   signature: any;
 
   did: string;
-  authMethod: any;
+  //authMethod: any;
   requestType: any;
-  defaultData: any;
+  capabilities: any;
   data: any;
 
 
@@ -27,14 +27,14 @@ export class Request {
     }
 
     //auth_method, request_type, default_data used for initial setup
-    if (requestData.payload.auth_method) {
-      this.authMethod = requestData.payload.auth_method;
-    }
+    // if (requestData.payload.auth_method) {
+    //   this.authMethod = requestData.payload.auth_method;
+    // }
     if (requestData.payload.request_type) {
       this.requestType = requestData.payload.request_type;
     }
     if (requestData.payload.default_data) {
-      this.defaultData = requestData.payload.default_data;
+      this.capabilities = requestData.payload.default_data[0].capabilities;
     }
 
     //signature of transaction request
@@ -47,9 +47,9 @@ export class Request {
     return (this.signature != undefined);
   }
 
-  hasAuthMethod = (): boolean => {
-    return (this.authMethod != undefined);
-  }
+  // hasAuthMethod = (): boolean => {
+  //   return (this.authMethod != undefined);
+  // }
 
   verifySignature = (): boolean => {
     if (!this.hasSignature) {
