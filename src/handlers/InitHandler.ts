@@ -37,7 +37,7 @@ export class InitHandler {
             request.signature.type = request.authMethod[0].type;
             request.signature.signature = signedpayload;
             request.signature.publicKey = request.authMethod[0].public_key;
-            console.log("IS THIS A VALID REQUEST " + request.verifySignature());
+            request.verifySignature();
 
             //log the transactoin to the transaction log
             transactionLog.createTransaction(request.payload, 
