@@ -1,6 +1,6 @@
 import {EventEmitter}  from 'events';
-import {ICapabilitiesModel, Capabilities} from '../model/Capabilities';
-import {ICapabilities} from '../model/ICapabilities';
+import {ICapabilitiesModel, Capabilities} from '../model/project/Capabilities';
+import {ICapabilities} from '../model/project/ICapabilities';
 
 declare var Promise: any;
 

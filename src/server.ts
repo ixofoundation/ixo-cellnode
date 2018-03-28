@@ -1,6 +1,6 @@
 require('dotenv').config();
 import * as http from 'http';
-//import * as logger from './logger/Logger';
+import * as logger from './logger/Logger';
 
 import App from './App';
 

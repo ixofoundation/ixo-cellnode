@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
-import { ITransactionModel, Transaction } from '../model/Transaction';
-import { ITransaction } from '../model/ITransaction';
+import { ITransactionModel, Transaction } from '../model/project/Transaction';
+import { ITransaction } from '../model/project/ITransaction';
 import { DocumentQuery } from 'mongoose';
 
 declare var Promise: any;

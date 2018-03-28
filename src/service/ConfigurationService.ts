@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
-import { IConfigModel, Config } from '../model/Config';
-import { IConfig } from '../model/IConfig';
+import { IConfigModel, Config } from '../model/project/Config';
+import { IConfig } from '../model/project/IConfig';
 import { DocumentQuery } from 'mongoose';
 
 declare var Promise: any;
@@ -28,9 +28,18 @@ export class ConfigurationService {
     });
   }
 
-  findConfig(): any {
+  findConfig(did: string): Promise<IConfigModel> {
     console.log("query configs")
-    return Config.findOne();
+    return new Promise(function (resolve: Function, reject: Function) {
+      Config.findOne({"did": did}, function (error: Error, config: IConfigModel)  {
+        if (error) {
+          console.log("Error is " + error);
+          reject(null);
+        } else {
+          resolve(config);
+        }
+      });
+    });
   }
   
 }

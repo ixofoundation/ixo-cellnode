@@ -2,12 +2,13 @@ import { Claim, IClaimModel, ClaimSchema } from '../model/claim/Claim';
 import { Evaluation, IEvaluationModel, EvaluationSchema } from '../model/claim/Evaluation';
 import { Agent, IAgentModel, AgentSchema, AGENT_ROLE } from '../model/agent/Agent';
 import { AgentStatus, IAgentStatusModel, AGENT_STATUS } from '../model/agent/AgentStatus';
-import { ITransactionModel, Transaction } from '../model/Transaction';
-import { ITransaction } from '../model/ITransaction';
+import { ITransactionModel, Transaction } from '../model/project/Transaction';
+import { ITransaction } from '../model/project/ITransaction';
 import transactionLog from '../service/TransactionLogService'
 import {ValidationError} from "../error/ValidationError";;
 import {Request} from "../handlers/Request";
 import { IClaim } from '../model/claim/IClaim';
+import config from '../service/ConfigurationService';
 
 
 declare var Promise: any;
@@ -24,9 +25,15 @@ export class RequestHandler {
         })
         .then( (request: Request) => {
           //Validate the new Agent
-          return new Promise((resolve: Function, reject: Function) => {
-            resolve(request);
+          return new Promise((resolve: Function, reject: Function) => {            
             // Check that a valid Project TX is supplied
+            var result = config.findConfig(request.did);
+            if (result != null) {
+                resolve(request);
+            } else {
+                reject(new ValidationError("Project not created"));
+            }
+            
             // Agent.find({"projectTx": request.data.projectTx, "did": request.did}, (err, agents) => {
             //     var role = request.data.role;
             //     agents.forEach((agent) => {

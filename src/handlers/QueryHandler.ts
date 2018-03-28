@@ -1,8 +1,7 @@
-import { Request } from "../handlers/Request";
-import { Config, IConfigModel, ConfigSchema } from '../model/Config';
 import transactionLog from '../service/TransactionLogService';
-import config from '../service/ConfigurationService'
-import capabilities from '../service/CapabilitiesService'
+import config from '../service/ConfigurationService';
+import capabilities from '../service/CapabilitiesService';
+import { Request } from "../handlers/Request";
 
 declare var Promise: any;
 
@@ -17,8 +16,9 @@ export class QueryHandler {
 
     queryConfigs = (args: any) => {
         console.log("find all configurations")
+        var request = new Request(args);
         return new Promise((resolve: Function, reject: Function) => { 
-            resolve(config.findConfig())    
+            resolve(config.findConfig(request.did))    
         });
     }
 

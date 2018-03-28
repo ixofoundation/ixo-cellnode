@@ -1,8 +1,8 @@
 import { Document, Schema, Model, model} from "mongoose";
-import {TransactionError} from '../error/TransactionError';
+import {TransactionError} from '../../error/TransactionError';
 import { ITransaction } from "./ITransaction";
 
-import CryptoUtils from '../crypto/Utils'
+import CryptoUtils from '../../crypto/Utils'
 
 var cryptoUtils = new CryptoUtils();
 
