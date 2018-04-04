@@ -16,10 +16,11 @@ class App {
 
   //Run configuration methods on the Express instance.
   constructor() {
+    console.log('CONSTRUCT THE APP');
     this.express = express();
-    
+
     this.middleware();
-    this.routes();
+    this.routes();    
   }
 
   // Configure Express middleware.
@@ -32,17 +33,18 @@ class App {
 
   // Configure API endpoints.
   private routes(): void {
+
+    console.log('CONFIGURE API ENDPOINTS');
+
     this.express.get('/', (req, res, next) => {
       res.send('API is running');
     });
-
+    
     this.express.use('/api/init', InitRouter);
     this.express.use('/api/request', RequestRouter);
     this.express.use('/api/query', QueryRouter);
-
-
+    
     this.express.use(logger.after);
-
   }
 
 }

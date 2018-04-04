@@ -17,3 +17,9 @@ services:
       - ./data:/data/db
     ports:
       - "27017:27017"
+
+  cli:
+    container_name: cli
+    image: trustlab/pds-cli
+    stdin_open: true
+    tty: true

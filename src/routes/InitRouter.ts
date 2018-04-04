@@ -8,7 +8,6 @@ export class InitRouter extends AbstractRouter{
 
     setup() {
         let config = {};
-    
         const handler = new InitHandler();
         this.register(config, "initPds", handler.initPds);
         console.log('init router configured');

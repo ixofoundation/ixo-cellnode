@@ -14,7 +14,7 @@ export class RequestRouter extends AbstractRouter{
         this.register(config, "updateAgentStatus", handler.updateAgentStatus);
         this.register(config, "submitClaim", handler.submitClaim);
         this.register(config, "evaluateClaim", handler.evaluateClaim);
-        console.log('query router configured');
+        console.log('request router configured');
         return config;
       }
 }
