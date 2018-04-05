@@ -5,9 +5,9 @@ import * as bodyParser from 'body-parser';
 import { Request, Response } from 'express';
 import * as logger from './logger/Logger';
 
-import InitRouter from './routes/InitRouter';
-import RequestRouter from './routes/RequestRouter';
-import QueryRouter from './routes/QueryRouter';
+import {InitRouter} from './routes/InitRouter';
+import {RequestRouter} from './routes/RequestRouter';
+import {QueryRouter} from './routes/QueryRouter';
 
 class App {
 
@@ -16,7 +16,6 @@ class App {
 
   //Run configuration methods on the Express instance.
   constructor() {
-    console.log('CONSTRUCT THE APP');
     this.express = express();
 
     this.middleware();
@@ -33,16 +32,13 @@ class App {
 
   // Configure API endpoints.
   private routes(): void {
-
-    console.log('CONFIGURE API ENDPOINTS');
-
     this.express.get('/', (req, res, next) => {
       res.send('API is running');
-    });
-    
-    this.express.use('/api/init', InitRouter);
-    this.express.use('/api/request', RequestRouter);
-    this.express.use('/api/query', QueryRouter);
+    });    
+
+    this.express.use('/api/init', new InitRouter().router);
+    this.express.use('/api/request', new RequestRouter().router);
+    this.express.use('/api/query', new QueryRouter().router);
     
     this.express.use(logger.after);
   }

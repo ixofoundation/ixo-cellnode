@@ -16,4 +16,4 @@ export class InitRouter extends AbstractRouter{
 }
 
 // Create the Router, and export its configured Express.Router
-export default new InitRouter().router;
+//export default new InitRouter().router;

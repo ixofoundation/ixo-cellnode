@@ -19,4 +19,4 @@ export class QueryRouter extends AbstractRouter{
 }
 
 // Create the Router, and export its configured Express.Router
-export default new QueryRouter().router;
+//export default new QueryRouter().router;
