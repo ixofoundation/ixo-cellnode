@@ -20,8 +20,8 @@ export class RequestRouter extends AbstractRouter {
         var inst: any = this;
         const handler = new RequestHandler();
         requestTypes.forEach(function(obj: any) { 
-                var type = obj.type.charAt(0).toLowerCase() + obj.type.slice(1);
-                inst.register(config, type, eval("handler." + type));
+            var type = obj.type.charAt(0).toLowerCase() + obj.type.slice(1);
+            inst.register(config, type, eval("handler." + type));
             }
         );
         
