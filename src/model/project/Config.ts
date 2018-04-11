@@ -10,16 +10,8 @@ export var ConfigSchema: Schema = new Schema({
         type: String,
         //required: true,
         index: true
-    }
-    // auth_method: [{
-    //     type: String,
-    //     public_key: String,
-    //     secret_key: String
-    //   }],
-    // request_type: [{
-    //     type: String,
-    //     template: String
-    //   }] 
+    },
+    requestType: [] 
 
 }, { strict: false });
 

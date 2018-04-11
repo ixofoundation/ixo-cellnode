@@ -8,7 +8,7 @@
                						},
  									{
                 					"type": "CreateAgent",
-                                 	"template": "CreateAgentTemplate"
+                                 	"template": "agents"
                						},
                						{
                 					"type": "UpdateAgent",

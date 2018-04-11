@@ -1,14 +1,14 @@
-import { Document, Schema, Model, model} from "mongoose";
-import { IAgent } from "./IAgent";
+// import { Document, Schema, Model, model} from "mongoose";
+// import { IAgent } from "./IAgent";
 
-import {ValidationError} from "../../error/ValidationError";
+// import {ValidationError} from "../../error/ValidationError";
 
-export interface IAgentModel extends IAgent, Document {
-}
+// export interface IAgentModel extends IAgent, Document {
+// }
 
-export var AGENT_ROLE = Object.freeze({'OA': 'OA', 'SA': 'SA', 'IA': 'IA', 'EA': 'EA'});
+// export var AGENT_ROLE = Object.freeze({'OA': 'OA', 'SA': 'SA', 'IA': 'IA', 'EA': 'EA'});
 
-export var AgentSchema: Schema = new Schema({
+// export var AgentSchema: Schema = new Schema({
   // tx: {
   //   type: String,
   //   index: true,
@@ -18,11 +18,11 @@ export var AgentSchema: Schema = new Schema({
   //   type: Date, 
   //   default: Date.now
   // },
-  did: {
-    type: String,
-    required : true,
-    index: true
-  }
+  // did: {
+  //   type: String,
+  //   required : true,
+  //   index: true
+  // }
   // name: {
   //   type: String,
   //   required : true
@@ -51,12 +51,12 @@ export var AgentSchema: Schema = new Schema({
   //     ref: 'AgentStatus'
   //   }
   // ]
- }, {strict: false});   // Allow any other fields to also be included over and above the standard ones
+//  }, {strict: false});   // Allow any other fields to also be included over and above the standard ones
 
- AgentSchema.pre("save", function(this: IAgent, next) {
-  next();
- });
+//  AgentSchema.pre("save", function(this: IAgent, next) {
+//   next();
+//  });
 
-export const Agent: Model<IAgentModel> = model<IAgentModel>("Agent", AgentSchema);
+// export const Agent: Model<IAgentModel> = model<IAgentModel>("Agent", AgentSchema);
 
 

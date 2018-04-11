@@ -17,12 +17,11 @@ export class CapabilitiesService {
   }
 
 
-  createCapability(requestTypes: any, capability: any, emit = true): Promise<ICapabilitiesModel>{
+  createCapability(capability: any, emit = true): Promise<ICapabilitiesModel>{
     return new Promise(function(resolve: Function, reject: Function){
       Capabilities.create(
         {
-          "capability": capability,
-          "requestType": requestTypes
+          "capability": capability
         }, function(error: Error, newTransaction: ICapabilitiesModel){
          if(error){
            reject(error);

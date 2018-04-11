@@ -17,7 +17,6 @@ export class Request {
 
 
   constructor(requestData: any) {
-    console.log("Request data " + JSON.stringify(requestData));
     this.payload = JSON.stringify(requestData.payload);
     this.did = requestData.payload.did;
 
@@ -25,11 +24,6 @@ export class Request {
     if (requestData.payload.data) {
       this.data = requestData.payload.data;
     }
-
-    //auth_method, request_type, default_data used for initial setup
-    // if (requestData.payload.auth_method) {
-    //   this.authMethod = requestData.payload.auth_method;
-    // }
     if (requestData.payload.request_type) {
       this.requestType = requestData.payload.request_type;
     }

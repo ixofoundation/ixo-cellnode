@@ -18,7 +18,7 @@ export class QueryHandler {
         console.log("find all configurations")
         var request = new Request(args);
         return new Promise((resolve: Function, reject: Function) => { 
-            resolve(config.findConfig(request.did))    
+            resolve(config.findConfigForDid(request.did))    
         });
     }
 

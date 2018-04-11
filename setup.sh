@@ -8,12 +8,12 @@ echo ""
 echo "Build the Project Data Store(PDS)" 
 docker build -t trustlab/ixo-pds .
 echo "Build the PDS command line interface"
-docker build -t trustlab/pds-cli ../pds-cli
+#docker build -t trustlab/pds-cli ../pds-cli
 docker-compose up --no-start
 docker-compose start
-docker-compose exec cli /bin/sh -c "/usr/src/cli/bin/run" 
+#docker-compose exec cli /bin/sh -c "/usr/src/cli/bin/run" 
 echo "Creating PDS ..." 
-sleep 2
+sleep 7
 docker-compose exec app /bin/sh -c "chmod 777 /usr/src/app/bin/initialise-db.sh;/usr/src/app/bin/initialise-db.sh"
 echo
 echo "Creating PDS ...done"

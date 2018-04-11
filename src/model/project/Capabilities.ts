@@ -11,20 +11,6 @@ export var CapabilitiesSchema: Schema = new Schema({
         //required : true,
         //index: true
       },
-    requestType: {
-        type: Array
-        //required : true,
-        //index: true
-      }
-    // auth_method: [{
-    //     type: String,
-    //     public_key: String,
-    //     secret_key: String
-    //   }],
-    // request_type: [{
-    //     type: String,
-    //     template: String
-    //   }] 
 
 }, {strict: false});
 
