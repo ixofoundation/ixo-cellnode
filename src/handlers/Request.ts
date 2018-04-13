@@ -10,7 +10,7 @@ export class Request {
   signature: any;
 
   did: string;
-  //authMethod: any;
+  template: any;
   requestType: any;
   capabilities: any;
   data: any;
@@ -30,7 +30,9 @@ export class Request {
     if (requestData.payload.default_data) {
       this.capabilities = requestData.payload.default_data[0].capabilities;
     }
-
+    if (requestData.payload.template) {
+      this.template = requestData.payload.template.name;
+    }
     //signature of transaction request
     if (requestData.signature) {
       this.signature = requestData.signature;
@@ -40,10 +42,6 @@ export class Request {
   hasSignature = (): boolean => {
     return (this.signature != undefined);
   }
-
-  // hasAuthMethod = (): boolean => {
-  //   return (this.authMethod != undefined);
-  // }
 
   verifySignature = (): boolean => {
     if (!this.hasSignature) {

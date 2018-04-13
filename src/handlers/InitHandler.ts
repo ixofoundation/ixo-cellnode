@@ -19,17 +19,17 @@ export class InitHandler {
             var mnemonic = sovrinUtils.generateBip39Mnemonic();
             var sovrinWallet = sovrinUtils.generateSdidFromMnemonic(mnemonic);
             request.did = String("did:sovrin:" + sovrinWallet.did);
+
             config.createConfig(request);
             capabilities.createCapability(request.capabilities);
-            
             var signedpayload = sovrinUtils.signDocument(sovrinWallet, request.payload);
             request.signature = signedpayload;
 
             transactionLog.createTransaction(request.payload, 
                 request.signature.type, 
                 request.signature.signatureValue,
-                sovrinWallet.encryptionPublicKey);            
-
+                sovrinWallet.encryptionPublicKey);    
+                        
             resolve({
                     did: request.did,
                     signatureType: request.signature.type,

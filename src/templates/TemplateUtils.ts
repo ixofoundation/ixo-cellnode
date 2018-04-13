@@ -35,7 +35,7 @@ export class TemplateUtils {
       return new Promise((resolve: Function, reject: Function) => {
         var template = templateCache.get(key);
         if(template){
-          resolve(template.asJSON());
+          resolve(template);
         }else{
           reject();
         }
@@ -47,9 +47,10 @@ export class TemplateUtils {
 
     return this.gitUtils.loadFileContents(this.repoName, template)
       .then((templateContents: any) => {
-          var res = new SchemaFormTemplate(JSON.parse(templateContents));
+          //var res = new SchemaFormTemplate(JSON.parse(templateContents));
+          var res = JSON.parse(templateContents);
           templateCache.set(key, res);
-          return res.asJSON();
+          return res;
         });
   }
 

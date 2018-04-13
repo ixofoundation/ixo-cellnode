@@ -1,7 +1,7 @@
-import {Validator} from 'jsonschema';
+import {Validator, ValidatorResult} from 'jsonschema';
 
 
-export function isValidJson(schema: any, json: any): boolean {
+export function validateJson(schema: any, json: any): ValidatorResult {
     var validator = new Validator();
-    return validator.validate(json, schema).valid;
+    return validator.validate(json, schema);
 }

@@ -1,6 +1,6 @@
 import {Router} from 'express';
 import {AbstractRouter} from './AbstractRouter';
-import {RequestHandler} from '../handlers/RequestHandler'
+//import {RequestHandler} from '../handlers/RequestHandler';
 
 declare var Promise: any;
 
@@ -18,10 +18,11 @@ export class RequestRouter extends AbstractRouter {
         var data = JSON.parse(fileSystem.readFileSync(process.env.CONFIG, 'utf8'));
         var requestTypes = data.params.payload.request_type;
         var inst: any = this;
-        const handler = new RequestHandler();
+        //const handler = new RequestHandler();
         requestTypes.forEach(function(obj: any) { 
             var type = obj.type.charAt(0).toLowerCase() + obj.type.slice(1);
-            inst.register(config, type, eval("handler." + type));
+            var handler = require('../handlers/RequestHandler');
+            inst.register(config, type, eval('handler.' + type));
             }
         );
         
