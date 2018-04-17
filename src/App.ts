@@ -39,7 +39,7 @@ class App {
     this.express.use('/api/init', new InitRouter().router);
     this.express.use('/api/request', new RequestRouter().router);
     this.express.use('/api/query', new QueryRouter().router);
-    
+   
     this.express.use(logger.after);
   }
 

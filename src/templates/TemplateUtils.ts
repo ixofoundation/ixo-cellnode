@@ -39,7 +39,6 @@ export class TemplateUtils {
         }else{
           reject();
         }
-        
       })
     }
 

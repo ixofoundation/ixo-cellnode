@@ -14,7 +14,7 @@ export class InitHandler {
 
     initPds = (args: any) => {
         var request = new Request(args);
-        return new Promise((resolve: Function, reject: Function) => {            
+        return new Promise((resolve: Function, reject: Function) => {
             var sovrinUtils = new SovrinUtils();
             var mnemonic = sovrinUtils.generateBip39Mnemonic();
             var sovrinWallet = sovrinUtils.generateSdidFromMnemonic(mnemonic);

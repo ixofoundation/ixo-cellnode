@@ -13,7 +13,7 @@ docker-compose up --no-start
 docker-compose start
 #docker-compose exec cli /bin/sh -c "/usr/src/cli/bin/run" 
 echo "Creating PDS ..."
-sleep 10
+sleep 7
 docker-compose exec app /bin/sh -c "chmod 777 /usr/src/app/bin/initialise-db.sh;/usr/src/app/bin/initialise-db.sh"
 echo
 echo "Creating PDS ...done"

@@ -1,8 +1,22 @@
 import { IRequest } from './IRequest';
 import { CryptoUtils } from '../crypto/Utils';
-import { ValidationError } from "../error/ValidationError";
 
 var cryptoUtils = new CryptoUtils();
+
+export class RequestValidator {
+
+  errors: string[];
+  valid: boolean;
+
+  constructor(instance: any) {
+    this.errors = new Array<string>();
+    this.valid = true;
+  }
+
+  addError = (error: string) => {
+    this.errors.push(error);
+  }
+}
 
 export class Request {
 
@@ -43,20 +57,25 @@ export class Request {
     return (this.signature != undefined);
   }
 
-  verifySignature = (): boolean => {
+  verifySignature = (): RequestValidator => {
+    var validator = new RequestValidator(this);
+    validator.valid = false;
     if (!this.hasSignature) {
-      throw new ValidationError("Signature is not present in request");
+      validator.addError("Signature is not present in request");
+      validator.valid = false;
+     }
+    if (this.did != this.signature.creator) {
+      validator.addError("'did' in payload is not the signature creator");
+      validator.valid = false;
     }
-    // if (cryptoUtils.remove0x(this.did) != cryptoUtils.remove0x(this.signature.creator)) {
-    //   throw new ValidationError("'did' in payload is not the signature creator");
-    // }
-    //if (!this.signature.publicKey)
-    //  this.signature.publicKey = this.signature.creator;
+
     if (!cryptoUtils.validateSignature(this.payload, this.signature.type, this.signature.signature, this.signature.publicKey)) {
-      //throw new ValidationError("Invalid request input signature '" + JSON.stringify(this.payload));
+      validator.addError("Invalid request input signature '" + JSON.stringify(this.payload));
+      validator.valid = false;
     }
     console.log("Request.verifySignature: return true");
-    return true;
+    validator.valid;
+    return validator;
   }
 
 }
