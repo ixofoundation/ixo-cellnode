@@ -2,7 +2,7 @@ import { ITransactionModel, Transaction } from '../model/project/Transaction';
 import { ITransaction } from '../model/project/ITransaction';
 import transactionLog from '../service/TransactionLogService'
 import {ValidationError} from "../error/ValidationError";;
-import {Request, RequestValidator} from "../handlers/Request";
+import {Request} from "../handlers/Request";
 import configService from '../service/ConfigurationService';
 import {TemplateUtils} from '../templates/TemplateUtils';
 
@@ -11,6 +11,9 @@ import { json } from 'body-parser';
 import { IConfigModel } from '../model/project/Config';
 import { validateJson } from '../templates/JsonValidator';
 import { ValidatorResult } from 'jsonschema';
+import { RequestValidator } from '../templates/RequestValidator';
+import capabilitiesService from '../service/CapabilitiesService';
+import { ICapabilitiesModel } from '../model/project/Capabilities';
 
 
 /////////////////////////////////////////////////
@@ -48,33 +51,45 @@ declare var Promise: any;
 /////////////////////////////////////////////////
 
 module.exports.createAgent = function (args: any) {
+  const methodCall = "CreateAgent";
   var request = new Request(args);
   return new Promise((resolve: Function, reject: Function) => {
     console.log('first verify that the payload is according to schema expected');
     configService.findConfig().then ((config: IConfigModel) => {
       config.requestType.some(function(requestType: any) {
-        if(requestType.type == 'CreateAgent'){
+        if(requestType.type == methodCall){
           var tu = new TemplateUtils();
-          tu.getTemplate(requestType.template, request.template).then((schema: any) =>{
+          tu.getTemplate(requestType.template, request.template).then((schema: any) => {
             var validator: ValidatorResult;
             validator = validateJson(schema, args);
-            if (validator.valid) {                  
-              console.log('next we verify the signature');
-              var sigValid: RequestValidator;
-              sigValid = request.verifySignature();
-              if (sigValid.valid) {
-                console.log('write transaction to log as sig has been verified')
-                transactionLog.createTransaction(request.payload, request.signature.type, request.signature.signature, request.signature.publicKey)
-                  .then((transaction: ITransactionModel) => {
-                    var agent = {...request.data,
-                                tx: transaction.hash,
-                                did: request.did
-                              };
-                    resolve(Agent.create(agent));
-                  });
-              } else {
-                reject(new ValidationError(sigValid.errors[0]));
-              }
+            if (validator.valid) {
+              console.log('next we validate the capability');
+              capabilitiesService.findCapabilities().then ((capabilities: ICapabilitiesModel) => {
+                console.log('THESE ARE OUR CAPABILITIES ' + JSON.stringify(capabilities));
+                var capValid: RequestValidator;
+                capValid = request.verifyCapability(capabilities.capability, methodCall);
+                if (capValid.valid) {
+                  console.log('next we verify the signature');
+                  var sigValid: RequestValidator;
+                  sigValid = request.verifySignature();
+                  if (sigValid.valid) {
+                    console.log('write transaction to log as sig has been verified')
+                    transactionLog.createTransaction(request.payload, request.signature.type, request.signature.signature, request.signature.publicKey)
+                      .then((transaction: ITransactionModel) => {
+                        var agent = {...request.data,
+                                    tx: transaction.hash,
+                                    did: request.did
+                                  };
+                        resolve(Agent.create(agent));
+                      });
+                  } else {
+                    reject(new ValidationError(sigValid.errors[0]));
+                  }                  
+                } else {
+                  console.log('CAPABILITY FAILED');
+                  reject(new ValidationError('Capability failed'));
+                }
+              }); 
             } else {
               reject(new ValidationError(validator.errors[0].message));
             };

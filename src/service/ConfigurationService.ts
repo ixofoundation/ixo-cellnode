@@ -55,10 +55,6 @@ export class ConfigurationService {
       });
     });
   }
-
-  // findConfig(): any {
-  //   return Config.findOne();
-  // }
 }
 
 export default new ConfigurationService();

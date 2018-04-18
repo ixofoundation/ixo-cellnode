@@ -1,22 +1,10 @@
 import { IRequest } from './IRequest';
 import { CryptoUtils } from '../crypto/Utils';
+import {RequestValidator} from '../templates/RequestValidator';
 
 var cryptoUtils = new CryptoUtils();
 
-export class RequestValidator {
 
-  errors: string[];
-  valid: boolean;
-
-  constructor(instance: any) {
-    this.errors = new Array<string>();
-    this.valid = true;
-  }
-
-  addError = (error: string) => {
-    this.errors.push(error);
-  }
-}
 
 export class Request {
 
@@ -58,8 +46,7 @@ export class Request {
   }
 
   verifySignature = (): RequestValidator => {
-    var validator = new RequestValidator(this);
-    validator.valid = false;
+    var validator = new RequestValidator();
     if (!this.hasSignature) {
       validator.addError("Signature is not present in request");
       validator.valid = false;
@@ -78,4 +65,24 @@ export class Request {
     return validator;
   }
 
+  verifyCapability = (caps: any, requestType: string): RequestValidator => {
+    var validator = new RequestValidator();
+    var inst = this;
+    validator.valid = false;
+    validator.addError('Capability not allowed for did ' + inst.signature.creator);
+    caps.some(function(capability: any){
+      if (capability.requestType == requestType) {
+        for (let index = 0; index < capability.allow.length; index++) {
+          const element = capability.allow[index];
+          if (inst.signature.creator.match(new RegExp(element))) {
+            console.log('REGULARE EXPRESSION FOUND ' + new RegExp(element));
+            validator.valid = true;
+            break;
+          } 
+        }                       
+      }
+      return capability.requestType == requestType;
+    });
+    return validator;
+  }
 }

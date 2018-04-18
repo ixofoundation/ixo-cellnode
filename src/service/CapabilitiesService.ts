@@ -1,6 +1,7 @@
 import {EventEmitter}  from 'events';
-import {ICapabilitiesModel, Capabilities} from '../model/project/Capabilities';
+import {ICapabilitiesModel, Capabilities, CapabilitiesSchema} from '../model/project/Capabilities';
 import {ICapabilities} from '../model/project/ICapabilities';
+import { DocumentQuery } from 'mongoose';
 
 declare var Promise: any;
 
@@ -32,11 +33,19 @@ export class CapabilitiesService {
     });
   }
 
-  findCapabilities(): any {
+  findCapabilities(): Promise<ICapabilitiesModel> {
     console.log("query capabilities")
-    return Capabilities.find();
+    return new Promise(function (resolve: Function, reject: Function) {
+      Capabilities.findOne(function (error: Error, capabilities: ICapabilitiesModel)  {
+        if (error) {
+          console.log("Error is " + error);
+          reject(error);
+        } else {
+          resolve(capabilities);
+        }
+      });
+    });
   }
-
 }
 
 export default new CapabilitiesService();

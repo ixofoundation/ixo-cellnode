@@ -6,11 +6,12 @@ export interface ICapabilitiesModel extends ICapabilities, Document {
 
 export var CapabilitiesSchema: Schema = new Schema({
 
-    capability: {
-        type: Array,
-        //required : true,
-        //index: true
-      },
+    // capability: {
+    //     type: Array,
+    //     //required : true,
+    //     //index: true
+    //   }
+    capability: []
 
 }, {strict: false});
 

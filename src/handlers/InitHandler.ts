@@ -18,7 +18,7 @@ export class InitHandler {
             var sovrinUtils = new SovrinUtils();
             var mnemonic = sovrinUtils.generateBip39Mnemonic();
             var sovrinWallet = sovrinUtils.generateSdidFromMnemonic(mnemonic);
-            request.did = String("did:sovrin:" + sovrinWallet.did);
+            request.did = String("did:sov:" + sovrinWallet.did);
 
             config.createConfig(request);
             capabilities.createCapability(request.capabilities);
