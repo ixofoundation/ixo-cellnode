@@ -46,6 +46,22 @@ export class CapabilitiesService {
       });
     });
   }
+
+  addCapabilities(did: string, requestType: string): Promise<ICapabilitiesModel> {
+    console.log("add capabilities for " + did + " for request type " + requestType);
+    return new Promise(function (resolve: Function, reject: Function) {
+      Capabilities.updateOne(
+        { },
+        { $addToSet: { "capability.$[elem].allow" : did } },
+        { arrayFilters: [ { "elem.requestType": { $eq: requestType } } ] },
+        function (error: Error, result: any)  {
+        if (error) {
+          console.log('DB ERROR ' + error);
+          reject(error);
+        }
+      });
+    });
+  }
 }
 
 export default new CapabilitiesService();

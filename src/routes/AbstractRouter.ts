@@ -13,7 +13,6 @@ export abstract class AbstractRouter {
      * Initialize the Router
      */
     constructor() {
-        console.log('CONSTRUCT THE ABSTRACT ROUTER');
         this.router = Router();
         this.init();
     }

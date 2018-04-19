@@ -69,3 +69,5 @@ data/
 
 .DS_Store
 src/.DS_Store
+
+scratch.ts

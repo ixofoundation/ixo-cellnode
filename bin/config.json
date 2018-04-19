@@ -11,12 +11,12 @@
                                  	"template": "agents"
                						},
                						{
-                					"type": "UpdateAgent",
-                                 	"template": "UpdateAgentTemplate"
+                					"type": "UpdateAgentStatus",
+                                 	"template": "agents"
                						},
                						{
                 					"type": "SubmitClaim",
-                                 	"template": "SubmitClaimTemplate"
+                                 	"template": "claims"
                						},
                						{
                 					"type": "EvaluateClaim",
@@ -24,10 +24,14 @@
                						}],
              			   "default_data":  [{
                 					"capabilities": [{
-                							"requestType": "CreateAgent",
-                							"allow": ["did:sov:*"]
-                						}
-                						]}]
+                								"requestType": "CreateAgent",
+                								"allow": ["did:sov:*"]
+											},
+											{
+												"requestType": "SubmitClaim",
+												"allow": ["did:sov:987654321"]
+											}]
+										}]
  							},
  				"signature": {}
                 }
