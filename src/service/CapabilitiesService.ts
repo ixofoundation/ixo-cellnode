@@ -54,10 +54,12 @@ export class CapabilitiesService {
         { },
         { $addToSet: { "capability.$[elem].allow" : did } },
         { arrayFilters: [ { "elem.requestType": { $eq: requestType } } ] },
-        function (error: Error, result: any)  {
+        function (error: Error, result: ICapabilitiesModel)  {
         if (error) {
           console.log('DB ERROR ' + error);
           reject(error);
+        } else{
+          resolve(result);
         }
       });
     });

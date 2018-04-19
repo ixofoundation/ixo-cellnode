@@ -6,6 +6,9 @@ import transactionLog from '../service/TransactionLogService'
 import capabilities from "../service/CapabilitiesService";
 import {SovrinUtils} from '../crypto/SovrinUtils';
 import config from "../service/ConfigurationService";
+import { ICapabilitiesModel } from "../model/project/Capabilities";
+import { TransactionError } from "../error/TransactionError";
+import { ITransactionModel } from "../model/project/Transaction";
 
 
 declare var Promise: any;
@@ -20,21 +23,26 @@ export class InitHandler {
             var sovrinWallet = sovrinUtils.generateSdidFromMnemonic(mnemonic);
             request.did = String("did:sov:" + sovrinWallet.did);
 
-            config.createConfig(request);
-            capabilities.createCapability(request.capabilities);
-            var signedpayload = sovrinUtils.signDocument(sovrinWallet, request.payload);
-            request.signature = signedpayload;
-
-            transactionLog.createTransaction(request.payload, 
-                request.signature.type, 
-                request.signature.signatureValue,
-                sovrinWallet.encryptionPublicKey);    
-                        
-            resolve({
-                    did: request.did,
-                    signatureType: request.signature.type,
-                    seed: mnemonic
-                    })    
+            config.createConfig(request).then ((configs: IConfigModel) => {
+                capabilities.createCapability(request.capabilities).then((capability: ICapabilitiesModel) => {
+                    capabilities.addCapabilities(request.did, 'CreateProject').then((capability: ICapabilitiesModel) => {
+                        capabilities.addCapabilities(request.did, 'UpdateAgentStatus').then((capability: ICapabilitiesModel) => {
+                            var signedpayload = sovrinUtils.signDocument(sovrinWallet, request.payload);
+                            request.signature = signedpayload;
+                            transactionLog.createTransaction(request.payload, 
+                                request.signature.type, 
+                                request.signature.signatureValue,
+                                sovrinWallet.encryptionPublicKey).then((txn: ITransactionModel) => {
+                                    resolve({
+                                        did: request.did,
+                                        signatureType: request.signature.type,
+                                        seed: mnemonic
+                                        }) 
+                                });  
+                        });
+                    });             
+                })
+            })
         })
     }
 }

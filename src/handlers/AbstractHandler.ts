@@ -18,62 +18,62 @@ import { ICapabilitiesModel } from '../model/project/Capabilities';
 
 export abstract class AbstractHandler {
 
-    createRequest (args: any, methodCall: string, model: Model<any>) {
-        var request = new Request(args);
-        var inst = this;
-        return new Promise((resolve: Function, reject: Function) => {
-          console.log('first verify that the payload is according to schema expected');
-          configService.findConfig().then ((config: IConfigModel) => {
-            config.requestType.some(function(requestType: any) {
-              if(requestType.type == methodCall){
-                var tu = new TemplateUtils();
-                tu.getTemplate(requestType.template, request.template).then((schema: any) => {
-                  var validator: ValidatorResult;
-                  validator = validateJson(schema, args);
-                  if (validator.valid) {
-                    console.log('next we validate the capability');
-                    capabilitiesService.findCapabilities().then ((capabilities: ICapabilitiesModel) => {
-                      console.log('THESE ARE OUR CAPABILITIES ' + JSON.stringify(capabilities));
-                      var capValid: RequestValidator;
-                      capValid = request.verifyCapability(capabilities.capability, methodCall);
-                      if (capValid.valid) {
-                        console.log('next we verify the signature');
-                        var sigValid: RequestValidator;
-                        sigValid = request.verifySignature();
-                        if (sigValid.valid) {
-                          console.log('write transaction to log as sig has been verified')
-                          transactionLog.createTransaction(request.payload, request.signature.type, request.signature.signature, request.signature.publicKey)
-                            .then((transaction: ITransactionModel) => {
-                                var obj = {...request.data,
-                                          tx: transaction.hash,
-                                          did: request.did
-                                        };
-                                inst.updateCapabilities(obj, methodCall);                              
-                                resolve(model.create(obj));
-                            });
-                        } else {
-                          reject(new ValidationError(sigValid.errors[0]));
-                        }                  
+  createRequest (args: any, methodCall: string, model: Model<any>) {
+      var request = new Request(args);
+      var inst = this;
+      return new Promise((resolve: Function, reject: Function) => {
+        console.log('first verify that the payload is according to schema expected');
+        configService.findConfig().then ((config: IConfigModel) => {
+          config.requestType.some(function(requestType: any) {
+            if(requestType.type == methodCall){
+              var tu = new TemplateUtils();
+              tu.getTemplate(requestType.template, request.template).then((schema: any) => {
+                var validator: ValidatorResult;
+                validator = validateJson(schema, args);
+                if (validator.valid) {
+                  console.log('next we validate the capability');
+                  capabilitiesService.findCapabilities().then ((capabilities: ICapabilitiesModel) => {
+                    console.log('THESE ARE OUR CAPABILITIES ' + JSON.stringify(capabilities));
+                    var capValid: RequestValidator;
+                    capValid = request.verifyCapability(capabilities.capability, methodCall);
+                    if (capValid.valid) {
+                      console.log('next we verify the signature');
+                      var sigValid: RequestValidator;
+                      sigValid = request.verifySignature();
+                      if (sigValid.valid) {
+                        console.log('write transaction to log as sig has been verified')
+                        transactionLog.createTransaction(request.payload, request.signature.type, request.signature.signature, request.signature.publicKey)
+                          .then((transaction: ITransactionModel) => {
+                              var obj = {...request.data,
+                                        tx: transaction.hash,
+                                        did: request.did
+                                      };
+                              inst.updateCapabilities(obj, methodCall);                              
+                              resolve(model.create(obj));
+                          });
                       } else {
-                        console.log('CAPABILITY FAILED');
-                        reject(new ValidationError('Capability failed'));
-                      }
-                    }); 
-                  } else {
-                    reject(new ValidationError(validator.errors[0].message));
-                  };
-                });
-              }
-              return requestType.type === methodCall;
-            })        
-          });
+                        reject(new ValidationError(sigValid.errors[0]));
+                      }                  
+                    } else {
+                      console.log('CAPABILITY FAILED');
+                      reject(new ValidationError('Capability failed'));
+                    }
+                  }); 
+                } else {
+                  reject(new ValidationError(validator.errors[0].message));
+                };
+              });
+            }
+            return requestType.type === methodCall;
+          })        
         });
-      }
+      });
+    }
 
-      saveCapabilities(did: string, requestType: string) {
-        capabilitiesService.addCapabilities(did, requestType);
-      }
+    saveCapabilities(did: string, requestType: string) {
+      capabilitiesService.addCapabilities(did, requestType);
+    }
 
-      abstract updateCapabilities(obj: any, methodCall: string) :void;
+    abstract updateCapabilities(obj: any, methodCall: string) :void;
 
 }

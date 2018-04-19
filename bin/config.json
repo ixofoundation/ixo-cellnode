@@ -4,7 +4,7 @@
 	"id": 123,
 	"params": {"payload": {"request_type": [{
                						"type": "CreateProject",
-                                 	"template": "CreateProjectTemplate"
+                                 	"template": "projects"
                						},
  									{
                 					"type": "CreateAgent",
@@ -20,7 +20,7 @@
                						},
                						{
                 					"type": "EvaluateClaim",
-                                 	"template": "EvaluateClaimTemplate"
+                                 	"template": "evaluations"
                						}],
              			   "default_data":  [{
                 					"capabilities": [{
@@ -28,8 +28,16 @@
                 								"allow": ["did:sov:*"]
 											},
 											{
-												"requestType": "SubmitClaim",
-												"allow": ["did:sov:987654321"]
+												"requestType": "SubmitClaim"
+											},
+											{
+												"requestType": "CreateProject"
+											},
+											{
+												"requestType": "EvaluateClaim"
+											},
+											{
+												"requestType": "UpdateAgentStatus"
 											}]
 										}]
  							},
