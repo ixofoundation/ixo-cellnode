@@ -24,8 +24,7 @@
                						}],
              			   "default_data":  [{
                 					"capabilities": [{
-                								"requestType": "CreateAgent",
-                								"allow": ["did:sov:*"]
+                								"requestType": "CreateAgent"
 											},
 											{
 												"requestType": "SubmitClaim"

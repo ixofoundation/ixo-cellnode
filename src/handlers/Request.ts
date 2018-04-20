@@ -4,8 +4,6 @@ import {RequestValidator} from '../templates/RequestValidator';
 
 var cryptoUtils = new CryptoUtils();
 
-
-
 export class Request {
 
   payload: any;
