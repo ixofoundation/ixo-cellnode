@@ -79,6 +79,7 @@ export class RequestHandler extends AbstractHandler {
       case 'CreateProject': {
         this.saveCapabilities(obj.did, 'EvaluateClaim');
         this.saveCapabilities('did:sov:*', 'CreateAgent');
+        this.saveCapabilities(obj.did, 'UpdateAgentStatus')
         break;
       }
       default: {

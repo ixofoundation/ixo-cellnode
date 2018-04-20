@@ -26,20 +26,18 @@ export class InitHandler {
             config.createConfig(request).then ((configs: IConfigModel) => {
                 capabilities.createCapability(request.capabilities).then((capability: ICapabilitiesModel) => {
                     capabilities.addCapabilities(request.did, 'CreateProject').then((capability: ICapabilitiesModel) => {
-                        capabilities.addCapabilities(request.did, 'UpdateAgentStatus').then((capability: ICapabilitiesModel) => {
-                            var signedpayload = sovrinUtils.signDocument(sovrinWallet, request.payload);
-                            request.signature = signedpayload;
-                            transactionLog.createTransaction(request.payload, 
-                                request.signature.type, 
-                                request.signature.signatureValue,
-                                sovrinWallet.encryptionPublicKey).then((txn: ITransactionModel) => {
-                                    resolve({
-                                        did: request.did,
-                                        signatureType: request.signature.type,
-                                        seed: mnemonic
-                                        }) 
-                                });  
-                        });
+                        var signedpayload = sovrinUtils.signDocument(sovrinWallet, request.payload);
+                        request.signature = signedpayload;
+                        transactionLog.createTransaction(request.payload, 
+                            request.signature.type, 
+                            request.signature.signatureValue,
+                            sovrinWallet.encryptionPublicKey).then((txn: ITransactionModel) => {
+                                resolve({
+                                    did: request.did,
+                                    signatureType: request.signature.type,
+                                    seed: mnemonic
+                                    }) 
+                            });  
                     });             
                 })
             })
