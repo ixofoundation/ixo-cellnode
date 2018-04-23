@@ -26,7 +26,7 @@ export class InitHandler {
             config.createConfig(request).then ((configs: IConfigModel) => {
                 capabilities.createCapability(request.capabilities).then((capability: ICapabilitiesModel) => {
                     capabilities.addCapabilities(request.did, 'CreateProject').then((capability: ICapabilitiesModel) => {
-                        var signedpayload = sovrinUtils.signDocument(sovrinWallet, request.payload);
+                    var signedpayload = sovrinUtils.signDocument(sovrinWallet, request.payload);
                         request.signature = signedpayload;
                         transactionLog.createTransaction(request.payload, 
                             request.signature.type, 
