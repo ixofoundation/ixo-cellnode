@@ -9,6 +9,7 @@ services:
       - "5000:5000"
     links:
       - db
+      - cache
       
   db:
     container_name: db
@@ -17,6 +18,12 @@ services:
       - ./data:/data/db
     ports:
       - "27017:27017"
+
+  cache:
+    container_name: cache
+    image: memcached:latest
+    ports:
+      - "11211:11211"
 
   # cli:
   #   container_name: cli

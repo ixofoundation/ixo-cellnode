@@ -1,6 +1,7 @@
 import { Document, Schema, Model, model} from "mongoose";
 import { AbstractHandler } from './AbstractHandler';
 
+
 /////////////////////////////////////////////////
 //  PROJECT MODEL                              //
 /////////////////////////////////////////////////
@@ -68,7 +69,7 @@ EvaluateClaimSchema.pre("save", function(next) {
 
 export const EvaluateClaim: Model<IEvaluateClaimModel> = model<IEvaluateClaimModel>("EvaluateClaim", EvaluateClaimSchema);
 
-export class RequestHandler extends AbstractHandler {
+export class RequestHandler extends AbstractHandler {  
 
   updateCapabilities(obj : any, methodCall: string) {
     switch(methodCall) {
@@ -104,6 +105,7 @@ export class RequestHandler extends AbstractHandler {
   createAgent = (args: any) => {
     return this.createRequest(args, 'CreateAgent', Agent);
   }
+
 
   updateAgentStatus = (args: any) => {
     return this.createRequest(args, 'UpdateAgentStatus', AgentStatus);

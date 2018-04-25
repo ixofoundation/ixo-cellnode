@@ -1,45 +1,24 @@
 {
-	"jsonrpc":"2.0", 
-	"method":"initPds",
-	"id": 123,
-	"params": {"payload": {"request_type": [{
-               						"type": "CreateProject",
-                                 	"template": "projects"
-               						},
- 									{
-                					"type": "CreateAgent",
-                                 	"template": "agents"
-               						},
-               						{
-                					"type": "UpdateAgentStatus",
-                                 	"template": "agents"
-               						},
-               						{
-                					"type": "SubmitClaim",
-                                 	"template": "claims"
-               						},
-               						{
-                					"type": "EvaluateClaim",
-                                 	"template": "evaluations"
-               						}],
-             			   "default_data":  [{
-                					"capabilities": [{
-                								"requestType": "CreateAgent"
-											},
-											{
-												"requestType": "SubmitClaim"
-											},
-											{
-												"requestType": "CreateProject"
-											},
-											{
-												"requestType": "EvaluateClaim"
-											},
-											{
-												"requestType": "UpdateAgentStatus"
-											}]
-										}]
- 							},
- 				"signature": {}
-                }
- }
+	"configuration": [
+		{
+			"capability": "CreateProject",
+			"template": "projects"
+		},
+		{
+			"capability": "CreateAgent",
+			"template": "agents"
+		},
+		{
+			"capability": "UpdateAgentStatus",
+			"template": "agents"
+		},
+		{
+			"capability": "SubmitClaim",
+			"template": "claims"
+		},
+		{
+			"capability": "EvaluateClaim",
+			"template": "evaluations"
+		}
+	]
+}

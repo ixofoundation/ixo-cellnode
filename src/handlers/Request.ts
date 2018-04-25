@@ -23,12 +23,6 @@ export class Request {
     if (requestData.payload.data) {
       this.data = requestData.payload.data;
     }
-    if (requestData.payload.request_type) {
-      this.requestType = requestData.payload.request_type;
-    }
-    if (requestData.payload.default_data) {
-      this.capabilities = requestData.payload.default_data[0].capabilities;
-    }
     if (requestData.payload.template) {
       this.template = requestData.payload.template.name;
     }
@@ -60,23 +54,18 @@ export class Request {
     return validator;
   }
 
-  verifyCapability = (caps: any, methodCall: string): RequestValidator => {
+  verifyCapability = (allow: any): RequestValidator => {
     var validator = new RequestValidator();
     var inst = this;
     validator.valid = false;
     validator.addError('Capability not allowed for did ' + inst.signature.creator);
-    caps.some(function(capability: any){
-      if (capability.requestType == methodCall) {
-        for (let index = 0; index < capability.allow.length; index++) {
-          const element = capability.allow[index];
-          if (inst.signature.creator.match(new RegExp(element))) {
-            validator.valid = true;
-            break;
-          } 
-        }                       
-      }
-      return capability.requestType == methodCall;
-    });
+    for (let index = 0; index < allow.length; index++) {
+      const element = allow[index];
+      if (inst.signature.creator.match(new RegExp(element))) {
+        validator.valid = true;
+        break;
+      } 
+    } 
     return validator;
   }
 }

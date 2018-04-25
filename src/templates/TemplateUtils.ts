@@ -1,7 +1,6 @@
 import {GitUtils} from './GitUtils';
 import {Validator} from 'jsonschema';
-
-var templateCache = new Map<string, SchemaFormTemplate>();
+import Cache from '../Cache';
 
 export class SchemaFormTemplate {
   template: Object;
@@ -20,10 +19,12 @@ export class TemplateUtils {
 
   gitUtils: GitUtils
   repoName: string
+  
 
   constructor(){
     this.gitUtils = new GitUtils();
     this.repoName = 'ixofoundation';
+
   }
 
   /*
@@ -31,24 +32,15 @@ export class TemplateUtils {
   */
   getTemplate(templateType: string, name: string){
     var key = this.getCacheKey(templateType, name);
-    if(templateCache.has(key)){
-      return new Promise((resolve: Function, reject: Function) => {
-        var template = templateCache.get(key);
-        if(template){
-          resolve(template);
-        }else{
-          reject();
-        }
-      })
-    }
+    var template = Cache.get(key);
+    if (template) return template;
 
-    var template = this.constructTemplate(templateType, name);
+    template = this.constructTemplate(templateType, name);
 
     return this.gitUtils.loadFileContents(this.repoName, template)
       .then((templateContents: any) => {
-          //var res = new SchemaFormTemplate(JSON.parse(templateContents));
           var res = JSON.parse(templateContents);
-          templateCache.set(key, res);
+          Cache.set(key, res);
           return res;
         });
   }
@@ -69,4 +61,4 @@ export class TemplateUtils {
   
 }
 
-export default TemplateUtils;
+export default new TemplateUtils();

@@ -6,10 +6,10 @@ export interface ICapabilitiesModel extends ICapabilities, Document {
 
 export var CapabilitiesSchema: Schema = new Schema({
 
-    capability: [{
-        requestType: String,
-        allow: [String]
-}]
+    capabilities: [{capability: String,
+                    template: String,
+                    allow: [String]
+    }]
 
 }, {strict: false});
 

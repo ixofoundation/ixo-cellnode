@@ -22,7 +22,7 @@ export class CapabilitiesService {
     return new Promise(function(resolve: Function, reject: Function){
       Capabilities.create(
         {
-          "capability": capability
+          capabilities: capability
         }, function(error: Error, newTransaction: ICapabilitiesModel){
          if(error){
            reject(error);
@@ -33,15 +33,17 @@ export class CapabilitiesService {
     });
   }
 
-  findCapabilities(): Promise<ICapabilitiesModel> {
+findCapabilities(): Promise<ICapabilitiesModel> {
     console.log("query capabilities")
     return new Promise(function (resolve: Function, reject: Function) {
-      Capabilities.findOne(function (error: Error, capabilities: ICapabilitiesModel)  {
+      Capabilities.findOne(
+        {},
+        function (error: Error, result: ICapabilitiesModel)  {
         if (error) {
           console.log("Error is " + error);
           reject(error);
         } else {
-          resolve(capabilities);
+          resolve(result);
         }
       });
     });
@@ -52,8 +54,8 @@ export class CapabilitiesService {
     return new Promise(function (resolve: Function, reject: Function) {
       Capabilities.updateOne(
         { },
-        { $addToSet: { "capability.$[elem].allow" : did } },
-        { arrayFilters: [ { "elem.requestType": { $eq: requestType } } ] },
+        { $addToSet: { "capabilities.$[elem].allow" : did } },
+        { arrayFilters: [ { "elem.capability": { $eq: requestType } } ] },
         function (error: Error, result: ICapabilitiesModel)  {
         if (error) {
           console.log('DB ERROR ' + error);

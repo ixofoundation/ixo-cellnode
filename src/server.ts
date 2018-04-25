@@ -1,10 +1,13 @@
 require('dotenv').config();
 import * as http from 'http';
 import * as logger from './logger/Logger';
+import cache from './Cache';
 
 import App from './App';
+import InitHandler from './handlers/InitHandler';
 
 var mongoose = require('mongoose');
+//var cache = require('./Cache');
 require('mongoose').Promise = global.Promise;
 
 // Set the port
@@ -15,6 +18,8 @@ const server = http.createServer(App);
 // Connect to Mongo DB
 //mongoose.connect('mongodb://localhost:27017/pds')
 mongoose.connect(process.env.MONGODB_URI || '');
+
+cache.connect();
 
 var db = mongoose.connection;
 db.on('error', function (err: any) {
@@ -46,13 +51,21 @@ db.once('open', function() {
   server.on('error', onError);
   server.on('listening', onListening);
 
+  //once we have a db connection, we must initialise it once only
+  //careful not to re-initialize on server startup
+  InitHandler.initialise().then((response: any) => {
+    console.log(JSON.stringify(response));
+    return response;
+  });
 });
+
 
 process.on('SIGTERM', function () {
   db.close();
   server.close(function () {
     process.exit(0);
   });
+  cache.close();
 });
 
 function normalizePort(val: number|string): number|string|boolean {

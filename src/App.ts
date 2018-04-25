@@ -5,7 +5,7 @@ import * as bodyParser from 'body-parser';
 import { Request, Response } from 'express';
 import * as logger from './logger/Logger';
 
-import {InitRouter} from './routes/InitRouter';
+//import {InitRouter} from './routes/InitRouter';
 import {RequestRouter} from './routes/RequestRouter';
 import {QueryRouter} from './routes/QueryRouter';
 
@@ -13,6 +13,8 @@ class App {
 
   // ref to Express instance
   public express: express.Application;
+
+  
 
   //Run configuration methods on the Express instance.
   constructor() {
@@ -30,18 +32,19 @@ class App {
     this.express.use(logger.before);
   }
 
+
+
   // Configure API endpoints.
   private routes(): void {
     this.express.get('/', (req, res, next) => {
       res.send('API is running');
     });    
 
-    this.express.use('/api/init', new InitRouter().router);
     this.express.use('/api/request', new RequestRouter().router);
     this.express.use('/api/query', new QueryRouter().router);
    
     this.express.use(logger.after);
-  }
+  } 
 
 }
 
