@@ -17,6 +17,7 @@ sleep 7
 #docker-compose exec app /bin/sh -c "chmod 777 /usr/src/app/bin/initialise-db.sh;/usr/src/app/bin/initialise-db.sh"
 echo
 echo "Creating PDS ...done"
+docker-compose logs --tail 1 app
 echo ""
 echo "***********************************"
 echo "* STORE YOUR SEED IN A SAFE PLACE *"
