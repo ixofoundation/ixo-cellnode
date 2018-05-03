@@ -8,7 +8,7 @@ import CryptoUtils from '../../crypto/Utils'
 var cryptoUtils = new CryptoUtils();
 
 export interface ITransactionModel extends ITransaction, Document {
-  validateTransaction(): boolean;
+  //validateTransaction(): boolean;
 }
 
 export var TransactionSchema: Schema = new Schema({
@@ -26,13 +26,16 @@ export var TransactionSchema: Schema = new Schema({
   timestamp: Date
  });
 
-TransactionSchema.pre("save", function(this: ITransaction, next) {
- //TODO get prev transaction hash and add to new hash
-  this.nonce = cryptoUtils.createNonce();
-  this.hash = cryptoUtils.hash(this.nonce.toString() + this.type + this.data);
-  this.timestamp = new Date()
-  next();
-});
 
+TransactionSchema.pre("save", function(this: ITransaction, next) {
+  transactionLog.findLatestTransaction()
+  .then((prevTxn: ITransactionModel) => {
+    let prevHash = (prevTxn ? prevTxn.hash : '');
+    this.nonce = cryptoUtils.createNonce();    
+    this.hash = cryptoUtils.hash(prevHash + this.nonce.toString() + this.data);
+    this.timestamp = new Date()
+    next();
+  });
+});
 
 export const Transaction: Model<ITransactionModel> = model<ITransactionModel>("Transaction", TransactionSchema);
