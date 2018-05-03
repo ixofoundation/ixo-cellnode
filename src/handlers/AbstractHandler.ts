@@ -1,7 +1,8 @@
 import { ITransactionModel, Transaction } from '../model/project/Transaction';
 import { ITransaction } from '../model/project/ITransaction';
 import transactionLog from '../service/TransactionLogService'
-import { ValidationError } from "../error/ValidationError";;
+import { ValidationError } from '../error/ValidationError';
+import { TransactionError } from '../error/TransactionError';
 import { Request } from "../handlers/Request";
 import TemplateUtils from '../templates/TemplateUtils';
 
@@ -12,32 +13,33 @@ import { ValidatorResult } from 'jsonschema';
 import { RequestValidator } from '../templates/RequestValidator';
 import capabilitiesService from '../service/CapabilitiesService';
 import { ICapabilitiesModel } from '../model/project/Capabilities';
+import { QueryHandler } from './QueryHandler';
 
 
 export abstract class AbstractHandler {
 
-  createRequest(args: any, capability: string, model: Model<any>) {
+  createRequest(args: any, capability: string, model: Model<any>, checkVersion?: Function) {
     var request = new Request(args);
     var inst = this;
 
 
     return new Promise((resolve: Function, reject: Function) => {
       capabilitiesService.findCapabilities()
-        .then((capabilities: ICapabilitiesModel) => {
-          var result: any;
-          capabilities.capabilities.forEach(element => {
+        .then((result: ICapabilitiesModel) => {
+          var capabilityMap: any;
+          result.capabilities.forEach(element => {
             if (element.capability == capability) {
-              result = {
+              capabilityMap = {
                 capability: element.capability,
                 template: element.template,
                 allow: element.allow
               }
             }        
           })
-          return result;
+          return capabilityMap;
         })
         .then((capabilityMap: any) => {
-          console.log('WE GOT A MAP OF CAPABILITIES ' + capabilityMap.capability + capabilityMap.template);
+          console.log('WE GOT A MAP OF CAPABILITIES ' + capabilityMap.capability);
           TemplateUtils.getTemplate(capabilityMap.template, request.template)
             .then((schema: any) => {
               var validator: ValidatorResult;
@@ -51,23 +53,44 @@ export abstract class AbstractHandler {
                   var sigValid: RequestValidator;
                   sigValid = request.verifySignature();
                   if (sigValid.valid) {
-                    console.log('write transaction to log as sig has been verified')
-                    transactionLog.createTransaction(request.payload, request.signature.type, request.signature.signature, request.signature.publicKey)
-                      .then((transaction: ITransactionModel) => {
-                        var obj = {
-                          ...request.data,
-                          tx: transaction.hash,
-                          did: request.did
-                        };
-                        inst.updateCapabilities(obj, capabilityMap.capability);
-                        resolve(model.create(obj));
-                      });
+                    //want to check if record has already been added
+                    console.log('&&&&&&&&&&&&&&&&WE ARE WITH VERSION &&&&&&&&&&&' + request.version);
+                    if (checkVersion) {
+                      checkVersion(request).then((found: boolean) => {
+                        if (found){
+                          reject(new TransactionError('Record out of date, please refresh data'));
+                        } else {
+                          console.log('write transaction to log as sig and record version has been verified')
+                          transactionLog.createTransaction(request.payload, request.signature.type, request.signature.signature, request.signature.publicKey)
+                            .then((transaction: ITransactionModel) => {
+                              var obj = {
+                                ...request.data,
+                                tx: transaction.hash,
+                                version: request.version + 1
+                              };
+                              inst.updateCapabilities(request.signature.creator, capabilityMap.capability);
+                              resolve(model.create(obj));
+                            });                          
+                        }
+                      })                    
+                    } else {                    
+                      console.log('write transaction to log as sig has been verified')
+                      transactionLog.createTransaction(request.payload, request.signature.type, request.signature.signature, request.signature.publicKey)
+                        .then((transaction: ITransactionModel) => {
+                          var obj = {
+                            ...request.data,
+                            tx: transaction.hash
+                          };
+                          inst.updateCapabilities(request.signature.creator, capabilityMap.capability);
+                          resolve(model.create(obj));
+                        });
+                    }
                   } else {
                     reject(new ValidationError(sigValid.errors[0]));
                   }
                 } else {
                   console.log('CAPABILITY FAILED');
-                  reject(new ValidationError('Capability failed'));
+                  reject(new ValidationError(capValid.errors[0]));
                 }
               } else {
                 reject(new ValidationError(validator.errors[0].message));
@@ -75,54 +98,6 @@ export abstract class AbstractHandler {
             });
       });
     });
-
-
-
-
-
-    // return new Promise((resolve: Function, reject: Function) => {
-    //   console.log('first verify that the payload is according to schema expected');
-    //   capabilitiesService.findCapability(capability).then((capability: ICapabilitiesModel) => {
-    //     if (capability != null) {
-    //       TemplateUtils.getTemplate(capability.capabilities[0].template, request.template).then((schema: any) => {
-    //         var validator: ValidatorResult;
-    //         validator = validateJson(schema, args);
-    //         if (validator.valid) {
-    //           console.log('next we validate the capability');
-    //           var capValid: RequestValidator;
-    //           capValid = request.verifyCapability(capability);
-    //           if (capValid.valid) {
-    //             console.log('next we verify the signature');
-    //             var sigValid: RequestValidator;
-    //             sigValid = request.verifySignature();
-    //             if (sigValid.valid) {
-    //               console.log('write transaction to log as sig has been verified')
-    //               transactionLog.createTransaction(request.payload, request.signature.type, request.signature.signature, request.signature.publicKey)
-    //                 .then((transaction: ITransactionModel) => {
-    //                   var obj = {
-    //                     ...request.data,
-    //                     tx: transaction.hash,
-    //                     did: request.did
-    //                   };
-    //                   inst.updateCapabilities(obj, capability);
-    //                   resolve(model.create(obj));
-    //                 });
-    //             } else {
-    //               reject(new ValidationError(sigValid.errors[0]));
-    //             }
-    //           } else {
-    //             console.log('CAPABILITY FAILED');
-    //             reject(new ValidationError('Capability failed'));
-    //           }
-    //         } else {
-    //           reject(new ValidationError(validator.errors[0].message));
-    //         };
-    //       });
-    //     } else {
-    //       reject(new ValidationError('No Capability found'));
-    //     }
-    //   });
-    // });
 
   }
 

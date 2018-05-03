@@ -71,16 +71,16 @@ export const EvaluateClaim: Model<IEvaluateClaimModel> = model<IEvaluateClaimMod
 
 export class RequestHandler extends AbstractHandler {  
 
-  updateCapabilities(obj : any, methodCall: string) {
+  updateCapabilities(did : string, methodCall: string) {
     switch(methodCall) {
       case 'CreateAgent': {
-        this.saveCapabilities(obj.did, 'SubmitClaim');
+        this.saveCapabilities(did, 'SubmitClaim');
         break;
       }
       case 'CreateProject': {
-        this.saveCapabilities(obj.did, 'EvaluateClaim');
+        this.saveCapabilities(did, 'EvaluateClaim');
         this.saveCapabilities('did:sov:*', 'CreateAgent');
-        this.saveCapabilities(obj.did, 'UpdateAgentStatus')
+        this.saveCapabilities(did, 'UpdateAgentStatus')
         break;
       }
       default: {
@@ -95,7 +95,23 @@ export class RequestHandler extends AbstractHandler {
 /////////////////////////////////////////////////
 
   createProject = (args: any) => {
-    return this.createRequest(args, 'CreateProject', Project);
+    return this.createRequest(args, 'CreateProject', Project, function(request: any) : Promise<boolean> {
+      return new Promise(function(resolve: Function, reject: Function){
+        Project.findOne(
+          { version: 1
+          },
+          function (error: Error, result: IAgentStatusModel)  {
+            if (error) {
+              reject(error);
+            } else {
+              if (result) {
+                resolve(true);
+              }
+              resolve(false);
+            }   
+          }).limit(1);
+        });
+      });
   }
   
 /////////////////////////////////////////////////
@@ -108,7 +124,26 @@ export class RequestHandler extends AbstractHandler {
 
 
   updateAgentStatus = (args: any) => {
-    return this.createRequest(args, 'UpdateAgentStatus', AgentStatus);
+    return this.createRequest(args, 'UpdateAgentStatus', AgentStatus, function(request: any) : Promise<boolean> {
+      let newVersion = request.version + 1;
+      return new Promise(function(resolve: Function, reject: Function){
+        AgentStatus.findOne(
+          { agentDid: request.data.agentDid,
+            version: newVersion
+          },
+          function (error: Error, result: IAgentStatusModel)  {
+            if (error) {
+              reject(error);
+            } else {
+              if (result) {
+                resolve(true);
+              }
+              resolve(false);
+            }   
+          }).limit(1);
+        });
+      }
+    )
   }
 
 /////////////////////////////////////////////////
@@ -120,6 +155,24 @@ export class RequestHandler extends AbstractHandler {
   }
 
   evaluateClaim = (args: any) => {
-    return this.createRequest(args, 'EvaluateClaim', EvaluateClaim);
+    return this.createRequest(args, 'EvaluateClaim', EvaluateClaim, function(request: any) : Promise<boolean> {
+      let newVersion = request.version + 1;
+      return new Promise(function(resolve: Function, reject: Function){
+        EvaluateClaim.findOne(
+          { claimId: request.data.claimId,
+            version: newVersion
+          },
+          function (error: Error, result: IEvaluateClaimModel)  {
+            if (error) {
+              reject(error);
+            } else {
+              if (result) {
+                resolve(true);
+              }
+              resolve(false);
+            }   
+          }).limit(1);
+        });
+      });
   }
 }

@@ -6,4 +6,5 @@ export interface ITransaction {
     signatureType: String;
     signature: String;
     publicKey: String;
+    timestamp: Date;
   }

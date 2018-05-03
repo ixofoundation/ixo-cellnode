@@ -22,6 +22,7 @@ export class TransactionLogService {
           "signatureType": signatureType,
           "signature": signature,
           "publicKey": publicKey
+                            
         }, function (error: Error, newTransaction: ITransactionModel) {
           if (error) {
             console.log("Error is " + error);
@@ -37,13 +38,6 @@ export class TransactionLogService {
     console.log("query transaction log")
     return Transaction.find();
   }
-
-  // find = (criteria: any) => {
-  //   return Transaction.find(criteria)
-  //   .sort('-created')
-  //   .exec();
-  // }
-
 }
 
 export default new TransactionLogService();
