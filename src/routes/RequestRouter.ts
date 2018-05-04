@@ -22,12 +22,10 @@ export class RequestRouter extends AbstractRouter {
         const handler = new RequestHandler();
         data.configuration.forEach(function(obj: any) { 
             var type = obj.capability.charAt(0).toLowerCase() + obj.capability.slice(1);
-            console.log('REGISTER REQUEST TYPE handler.' + type);
+            console.log('register handler.' + type);
             inst.register(config, type, eval('handler.' + type));
             }
         );
-        
-        console.log('request router configured');
         return config;
       }
 }

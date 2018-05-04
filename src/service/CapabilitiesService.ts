@@ -34,7 +34,6 @@ export class CapabilitiesService {
   }
 
 findCapabilities(): Promise<ICapabilitiesModel> {
-    console.log("query capabilities")
     return new Promise(function (resolve: Function, reject: Function) {
       Capabilities.findOne(
         {},

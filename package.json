@@ -21,6 +21,7 @@
     "@types/memcached": "^2.2.5",
     "@types/mongoose": "^5.0.7",
     "@types/node": "^9.4.7",
+    "amqplib": "^0.5.2",
     "base-64": "^0.1.0",
     "bip39": "^2.5.0",
     "bs58": "^4.0.1",

@@ -17,7 +17,6 @@ export class InitHandler {
         return new Promise((resolve: Function, reject: Function) => {
             capabilities.findCapabilities()
             .then((result: ICapabilitiesModel) => {
-                console.log('INITAIL CAPABILITIES FOUND ' + JSON.stringify(result));
                 if (!result) {
                     var fileSystem = require('fs');
                     var data = JSON.parse(fileSystem.readFileSync(process.env.CONFIG, 'utf8'));
@@ -36,6 +35,8 @@ export class InitHandler {
                             })
                         });             
                     })
+                } else {
+                    console.log('capabilities found ' + JSON.stringify(result));
                 }
             });            
         })
