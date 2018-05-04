@@ -2,7 +2,8 @@
 	"configuration": [
 		{
 			"capability": "CreateProject",
-			"template": "projects"
+			"template": "projects",
+			"allow":["did:sov:*"]
 		},
 		{
 			"capability": "CreateAgent",

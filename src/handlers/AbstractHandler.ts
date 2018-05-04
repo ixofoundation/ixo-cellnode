@@ -22,7 +22,6 @@ export abstract class AbstractHandler {
     var request = new Request(args);
     var inst = this;
 
-
     return new Promise((resolve: Function, reject: Function) => {
       capabilitiesService.findCapabilities()
         .then((result: ICapabilitiesModel) => {
@@ -54,7 +53,6 @@ export abstract class AbstractHandler {
                   sigValid = request.verifySignature();
                   if (sigValid.valid) {
                     //want to check if record has already been added
-                    console.log('&&&&&&&&&&&&&&&&WE ARE WITH VERSION &&&&&&&&&&&' + request.version);
                     if (checkVersion) {
                       checkVersion(request).then((found: boolean) => {
                         if (found){

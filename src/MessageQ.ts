@@ -23,7 +23,7 @@ export class MessageQ {
     }
 
     connect() : void {
-        amqplib.connect('amqp://guest:guest@mq:5672').then((conn: any) => {
+        amqplib.connect(this.host).then((conn: any) => {
             connection = conn;
             console.log('RabbitMQ connected');
         }, () => {

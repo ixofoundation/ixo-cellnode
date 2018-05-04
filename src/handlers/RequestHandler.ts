@@ -1,5 +1,6 @@
 import { Document, Schema, Model, model} from "mongoose";
 import { AbstractHandler } from './AbstractHandler';
+import {SovrinUtils} from '../crypto/SovrinUtils';
 
 
 /////////////////////////////////////////////////
@@ -95,6 +96,21 @@ export class RequestHandler extends AbstractHandler {
 /////////////////////////////////////////////////
 
   createProject = (args: any) => {
+
+    var fileSystem = require('fs');
+    var data = JSON.parse(fileSystem.readFileSync(process.env.CONFIG, 'utf8'));
+    
+    var sovrinUtils = new SovrinUtils();
+    var mnemonic = sovrinUtils.generateBip39Mnemonic();
+    var sovrinWallet = sovrinUtils.generateSdidFromMnemonic(mnemonic);
+    var did = String("did:ixo:" + sovrinWallet.did);
+    console.log('Project wallet created ' + JSON.stringify(sovrinWallet));
+
+    args.payload.data = {
+      ...args.payload.data,
+      did: did,
+    };
+    
     return this.createRequest(args, 'CreateProject', Project, function(request: any) : Promise<boolean> {
       return new Promise(function(resolve: Function, reject: Function){
         Project.findOne(

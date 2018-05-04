@@ -20,21 +20,7 @@ export class InitHandler {
                 if (!result) {
                     var fileSystem = require('fs');
                     var data = JSON.parse(fileSystem.readFileSync(process.env.CONFIG, 'utf8'));
-                    
-                    var sovrinUtils = new SovrinUtils();
-                    var mnemonic = sovrinUtils.generateBip39Mnemonic();
-                    var sovrinWallet = sovrinUtils.generateSdidFromMnemonic(mnemonic);
-                    var did = String("did:ixo:" + sovrinWallet.did);
-        
-                    capabilities.createCapability(data.configuration).then((capability: ICapabilitiesModel) => {
-                        capabilities.addCapabilities('did:sov:*', 'CreateProject')
-                        .then((capability: ICapabilitiesModel) => {
-                            resolve({
-                                did: did,
-                                seed: mnemonic
-                            })
-                        });             
-                    })
+                    capabilities.createCapability(data.configuration);
                 } else {
                     console.log('capabilities found ' + JSON.stringify(result));
                 }
