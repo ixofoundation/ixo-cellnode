@@ -106,6 +106,8 @@ export class RequestHandler extends AbstractHandler {
     var did = String("did:ixo:" + sovrinWallet.did);
     console.log('Project wallet created ' + JSON.stringify(sovrinWallet));
 
+    this.saveWallet(sovrinWallet.did, sovrinWallet.secret.signKey, sovrinWallet.verifyKey);
+
     args.payload.data = {
       ...args.payload.data,
       did: did,

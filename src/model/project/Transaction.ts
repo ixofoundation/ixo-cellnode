@@ -7,9 +7,7 @@ import CryptoUtils from '../../crypto/Utils'
 
 var cryptoUtils = new CryptoUtils();
 
-export interface ITransactionModel extends ITransaction, Document {
-  //validateTransaction(): boolean;
-}
+export interface ITransactionModel extends ITransaction, Document {}
 
 export var TransactionSchema: Schema = new Schema({
   data: String,

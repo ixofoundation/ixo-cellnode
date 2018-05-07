@@ -1,6 +1,7 @@
 import { ITransactionModel, Transaction } from '../model/project/Transaction';
 import { ITransaction } from '../model/project/ITransaction';
-import transactionLog from '../service/TransactionLogService'
+import transactionLog from '../service/TransactionLogService';
+import walletService from '../service/WalletService';
 import { ValidationError } from '../error/ValidationError';
 import { TransactionError } from '../error/TransactionError';
 import { Request } from "../handlers/Request";
@@ -14,6 +15,7 @@ import { RequestValidator } from '../templates/RequestValidator';
 import capabilitiesService from '../service/CapabilitiesService';
 import { ICapabilitiesModel } from '../model/project/Capabilities';
 import { QueryHandler } from './QueryHandler';
+import mq from '../MessageQ';
 
 
 export abstract class AbstractHandler {
@@ -67,7 +69,9 @@ export abstract class AbstractHandler {
                                 version: request.version + 1
                               };
                               inst.updateCapabilities(request.signature.creator, capabilityMap.capability);
+                              mq.publish(obj);
                               resolve(model.create(obj));
+
                             });                          
                         }
                       })                    
@@ -80,6 +84,7 @@ export abstract class AbstractHandler {
                             tx: transaction.hash
                           };
                           inst.updateCapabilities(request.signature.creator, capabilityMap.capability);
+                          mq.publish(obj);
                           resolve(model.create(obj));
                         });
                     }
@@ -104,5 +109,9 @@ export abstract class AbstractHandler {
   }
 
   abstract updateCapabilities(obj: any, methodCall: string): void;
+
+  saveWallet(did: string, signKey: string, verifyKey: string) {
+    walletService.createWallet(did, signKey, verifyKey);
+  }
 
 }
