@@ -11,12 +11,7 @@ export class QueryRouter extends AbstractRouter{
     
         const handler = new QueryHandler();
         this.register(config, "queryTransactions", handler.queryTransactions);
-        this.register(config, "queryConfigs", handler.queryConfigs);
         this.register(config, "queryCapabilities", handler.queryCapabilities);
-        console.log('query router configured');
         return config;
       }
 }
-
-// Create the Router, and export its configured Express.Router
-//export default new QueryRouter().router;

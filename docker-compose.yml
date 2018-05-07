@@ -9,6 +9,8 @@ services:
       - "5000:5000"
     links:
       - db
+      - cache
+      - mq
       
   db:
     container_name: db
@@ -17,6 +19,19 @@ services:
       - ./data:/data/db
     ports:
       - "27017:27017"
+
+  cache:
+    container_name: cache
+    image: memcached:latest
+    ports:
+      - "11211:11211"
+
+  mq:
+    container_name: mq
+    image: rabbitmq:latest
+    ports:
+        - "5672:5672"
+    restart: always
 
   # cli:
   #   container_name: cli

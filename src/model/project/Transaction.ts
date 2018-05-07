@@ -1,14 +1,13 @@
 import { Document, Schema, Model, model} from "mongoose";
 import {TransactionError} from '../../error/TransactionError';
 import { ITransaction } from "./ITransaction";
+import transactionLog from '../../service/TransactionLogService'
 
 import CryptoUtils from '../../crypto/Utils'
 
 var cryptoUtils = new CryptoUtils();
 
-export interface ITransactionModel extends ITransaction, Document {
-  validateTransaction(): boolean;
-}
+export interface ITransactionModel extends ITransaction, Document {}
 
 export var TransactionSchema: Schema = new Schema({
   data: String,
@@ -21,23 +20,20 @@ export var TransactionSchema: Schema = new Schema({
   type: String,
   signatureType: String,
   signature: String,
-  publicKey: String
+  publicKey: String,
+  timestamp: Date
  });
 
-TransactionSchema.pre("save", function(this: ITransaction, next) {
-  if(!cryptoUtils.validateSignature(this.data, this.signatureType, this.signature, this.publicKey)){
-      //throw new TransactionError("Invalid transaction input signature '" + this.data);
-  }
-  this.nonce = cryptoUtils.createNonce();
-  this.hash = cryptoUtils.hash(this.nonce.toString() + this.type + this.data)
-  next();
-});
 
-TransactionSchema.methods.validateTransaction = function(): boolean {
-  if(!cryptoUtils.validateSignature(this.data, this.signatureType, this.signature, this.publicKey)){
-    //throw new TransactionError("Invalid transaction input signature '" + this.data);
-  }
-  return true;
-};
+TransactionSchema.pre("save", function(this: ITransaction, next) {
+  transactionLog.findLatestTransaction()
+  .then((prevTxn: ITransactionModel) => {
+    let prevHash = (prevTxn ? prevTxn.hash : '');
+    this.nonce = cryptoUtils.createNonce();    
+    this.hash = cryptoUtils.hash(prevHash + this.nonce.toString() + this.data);
+    this.timestamp = new Date()
+    next();
+  });
+});
 
 export const Transaction: Model<ITransactionModel> = model<ITransactionModel>("Transaction", TransactionSchema);

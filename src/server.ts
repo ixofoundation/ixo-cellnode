@@ -1,10 +1,13 @@
 require('dotenv').config();
 import * as http from 'http';
 import * as logger from './logger/Logger';
-
+import cache from './Cache';
+import mq from './MessageQ';
 import App from './App';
+import InitHandler from './handlers/InitHandler';
 
 var mongoose = require('mongoose');
+
 require('mongoose').Promise = global.Promise;
 
 // Set the port
@@ -12,47 +15,47 @@ const port = normalizePort(process.env.PORT || '');
 App.set('port', port);
 const server = http.createServer(App);
 
-// Connect to Mongo DB
-//mongoose.connect('mongodb://localhost:27017/pds')
 mongoose.connect(process.env.MONGODB_URI || '');
+
+cache.connect();
+mq.connect();
 
 var db = mongoose.connection;
 db.on('error', function (err: any) {
-  // If first connect fails because mongod is down, try again later.
-  // This is only needed for first connect, not for runtime reconnects.
-  // See: https://github.com/Automattic/mongoose/issues/5169
   if (err.message && err.message.match(/failed to connect to server .* on first connect/)) {
       console.log(new Date(), String(err));
-      // Wait for a bit, then try to connect again
       setTimeout(function () {
           console.log("Retrying first connect...");
           db.openUri(process.env.MONGODB_URI || '').catch(() => {});
-          // Why the empty catch?
-          // Well, errors thrown by db.open() will also be passed to .on('error'),
-          // so we can handle them there, no need to log anything in the catch here.
-          // But we still need this empty catch to avoid unhandled rejections.
       }, 5 * 1000);
   } else {
-      // Some other error occurred.  Log it.
       console.error(new Date(), String(err));
   }
 });
 
 db.once('open', function() {
-  console.log('MongDB connected!');
+  console.log('MongDB connected');
 
   // Once connected listen on server
   server.listen(port);
   server.on('error', onError);
   server.on('listening', onListening);
 
+  //once we have a db connection, we must initialise it once only
+  //careful not to re-initialize on server startup
+  InitHandler.initialise().then((response: any) => {
+    console.log(JSON.stringify(response));
+    return response;
+  });
 });
+
 
 process.on('SIGTERM', function () {
   db.close();
   server.close(function () {
     process.exit(0);
   });
+  cache.close();
 });
 
 function normalizePort(val: number|string): number|string|boolean {
@@ -82,6 +85,6 @@ function onError(error: NodeJS.ErrnoException): void {
 function onListening(): void {
   let addr = server.address();
   let bind = (typeof addr === 'string') ? `pipe ${addr}` : `port ${addr.port}`;
-  console.log(`Listening on ${bind}`);
+  console.log(`App listening on ${bind}`);
 }
 
