@@ -1,6 +1,6 @@
-import {EventEmitter}  from 'events';
-import {ICapabilitiesModel, Capabilities, CapabilitiesSchema} from '../model/project/Capabilities';
-import {ICapabilities} from '../model/project/ICapabilities';
+import { EventEmitter } from 'events';
+import { ICapabilitiesModel, Capabilities, CapabilitiesSchema } from '../model/project/Capabilities';
+import { ICapabilities } from '../model/project/ICapabilities';
 import { DocumentQuery } from 'mongoose';
 
 declare var Promise: any;
@@ -18,33 +18,33 @@ export class CapabilitiesService {
   }
 
 
-  createCapability(capability: any, emit = true): Promise<ICapabilitiesModel>{
-    return new Promise(function(resolve: Function, reject: Function){
+  createCapability(capability: any, emit = true): Promise<ICapabilitiesModel> {
+    return new Promise(function (resolve: Function, reject: Function) {
       Capabilities.create(
         {
           capabilities: capability
-        }, function(error: Error, newTransaction: ICapabilitiesModel){
-         if(error){
-           reject(error);
-         }else{
-           resolve(newTransaction);
-         }
-      });
+        }, function (error: Error, newTransaction: ICapabilitiesModel) {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(newTransaction);
+          }
+        });
     });
   }
 
-findCapabilities(): Promise<ICapabilitiesModel> {
+  findCapabilities(): Promise<ICapabilitiesModel> {
     return new Promise(function (resolve: Function, reject: Function) {
       Capabilities.findOne(
         {},
-        function (error: Error, result: ICapabilitiesModel)  {
-        if (error) {
-          console.log("Error is " + error);
-          reject(error);
-        } else {
-          resolve(result);
-        }
-      });
+        function (error: Error, result: ICapabilitiesModel) {
+          if (error) {
+            console.log("Error is " + error);
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        });
     });
   }
 
@@ -52,17 +52,17 @@ findCapabilities(): Promise<ICapabilitiesModel> {
     console.log("add capabilities for " + did + " for request type " + requestType);
     return new Promise(function (resolve: Function, reject: Function) {
       Capabilities.updateOne(
-        { },
-        { $addToSet: { "capabilities.$[elem].allow" : did } },
-        { arrayFilters: [ { "elem.capability": { $eq: requestType } } ] },
-        function (error: Error, result: ICapabilitiesModel)  {
-        if (error) {
-          console.log('DB ERROR ' + error);
-          reject(error);
-        } else{
-          resolve(result);
-        }
-      });
+        {},
+        { $addToSet: { "capabilities.$[elem].allow": did } },
+        { arrayFilters: [{ "elem.capability": { $eq: requestType } }] },
+        function (error: Error, result: ICapabilitiesModel) {
+          if (error) {
+            console.log('DB ERROR ' + error);
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        });
     });
   }
 }

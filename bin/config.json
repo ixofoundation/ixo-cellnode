@@ -20,6 +20,14 @@
 		{
 			"capability": "EvaluateClaim",
 			"template": "evaluations"
+		},
+		{
+			"capability": "ListClaims",
+			"template": "claims" 
+		},
+		{
+			"capability": "ListAgents",
+			"template": "agents" 
 		}
 	]
 }

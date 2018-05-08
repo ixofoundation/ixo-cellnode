@@ -21,7 +21,7 @@ import mq from '../MessageQ';
 
 export abstract class AbstractHandler {
 
-  public createRequest(args: any, capability: string, model: Model<any>, checkIfExist?: Function) {
+  public createTransaction(args: any, capability: string, model: Model<any>, checkIfExist?: Function) {
     var inst = this;
     var request = new Request(args);
     return new Promise((resolve: Function, reject: Function) => {
@@ -94,6 +94,56 @@ export abstract class AbstractHandler {
                           resolve(model.create(obj));
                         });
                     }
+                  } else {
+                    reject(new ValidationError(sigValid.errors[0]));
+                  }
+                } else {
+                  reject(new ValidationError(capValid.errors[0]));
+                }
+              } else {
+                reject(new ValidationError(validator.errors[0].message));
+              };
+            });
+        });
+    });
+  }
+
+
+  public queryTransaction(args: any, capability: string, query: Function) {
+    var inst = this;
+    var request = new Request(args);
+    return new Promise((resolve: Function, reject: Function) => {
+      capabilitiesService.findCapabilities()
+        .then((result: ICapabilitiesModel) => {
+          var capabilityMap: any;
+          result.capabilities.forEach(element => {
+            if (element.capability == capability) {
+              capabilityMap = {
+                capability: element.capability,
+                template: element.template,
+                allow: element.allow
+              }
+            }
+          })
+          return capabilityMap;
+        })
+        .then((capabilityMap: any) => {
+          console.log('have capability ' + capabilityMap.capability);
+          TemplateUtils.getTemplate(capabilityMap.template, request.template)
+            .then((schema: any) => {
+              var validator: ValidatorResult;
+              validator = validateJson(schema, args);
+              if (validator.valid) {
+                console.log('validate the capability');
+                var capValid: RequestValidator;
+                capValid = request.verifyCapability(capabilityMap.allow);
+                if (capValid.valid) {
+                  console.log('verify the signature');
+                  var sigValid: RequestValidator;
+                  sigValid = request.verifySignature();
+                  if (sigValid.valid) {
+                    console.log('query PDS');
+                    resolve(query(request.data));
                   } else {
                     reject(new ValidationError(sigValid.errors[0]));
                   }
