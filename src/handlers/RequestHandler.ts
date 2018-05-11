@@ -168,19 +168,39 @@ export class RequestHandler extends AbstractHandler {
     )
   }
 
-  listAgents = (args: any) => {
-    return this.queryTransaction(args, 'ListAgents', function (filter: any): Promise<IAgentModel[]> {
+ listAgents = (args: any) => {
+    return this.queryTransaction(args, 'ListAgents', function (filter: any): Promise<any[]> {
       return new Promise(function (resolve: Function, reject: Function) {
-        Agent.find(
-          filter,
-          function (error: Error, result: IAgentModel[]) {
+        Agent.aggregate([
+          {
+            $match: filter
+          },
+          {
+            $lookup: {
+              "from": "agentstatuses",
+              "localField": "agentDid",
+              "foreignField": "agentDid",
+              "as": "statuses"
+            }
+          },
+          { $unwind: { path: "$statuses", preserveNullAndEmptyArrays: true } },
+          { $sort: { "statuses.version": -1 } },
+          {
+            $group: {
+              "_id": "$_id",
+              "name": { $first: "$name" },
+              "surname": { $first: "$surname" },
+              "statuses": { $first: "$statuses" }
+            }
+          }
+        ],
+          function (error: Error, result: any[]) {
             if (error) {
               reject(error);
             } else {
               resolve(result);
             }
-          }
-        );
+          });
       });
     });
   }
@@ -217,18 +237,38 @@ export class RequestHandler extends AbstractHandler {
   }
 
   listClaims = (args: any) => {
-    return this.queryTransaction(args, 'ListClaims', function (filter: any): Promise<IClaimModel[]> {
+    return this.queryTransaction(args, 'ListClaims', function (filter: any): Promise<any[]> {
       return new Promise(function (resolve: Function, reject: Function) {
-        Claim.find(
-          filter,
-          function (error: Error, result: IClaimModel[]) {
+        Claim.aggregate([
+          {
+            $match: filter
+          },
+          {
+            $lookup: {
+              "from": "evaluateclaims",
+              "localField": "claimid",
+              "foreignField": "claimId",
+              "as": "evaluations"
+            }
+          },
+          { $unwind: { path: "$claims", preserveNullAndEmptyArrays: true } },
+          { $sort: { "evaluations.version": -1 } },
+          {
+            $group: {
+              "_id": "$_id",
+              "name": { $first: "$name" },
+              "type": { $first: "$type" },
+              "claims": { $first: "$claims" }
+            }
+          }
+        ],
+          function (error: Error, result: any[]) {
             if (error) {
               reject(error);
             } else {
               resolve(result);
             }
-          }
-        );
+          });
       });
     });
   }
