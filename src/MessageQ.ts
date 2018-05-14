@@ -33,7 +33,7 @@ export class MessageQ {
                 durable: true
             }).then(() => {
                 let jsonContent = JSON.stringify(content);
-                console.log('publish to queue ' + this.queue + ' CONTENT ' + jsonContent);
+                console.log('publish to queue ' + jsonContent);
                 channel.sendToQueue(this.queue, Buffer.from(jsonContent), {
                     persistent: true,
                     contentType: 'application/json'
@@ -46,6 +46,45 @@ export class MessageQ {
         } catch (error) {
             throw new TransactionError(error.message);
         }
+
+        this.subscribe();
+    }
+
+    public async subscribe() {
+        try {
+            const channel = await connection.createChannel();
+            channel.assertQueue(this.queue, {
+                durable: true
+            }).then(() => {
+                channel.prefetch(1);
+                channel.consume(this.queue, (messageData: any) => {
+
+                    if (messageData === null) {
+                        return;
+                    }
+
+                    const message = JSON.parse(messageData.content.toString());
+
+                    this.handleMessage(message).then(() => {
+                        return channel.ack(messageData);
+                    }, () => {
+                        return channel.nack(messageData);
+                    });
+                });
+            }, (error: any) => {
+                throw error;
+            });
+
+        } catch (error) {
+            throw new TransactionError(error.message);
+        }
+    }
+
+    private handleMessage(message: any): Promise<any> {
+        return new Promise((resolve: Function, reject: Function) => { 
+            console.log('consume from queue ' + JSON.stringify(message));
+            resolve(true);    
+        });
     }
 }
 
