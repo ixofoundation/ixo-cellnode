@@ -37,10 +37,10 @@ export class SovrinUtils {
     }
 
     //Signs a document using signKey from generated SDID and returns the signature
-    signDocument(sdid: any, input: any) {
-        var signature = base58.encode(sovrin.signMessage(new Buffer(JSON.stringify(input)), sdid.secret.signKey, sdid.verifyKey));
-        if (this.verifyDocumentSignature(signature, sdid.verifyKey)) {
-            return this.generateDocumentSignature(sdid.did, signature);
+    signDocument(signKey: string, verifyKey: string, did: string, input: any) {
+        var signature = base58.encode(sovrin.signMessage(new Buffer(JSON.stringify(input)), signKey, verifyKey));
+        if (this.verifyDocumentSignature(signature, verifyKey)) {
+            return this.generateDocumentSignature(did, signature);
         } else {
             throw new Error('fulfillment validation failed');
         }

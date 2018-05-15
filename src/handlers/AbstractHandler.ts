@@ -15,8 +15,10 @@ import { TransactionError } from '../error/TransactionError';
 
 import { Request } from "../handlers/Request";
 import TemplateUtils from '../templates/TemplateUtils';
+import { SovrinUtils } from '../crypto/SovrinUtils';
 import { json } from 'body-parser';
 import mq from '../MessageQ';
+import { IWalletModel } from "../model/project/Wallet";
 
 
 export abstract class AbstractHandler {
@@ -51,52 +53,56 @@ export abstract class AbstractHandler {
                 capValid = request.verifyCapability(capabilityMap.allow);
                 if (capValid.valid) {
                   console.log('verify the signature');
-                  var sigValid: RequestValidator;
-                  sigValid = request.verifySignature();
-                  if (sigValid.valid) {
-                    //want to check if record has already been added
-                    if (checkIfExist) {
-                      checkIfExist(request)
-                        .then((found: boolean) => {
-                          if (found) {
-                            reject(new TransactionError('Record out of date, please refresh data'));
-                          } else {
-                            console.log('write transaction to log')
-                            transactionService.createTransaction(request.payload, request.signature.type, request.signature.signature, request.signature.publicKey)
-                              .then((transaction: ITransactionModel) => {
-                                var obj = {
-                                  ...request.data,
-                                  tx: transaction.hash,
-                                  version: request.version + 1
-                                };
-                                console.log('updating the capabilities');
-                                inst.updateCapabilities(request.signature.creator, capabilityMap.capability);
-                                console.log('publish to blockchain');
-                                mq.publish(obj);
-                                console.log('commit to PDS');
-                                resolve(model.create(obj));
-                              });
-                          }
-                        })
-                    } else {
-                      console.log('write transaction to log')
-                      transactionService.createTransaction(request.payload, request.signature.type, request.signature.signature, request.signature.publicKey)
-                        .then((transaction: ITransactionModel) => {
-                          var obj = {
-                            ...request.data,
-                            tx: transaction.hash
-                          };
-                          console.log('updating the capabilities')
-                          inst.updateCapabilities(request.signature.creator, capabilityMap.capability);
-                          console.log('publish to blockchain');
-                          mq.publish(obj);
-                          console.log('commit to PDS');
-                          resolve(model.create(obj));
-                        });
-                    }
-                  } else {
-                    reject(new ValidationError(sigValid.errors[0]));
-                  }
+                  request.verifySignature()
+                    .then((sigValid: RequestValidator) => {
+                      if (sigValid.valid) {
+                        //want to check if record has already been added
+                        if (checkIfExist) {
+                          checkIfExist(request)
+                            .then((found: boolean) => {
+                              if (found) {
+                                reject(new TransactionError('Record out of date, please refresh data'));
+                              } else {
+                                console.log('write transaction to log')
+                                transactionService.createTransaction(request.payload, request.signature.type, request.signature.signature, request.signature.publicKey)
+                                  .then((transaction: ITransactionModel) => {
+                                    var obj = {
+                                      ...request.data,
+                                      tx: transaction.hash,
+                                      version: request.version + 1
+                                    };
+                                    console.log('updating the capabilities');
+                                    this.updateCapabilities(request.signature.creator, capabilityMap.capability);
+                                    console.log('commit to PDS');
+                                    resolve(model.create(obj));
+                                    console.log('publish to blockchain');
+                                    //mq.publish(this.msgToPublish(obj, capabilityMap.capability));
+                                    mq.publish(obj);
+                                  });
+                              }
+                            })
+                        } else {
+                          console.log('write transaction to log')
+                          transactionService.createTransaction(request.payload, request.signature.type, request.signature.signature, request.signature.publicKey)
+                            .then((transaction: ITransactionModel) => {
+                              var obj = {
+                                ...request.data,
+                                tx: transaction.hash
+                              };
+                              console.log('updating the capabilities');
+                              inst.updateCapabilities(request.signature.creator, capabilityMap.capability);                              
+                              console.log('commit to PDS');
+                              resolve(model.create(obj));
+                              console.log('publish to blockchain');
+                             // mq.publish(inst.msgToPublish(obj, capabilityMap.capability));
+                             mq.publish(obj);
+                            });
+                        }
+                      } else {
+                        reject(new ValidationError(sigValid.errors[0]));
+                      }
+                    })
+                  mq.subscribe();
                 } else {
                   reject(new ValidationError(capValid.errors[0]));
                 }
@@ -139,14 +145,15 @@ export abstract class AbstractHandler {
                 capValid = request.verifyCapability(capabilityMap.allow);
                 if (capValid.valid) {
                   console.log('verify the signature');
-                  var sigValid: RequestValidator;
-                  sigValid = request.verifySignature();
-                  if (sigValid.valid) {
-                    console.log('query PDS');
-                    resolve(query(request.data));
-                  } else {
-                    reject(new ValidationError(sigValid.errors[0]));
-                  }
+                  request.verifySignature()
+                    .then((sigValid: RequestValidator) => {
+                      if (sigValid.valid) {
+                        console.log('query PDS');
+                        resolve(query(request.data));
+                      } else {
+                        reject(new ValidationError(sigValid.errors[0]));
+                      }
+                    })
                 } else {
                   reject(new ValidationError(capValid.errors[0]));
                 }
@@ -163,10 +170,32 @@ export abstract class AbstractHandler {
     capabilitiesService.addCapabilities(did, requestType);
   }
 
-  saveWallet(did: string, signKey: string, verifyKey: string) {
-    walletService.createWallet(did, signKey, verifyKey);
+  generateProjectWallet(): Promise<string> {
+    return new Promise((resolve: Function, reject: Function) => {
+      var fileSystem = require('fs');
+      var data = JSON.parse(fileSystem.readFileSync(process.env.CONFIG, 'utf8'));
+
+      var sovrinUtils = new SovrinUtils();
+      var mnemonic = sovrinUtils.generateBip39Mnemonic();
+      var sovrinWallet = sovrinUtils.generateSdidFromMnemonic(mnemonic);
+      var did = String("did:ixo:" + sovrinWallet.did);
+      console.log('project wallet created');
+      walletService.createWallet(sovrinWallet.did, sovrinWallet.secret.signKey, sovrinWallet.verifyKey);
+    });
   }
 
   abstract updateCapabilities(obj: any, methodCall: string): void;
+
+  abstract msgToPublish(obj: any, methodCall: string): any;
+
+  signMessageForBlockchain(msgToSign: any) {
+    return new Promise((resolve: Function, reject: Function) => {
+      walletService.getWallet()
+        .then((wallet: IWalletModel) => {
+          var sovrinUtils = new SovrinUtils();
+          resolve(sovrinUtils.signDocument(wallet.signKey, wallet.verifyKey, wallet.did, msgToSign));
+        });
+    });
+  }
 
 }

@@ -46,8 +46,6 @@ export class MessageQ {
         } catch (error) {
             throw new TransactionError(error.message);
         }
-
-        this.subscribe();
     }
 
     public async subscribe() {

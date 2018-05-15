@@ -20,7 +20,7 @@ export class Cache {
     get(key: string): any {
         cache.get(key, function (err: any, data: any) {
             if (err) throw new Error(err);
-            console.log('GOT CACHED VALUE ' + JSON.stringify(data));
+            console.log('got cached value ' + JSON.stringify(data));
             return data;
         });
     }

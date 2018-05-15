@@ -1,8 +1,12 @@
 import { IRequest } from './IRequest';
 import { CryptoUtils } from '../crypto/Utils';
-import {RequestValidator} from '../templates/RequestValidator';
+import { RequestValidator } from '../templates/RequestValidator';
+
+import axios from 'axios';
 
 var cryptoUtils = new CryptoUtils();
+
+const BLOCKCHAIN_URI = (process.env.BLOCKCHAIN_URI || '');
 
 export class Request {
 
@@ -17,7 +21,7 @@ export class Request {
 
 
   constructor(requestData: any) {
-    this.payload = JSON.stringify(requestData.payload);    
+    this.payload = JSON.stringify(requestData.payload);
 
     if (requestData.payload.data) {
       this.data = requestData.payload.data;
@@ -37,20 +41,25 @@ export class Request {
     return (this.signature != undefined);
   }
 
-  verifySignature = (): RequestValidator => {
-    var validator = new RequestValidator();
-    if (!this.hasSignature) {
-      validator.addError("Signature is not present in request");
-      validator.valid = false;
-     }
+  verifySignature = (): Promise<RequestValidator> => {
 
-    if (!cryptoUtils.validateSignature(this.payload, this.signature.type, this.signature.signature, this.signature.publicKey)) {
-      validator.addError("Invalid request input signature '" + JSON.stringify(this.payload));
-      //validator.valid = false;
-    }
-    console.log("Request.verifySignature: return true");
-    return validator;
-  }
+    return new Promise((resolve: Function, reject: Function) => {
+      var validator = new RequestValidator();
+      if (!this.hasSignature) {
+        validator.addError("Signature is not present in request");
+        validator.valid = false;
+      }
+      axios.get(BLOCKCHAIN_URI)
+        .then((response) => {
+          console.log(response.data.explanation);
+          if (!cryptoUtils.validateSignature(this.payload, this.signature.type, this.signature.signature, response.data.url)) {
+            validator.addError("Invalid request input signature '" + JSON.stringify(this.payload));
+            //validator.valid = false;
+          }
+          resolve(validator);
+        });
+    })
+}
 
   verifyCapability = (allow: any): RequestValidator => {
     var validator = new RequestValidator();
@@ -62,8 +71,15 @@ export class Request {
       if (inst.signature.creator.match(new RegExp(element))) {
         validator.valid = true;
         break;
-      } 
-    } 
+      }
+    }
     return validator;
+  }
+
+  getPublicKey = (did: string): any => {
+    axios.get(BLOCKCHAIN_URI)
+      .then((response) => {
+        console.log(response.data.explanation);
+      });
   }
 }

@@ -1,6 +1,6 @@
 import { Document, Schema, Model, model } from "mongoose";
 import { AbstractHandler } from './AbstractHandler';
-import { SovrinUtils } from '../crypto/SovrinUtils';
+import { Request } from "../handlers/Request";
 
 
 /////////////////////////////////////////////////
@@ -93,27 +93,31 @@ export class RequestHandler extends AbstractHandler {
     }
   }
 
+  msgToPublish(obj: any, methodCall: string): any {
+
+    switch (methodCall) {
+      case 'CreateAgent': {
+
+        break;
+      }
+      case 'CreateProject': {
+        console.log('###################msgToPub ' + obj);
+        return this.signMessageForBlockchain(obj);
+      }
+      default: {
+
+        break;
+      }
+    }
+  }
+
   /////////////////////////////////////////////////
   //  HANDLE CREATE PROJECT                      //
   /////////////////////////////////////////////////
 
   createProject = (args: any) => {
 
-    var fileSystem = require('fs');
-    var data = JSON.parse(fileSystem.readFileSync(process.env.CONFIG, 'utf8'));
-
-    var sovrinUtils = new SovrinUtils();
-    var mnemonic = sovrinUtils.generateBip39Mnemonic();
-    var sovrinWallet = sovrinUtils.generateSdidFromMnemonic(mnemonic);
-    var did = String("did:ixo:" + sovrinWallet.did);
-    console.log('Project wallet created ' + JSON.stringify(sovrinWallet));
-
-    this.saveWallet(sovrinWallet.did, sovrinWallet.secret.signKey, sovrinWallet.verifyKey);
-
-    args.payload.data = {
-      ...args.payload.data,
-      did: did,
-    };
+    this.generateProjectWallet();
 
     return this.createTransaction(args, 'CreateProject', Project, function (request: any): Promise<boolean> {
       return new Promise(function (resolve: Function, reject: Function) {
@@ -121,7 +125,7 @@ export class RequestHandler extends AbstractHandler {
           {
             version: 1
           },
-          function (error: Error, result: IAgentStatusModel) {
+          function (error: Error, result: IProjectModel) {
             if (error) {
               reject(error);
             } else {
@@ -164,11 +168,10 @@ export class RequestHandler extends AbstractHandler {
             }
           }).limit(1);
       });
-    }
-    )
+    })
   }
 
- listAgents = (args: any) => {
+  listAgents = (args: any) => {
     return this.queryTransaction(args, 'ListAgents', function (filter: any): Promise<any[]> {
       return new Promise(function (resolve: Function, reject: Function) {
         Agent.aggregate([

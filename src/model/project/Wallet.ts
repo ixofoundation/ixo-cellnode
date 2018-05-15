@@ -7,7 +7,7 @@ export var WalletSchema: Schema = new Schema({
 
     did: String,
     signKey: String,
-    verifykey: String
+    verifyKey: String
 
 }, { strict: false });
 

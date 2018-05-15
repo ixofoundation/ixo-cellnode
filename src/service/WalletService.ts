@@ -14,13 +14,13 @@ export class WalletService {
   }
 
 
-  createWallet(did: String, signKey: String, verifykey: String, emit = true): Promise<IWalletModel> {
+  createWallet(did: String, signKey: String, verifyKey: String, emit = true): Promise<IWalletModel> {
     return new Promise(function (resolve: Function, reject: Function) {
       Wallet.create(
         {
           "did": did,
-          "signkey": signKey,
-          "verifyKey": verifykey
+          "signKey": signKey,
+          "verifyKey": verifyKey
                             
         }, function (error: Error, newTransaction: IWalletModel) {
           if (error) {
@@ -30,6 +30,12 @@ export class WalletService {
             resolve(newTransaction);
           }
         });
+    });
+  }
+
+  getWallet(): Promise<IWalletModel> {
+    return new Promise(function (resolve: Function, reject: Function) {
+      resolve (Wallet.findOne());
     });
   }
 }
