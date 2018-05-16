@@ -24,6 +24,7 @@ import { IWalletModel } from "../model/project/Wallet";
 export abstract class AbstractHandler {
 
   public createTransaction(args: any, capability: string, model: Model<any>, checkIfExist?: Function) {
+    
     var inst = this;
     var request = new Request(args);
     return new Promise((resolve: Function, reject: Function) => {
@@ -42,28 +43,31 @@ export abstract class AbstractHandler {
           return capabilityMap;
         })
         .then((capabilityMap: any) => {
-          console.log('have capability ' + capabilityMap.capability);
-          TemplateUtils.getTemplate(capabilityMap.template, request.template)
+          console.log(new Date().getUTCMilliseconds() + ' have capability ' + capabilityMap.capability);
+          TemplateUtils.getTemplateFromRegistry(capabilityMap.template, request.template)
             .then((schema: any) => {
+              console.log('######################SCHEMA IS ' + schema);
+              //if (!schema) schema = TemplateUtils.getTemplateFromRegistry(capabilityMap.template, request.template);
+              console.log(new Date().getUTCMilliseconds() + ' template to validate ' + schema);
               var validator: ValidatorResult;
               validator = validateJson(schema, args);
               if (validator.valid) {
-                console.log('validate the capability');
+                console.log(new Date().getUTCMilliseconds() + ' validate the capability');
                 var capValid: RequestValidator;
                 capValid = request.verifyCapability(capabilityMap.allow);
                 if (capValid.valid) {
-                  console.log('verify the signature');
+                  console.log(new Date().getUTCMilliseconds() + ' verify the signature');
                   request.verifySignature()
                     .then((sigValid: RequestValidator) => {
                       if (sigValid.valid) {
-                        //want to check if record has already been added
+                        console.log(new Date().getUTCMilliseconds() + ' signature verified');
                         if (checkIfExist) {
                           checkIfExist(request)
                             .then((found: boolean) => {
                               if (found) {
                                 reject(new TransactionError('Record out of date, please refresh data'));
                               } else {
-                                console.log('write transaction to log')
+                                console.log(new Date().getUTCMilliseconds() + ' write transaction to log')
                                 transactionService.createTransaction(request.payload, request.signature.type, request.signature.signature, request.signature.publicKey)
                                   .then((transaction: ITransactionModel) => {
                                     var obj = {
@@ -71,35 +75,37 @@ export abstract class AbstractHandler {
                                       tx: transaction.hash,
                                       version: request.version + 1
                                     };
-                                    console.log('updating the capabilities');
+                                    console.log(new Date().getUTCMilliseconds() + ' updating the capabilities');
                                     this.updateCapabilities(request.signature.creator, capabilityMap.capability);
-                                    console.log('commit to PDS');
+                                    console.log(new Date().getUTCMilliseconds() + ' commit to PDS');
                                     resolve(model.create(obj));
-                                    console.log('publish to blockchain');
+                                    console.log(new Date().getUTCMilliseconds() + ' publish to blockchain');
                                     this.msgToPublish(obj, capabilityMap.capability)
                                       .then((msg: any) => {
                                         mq.publish(msg);
                                       });
+                                      console.log(new Date().getUTCMilliseconds() + ' transaction completed successfully');
                                   });
                               }
                             })
                         } else {
-                          console.log('write transaction to log')
+                          console.log(new Date().getUTCMilliseconds() + ' write transaction to log');
                           transactionService.createTransaction(request.payload, request.signature.type, request.signature.signature, request.signature.publicKey)
                             .then((transaction: ITransactionModel) => {
                               var obj = {
                                 ...request.data,
                                 tx: transaction.hash
                               };
-                              console.log('updating the capabilities');
+                              console.log(new Date().getUTCMilliseconds() + ' updating the capabilities');
                               inst.updateCapabilities(request.signature.creator, capabilityMap.capability);
-                              console.log('commit to PDS');
+                              console.log(new Date().getUTCMilliseconds() + ' commit to PDS');
                               resolve(model.create(obj));
-                              console.log('publish to blockchain');
+                              console.log(new Date().getUTCMilliseconds() + ' publish to blockchain');
                               this.msgToPublish(obj, capabilityMap.capability)
                                 .then((msg: any) => {
                                   mq.publish(msg);
                                 });
+                                console.log(new Date().getUTCMilliseconds() + ' transaction completed successfully');
                             });
                         }
                       } else {
@@ -139,8 +145,9 @@ export abstract class AbstractHandler {
         })
         .then((capabilityMap: any) => {
           console.log('have capability ' + capabilityMap.capability);
-          TemplateUtils.getTemplate(capabilityMap.template, request.template)
+          TemplateUtils.getTemplateFromCache(capabilityMap.template, request.template)
             .then((schema: any) => {
+              if (!schema) schema = TemplateUtils.getTemplateFromRegistry(capabilityMap.template, request.template);
               var validator: ValidatorResult;
               validator = validateJson(schema, args);
               if (validator.valid) {
@@ -183,7 +190,7 @@ export abstract class AbstractHandler {
       var mnemonic = sovrinUtils.generateBip39Mnemonic();
       var sovrinWallet = sovrinUtils.generateSdidFromMnemonic(mnemonic);
       var did = String("did:ixo:" + sovrinWallet.did);
-      console.log('project wallet created');
+      console.log(new Date().getUTCMilliseconds() + ' project wallet created');
       walletService.createWallet(sovrinWallet.did, sovrinWallet.secret.signKey, sovrinWallet.verifyKey);
     });
   }

@@ -33,6 +33,7 @@ export class SovrinUtils {
     }
 
     verifyDocumentSignature(signature: any, publicKey: any): boolean {
+        //return !(sovrin.verifySignedMessage(base58.decode(signature), base58.decode(publicKey)) === false);
         return !(sovrin.verifySignedMessage(base58.decode(signature), publicKey) === false);
     }
 

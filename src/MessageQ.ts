@@ -33,7 +33,7 @@ export class MessageQ {
                 durable: true
             }).then(() => {
                 let jsonContent = JSON.stringify(content);
-                console.log('publish to queue ' + jsonContent);
+                console.log(new Date().getUTCMilliseconds() + ' publish to queue ' + jsonContent);
                 channel.sendToQueue(this.queue, Buffer.from(jsonContent), {
                     persistent: true,
                     contentType: 'application/json'
@@ -80,7 +80,7 @@ export class MessageQ {
 
     private handleMessage(message: any): Promise<any> {
         return new Promise((resolve: Function, reject: Function) => { 
-            console.log('consume from queue ' + JSON.stringify(message));
+            console.log(new Date().getUTCMilliseconds() + ' consume from queue ' + JSON.stringify(message));
             resolve(true);    
         });
     }

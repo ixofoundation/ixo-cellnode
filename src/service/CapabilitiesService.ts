@@ -49,7 +49,7 @@ export class CapabilitiesService {
   }
 
   addCapabilities(did: string, requestType: string): Promise<ICapabilitiesModel> {
-    console.log("add capabilities for " + did + " for request type " + requestType);
+    console.log(new Date().getUTCMilliseconds() + ' add capabilities for ' + did + ' for request type ' + requestType);
     return new Promise(function (resolve: Function, reject: Function) {
       Capabilities.updateOne(
         {},

@@ -1,7 +1,7 @@
 import { IRequest } from './IRequest';
 import { CryptoUtils } from '../crypto/Utils';
 import { RequestValidator } from '../templates/RequestValidator';
-
+import Cache from '../Cache';
 import axios from 'axios';
 
 var cryptoUtils = new CryptoUtils();
@@ -42,7 +42,6 @@ export class Request {
   }
 
   verifySignature = (): Promise<RequestValidator> => {
-
     return new Promise((resolve: Function, reject: Function) => {
       var validator = new RequestValidator();
       if (!this.hasSignature) {
@@ -55,11 +54,13 @@ export class Request {
           if (!cryptoUtils.validateSignature(this.payload, this.signature.type, this.signature.signature, response.data.url)) {
             validator.addError("Invalid request input signature '" + JSON.stringify(this.payload));
             //validator.valid = false;
+          } else {
+            Cache.set(this.signature.signature.creator, response.data.url);
           }
           resolve(validator);
         });
     })
-}
+  }
 
   verifyCapability = (allow: any): RequestValidator => {
     var validator = new RequestValidator();
@@ -74,12 +75,5 @@ export class Request {
       }
     }
     return validator;
-  }
-
-  getPublicKey = (did: string): any => {
-    axios.get(BLOCKCHAIN_URI)
-      .then((response) => {
-        console.log(response.data.explanation);
-      });
   }
 }

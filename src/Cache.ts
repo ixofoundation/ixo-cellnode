@@ -7,7 +7,8 @@ export class Cache {
 
     constructor() {
         this.host = (process.env.MEMCACHE_URI || '');
-        cache = new Memcached(this.host);
+        console.log(new Date().getUTCMilliseconds() + ' connect to cache')
+        cache = new Memcached(this.host);        
     }
 
     connect(): void {
@@ -20,7 +21,7 @@ export class Cache {
     get(key: string): any {
         cache.get(key, function (err: any, data: any) {
             if (err) throw new Error(err);
-            console.log('got cached value ' + JSON.stringify(data));
+            console.log(new Date().getUTCMilliseconds() + ' got cached value ' + JSON.stringify(data));
             return data;
         });
     }

@@ -116,7 +116,7 @@ export class RequestHandler extends AbstractHandler {
   /////////////////////////////////////////////////
 
   createProject = (args: any) => {
-
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction');
     this.generateProjectWallet();
 
     return this.createTransaction(args, 'CreateProject', Project, function (request: any): Promise<boolean> {
