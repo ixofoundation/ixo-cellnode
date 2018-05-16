@@ -76,8 +76,10 @@ export abstract class AbstractHandler {
                                     console.log('commit to PDS');
                                     resolve(model.create(obj));
                                     console.log('publish to blockchain');
-                                    //mq.publish(this.msgToPublish(obj, capabilityMap.capability));
-                                    mq.publish(obj);
+                                    this.msgToPublish(obj, capabilityMap.capability)
+                                      .then((msg: any) => {
+                                        mq.publish(msg);
+                                      });
                                   });
                               }
                             })
@@ -90,12 +92,14 @@ export abstract class AbstractHandler {
                                 tx: transaction.hash
                               };
                               console.log('updating the capabilities');
-                              inst.updateCapabilities(request.signature.creator, capabilityMap.capability);                              
+                              inst.updateCapabilities(request.signature.creator, capabilityMap.capability);
                               console.log('commit to PDS');
                               resolve(model.create(obj));
                               console.log('publish to blockchain');
-                             // mq.publish(inst.msgToPublish(obj, capabilityMap.capability));
-                             mq.publish(obj);
+                              this.msgToPublish(obj, capabilityMap.capability)
+                                .then((msg: any) => {
+                                  mq.publish(msg);
+                                });
                             });
                         }
                       } else {
@@ -193,7 +197,11 @@ export abstract class AbstractHandler {
       walletService.getWallet()
         .then((wallet: IWalletModel) => {
           var sovrinUtils = new SovrinUtils();
-          resolve(sovrinUtils.signDocument(wallet.signKey, wallet.verifyKey, wallet.did, msgToSign));
+          var signedMsg = {
+            data: msgToSign,
+            signature: sovrinUtils.signDocument(wallet.signKey, wallet.verifyKey, wallet.did, msgToSign)
+          }
+          resolve(signedMsg);
         });
     });
   }
