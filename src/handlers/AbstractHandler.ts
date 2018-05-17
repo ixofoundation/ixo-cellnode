@@ -143,9 +143,8 @@ export abstract class AbstractHandler {
         })
         .then((capabilityMap: any) => {
           console.log('have capability ' + capabilityMap.capability);
-          TemplateUtils.getTemplateFromCache(capabilityMap.template, request.template)
+          TemplateUtils.getTemplateFromRegistry(capabilityMap.template, request.template)
             .then((schema: any) => {
-              if (!schema) schema = TemplateUtils.getTemplateFromRegistry(capabilityMap.template, request.template);
               var validator: ValidatorResult;
               validator = validateJson(schema, args);
               if (validator.valid) {
