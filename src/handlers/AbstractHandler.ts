@@ -44,7 +44,7 @@ export abstract class AbstractHandler {
         })
         .then((capabilityMap: any) => {
           console.log(new Date().getUTCMilliseconds() + ' have capability ' + capabilityMap.capability);
-          TemplateUtils.getTemplateFromRegistry(capabilityMap.template, request.template)
+          TemplateUtils.getTemplate(capabilityMap.template, request.template)
             .then((schema: any) => {
               console.log(new Date().getUTCMilliseconds() + ' template to validate ' + JSON.stringify(schema));
               var validator: ValidatorResult;
@@ -143,7 +143,7 @@ export abstract class AbstractHandler {
         })
         .then((capabilityMap: any) => {
           console.log('have capability ' + capabilityMap.capability);
-          TemplateUtils.getTemplateFromRegistry(capabilityMap.template, request.template)
+          TemplateUtils.getTemplate(capabilityMap.template, request.template)
             .then((schema: any) => {
               var validator: ValidatorResult;
               validator = validateJson(schema, args);
