@@ -30,23 +30,23 @@ export class TemplateUtils {
   /*
     Returns the Template and the corresponding form for the name supplied
   */
-  getTemplateFromCache(templateType: string, name: string): Promise<any> {
+  getTemplateFromCache(templateType: string, name: string): Promise<string> {
     return new Promise((resolve: Function, reject: Function) => {
       var key = this.getCacheKey(templateType, name);
-      resolve(Cache.get(key));
+      return Cache.get(key);
     });
   }
 
-  getTemplateFromRegistry(templateType: string, name: string){
-    var template = this.constructTemplate(templateType, name);
-    console.log(new Date().getUTCMilliseconds() + ' load template contents from file');
-    return this.gitUtils.loadFileContents(this.repoName, template)
-      .then((templateContents: any) => {
-        var res = JSON.parse(templateContents);
-        var key = this.getCacheKey(templateType, name);
-        Cache.set(key, res);
-        return res;
-      });
+  getTemplateFromRegistry(templateType: string, name: string) : any{
+      var template = this.constructTemplate(templateType, name);
+      console.log(new Date().getUTCMilliseconds() + ' load template contents from file');
+      return this.gitUtils.loadFileContents(this.repoName, template)
+        .then((templateContents: any) => {
+          var res = JSON.parse(templateContents);
+          var key = this.getCacheKey(templateType, name);
+          Cache.set(key, res);
+          return res;
+        });
   }
 
 

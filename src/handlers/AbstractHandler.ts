@@ -46,9 +46,7 @@ export abstract class AbstractHandler {
           console.log(new Date().getUTCMilliseconds() + ' have capability ' + capabilityMap.capability);
           TemplateUtils.getTemplateFromRegistry(capabilityMap.template, request.template)
             .then((schema: any) => {
-              console.log('######################SCHEMA IS ' + schema);
-              //if (!schema) schema = TemplateUtils.getTemplateFromRegistry(capabilityMap.template, request.template);
-              console.log(new Date().getUTCMilliseconds() + ' template to validate ' + schema);
+              console.log(new Date().getUTCMilliseconds() + ' template to validate ' + JSON.stringify(schema));
               var validator: ValidatorResult;
               validator = validateJson(schema, args);
               if (validator.valid) {
