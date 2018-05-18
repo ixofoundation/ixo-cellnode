@@ -2,7 +2,7 @@ version: "2"
 services:
   app:
     container_name: app
-    image: trustlab/ixo-pds
+    image: trustlab/ixo-elysian
     restart: always
     build: .
     ports:
@@ -35,6 +35,6 @@ services:
 
   # cli:
   #   container_name: cli
-  #   image: trustlab/pds-cli
+  #   image: trustlab/elysian-cli
   #   stdin_open: true
   #   tty: true

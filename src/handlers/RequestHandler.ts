@@ -101,7 +101,7 @@ export class RequestHandler extends AbstractHandler {
           break;
         }
         case 'CreateProject': {
-          resolve(this.signMessageForBlockchain(obj));
+          resolve(this.signMessageForBlockchain(obj, methodCall));
         }
         default: {
 

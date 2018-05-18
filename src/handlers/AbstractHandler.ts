@@ -75,7 +75,7 @@ export abstract class AbstractHandler {
                                     };
                                     console.log(new Date().getUTCMilliseconds() + ' updating the capabilities');
                                     this.updateCapabilities(request.signature.creator, capabilityMap.capability);
-                                    console.log(new Date().getUTCMilliseconds() + ' commit to PDS');
+                                    console.log(new Date().getUTCMilliseconds() + ' commit to Elysian');
                                     resolve(model.create(obj));
                                     console.log(new Date().getUTCMilliseconds() + ' publish to blockchain');
                                     this.msgToPublish(obj, capabilityMap.capability)
@@ -96,7 +96,7 @@ export abstract class AbstractHandler {
                               };
                               console.log(new Date().getUTCMilliseconds() + ' updating the capabilities');
                               inst.updateCapabilities(request.signature.creator, capabilityMap.capability);
-                              console.log(new Date().getUTCMilliseconds() + ' commit to PDS');
+                              console.log(new Date().getUTCMilliseconds() + ' commit to Elysian');
                               resolve(model.create(obj));
                               console.log(new Date().getUTCMilliseconds() + ' publish to blockchain');
                               this.msgToPublish(obj, capabilityMap.capability)
@@ -156,7 +156,7 @@ export abstract class AbstractHandler {
                   request.verifySignature()
                     .then((sigValid: RequestValidator) => {
                       if (sigValid.valid) {
-                        console.log('query PDS');
+                        console.log('query Elysian');
                         resolve(query(request.data));
                       } else {
                         reject(new ValidationError(sigValid.errors[0]));
@@ -196,12 +196,13 @@ export abstract class AbstractHandler {
 
   abstract msgToPublish(obj: any, methodCall: string): any;
 
-  signMessageForBlockchain(msgToSign: any) {
+  signMessageForBlockchain(msgToSign: any, methodName: string) {
     return new Promise((resolve: Function, reject: Function) => {
       walletService.getWallet()
         .then((wallet: IWalletModel) => {
           var sovrinUtils = new SovrinUtils();
           var signedMsg = {
+            method: methodName,
             data: msgToSign,
             signature: sovrinUtils.signDocument(wallet.signKey, wallet.verifyKey, wallet.did, msgToSign)
           }

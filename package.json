@@ -1,5 +1,5 @@
 {
-  "name": "ixo-pds",
+  "name": "ixo-elysian",
   "version": "0.0.1",
   "description": "ixo service to create a project data store",
   "main": "App.ts",
