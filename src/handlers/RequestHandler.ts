@@ -261,7 +261,7 @@ export class RequestHandler extends AbstractHandler {
               "_id": "$_id",
               "name": { $first: "$name" },
               "type": { $first: "$type" },
-              "claims": { $first: "$claims" }
+              "evaluations": { $first: "$evaluations" }
             }
           }
         ],
