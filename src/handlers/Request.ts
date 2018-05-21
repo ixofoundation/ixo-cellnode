@@ -48,10 +48,10 @@ export class Request {
         validator.addError("Signature is not present in request");
         validator.valid = false;
       }
-      axios.get(BLOCKCHAIN_URI)
+      axios.get(BLOCKCHAIN_URI + 'did/' + this.signature.creator.substring(8))
         .then((response) => {
-          console.log(response.data.explanation);
-          if (!cryptoUtils.validateSignature(this.payload, this.signature.type, this.signature.signature, response.data.url)) {
+          console.log(new Date().getUTCMilliseconds() + ' pubKey received from blockchain ' + response.data.pubKey);
+          if (!cryptoUtils.validateSignature(this.payload, this.signature.type, this.signature.signature, response.data.pubKey)) {
             validator.addError("Invalid request input signature '" + JSON.stringify(this.payload));
             //validator.valid = false;
           } else {

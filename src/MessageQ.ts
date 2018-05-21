@@ -1,8 +1,10 @@
 import { TransactionError } from "./error/TransactionError";
+import axios from 'axios';
 
 var amqplib = require('amqplib');
 
 var connection: any;
+const BLOCKCHAIN_URI = (process.env.BLOCKCHAIN_URI || '');
 
 export class MessageQ {
 
@@ -81,7 +83,15 @@ export class MessageQ {
     private handleMessage(message: any): Promise<any> {
         return new Promise((resolve: Function, reject: Function) => { 
             console.log(new Date().getUTCMilliseconds() + ' consume from queue ' + JSON.stringify(message));
-            resolve(true);    
+            axios.post(BLOCKCHAIN_URI + 'project', message, {headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }})
+            .then((response: any) => {
+                console.log(new Date().getUTCMilliseconds() + ' blockchain response ' + response);
+                resolve(true);
+            })  
+                
         });
     }
 }

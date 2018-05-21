@@ -96,15 +96,11 @@ export class RequestHandler extends AbstractHandler {
   msgToPublish(obj: any, methodCall: string): any {
     return new Promise((resolve: Function, reject: Function) => {
       switch (methodCall) {
-        case 'CreateAgent': {
-
-          break;
-        }
         case 'CreateProject': {
           resolve(this.signMessageForBlockchain(obj, methodCall));
         }
         default: {
-
+          resolve(this.signMessageForBlockchain('', methodCall))
           break;
         }
       }
