@@ -6,7 +6,7 @@ import axios from 'axios';
 
 var cryptoUtils = new CryptoUtils();
 
-const BLOCKCHAIN_URI = (process.env.BLOCKCHAIN_URI || '');
+const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
 
 export class Request {
 
@@ -48,7 +48,7 @@ export class Request {
         validator.addError("Signature is not present in request");
         validator.valid = false;
       }
-      axios.get(BLOCKCHAIN_URI + 'did/' + this.signature.creator.substring(8))
+      axios.get(BLOCKCHAIN_URI_REST + 'did/' + this.signature.creator.substring(8))
         .then((response) => {
           console.log(new Date().getUTCMilliseconds() + ' pubKey received from blockchain ' + response.data.pubKey);
           if (!cryptoUtils.validateSignature(this.payload, this.signature.type, this.signature.signature, response.data.pubKey)) {

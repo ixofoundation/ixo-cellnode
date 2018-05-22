@@ -4,7 +4,7 @@ import axios from 'axios';
 var amqplib = require('amqplib');
 
 var connection: any;
-const BLOCKCHAIN_URI = (process.env.BLOCKCHAIN_URI || '');
+const BLOCKCHAIN_URI_TENDERMINT = (process.env.BLOCKCHAIN_URI_TENDERMINT || '');
 
 export class MessageQ {
 
@@ -16,7 +16,7 @@ export class MessageQ {
         this.host = (process.env.RABITMQ_URI || '');
     }
 
-    connect() : void {
+    connect(): void {
         amqplib.connect(this.host).then((conn: any) => {
             connection = conn;
             console.log('RabbitMQ connected');
@@ -35,7 +35,7 @@ export class MessageQ {
                 durable: true
             }).then(() => {
                 let jsonContent = JSON.stringify(content);
-                console.log(new Date().getUTCMilliseconds() + ' publish to queue ' + jsonContent);
+                console.log(new Date().getUTCMilliseconds() + ' publish to queue');
                 channel.sendToQueue(this.queue, Buffer.from(jsonContent), {
                     persistent: true,
                     contentType: 'application/json'
@@ -70,7 +70,7 @@ export class MessageQ {
                     }, () => {
                         return channel.nack(messageData);
                     });
-                });
+                }, { noAck: false });
             }, (error: any) => {
                 throw error;
             });
@@ -81,17 +81,14 @@ export class MessageQ {
     }
 
     private handleMessage(message: any): Promise<any> {
-        return new Promise((resolve: Function, reject: Function) => { 
-            console.log(new Date().getUTCMilliseconds() + ' consume from queue ' + JSON.stringify(message));
-            axios.post(BLOCKCHAIN_URI + 'project', message, {headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }})
-            .then((response: any) => {
-                console.log(new Date().getUTCMilliseconds() + ' blockchain response ' + response);
-                resolve(true);
-            })  
-                
+        return new Promise((resolve: Function, reject: Function) => {
+            console.log(new Date().getUTCMilliseconds() + ' consume from queue');
+            axios.get(BLOCKCHAIN_URI_TENDERMINT + message)
+                .then((response: any) => {
+                    console.log(new Date().getUTCMilliseconds() + ' received response from blockchaind');
+                    resolve(true);
+                })
+
         });
     }
 }

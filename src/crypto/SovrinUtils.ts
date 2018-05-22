@@ -1,9 +1,4 @@
 import * as crypto from 'crypto';
-//import * as sovrin from 'sovrin-did';
-//import {ISovrinDidModel} from "../db/models";
-//import {writeToFile} from "./fileUtils";
-//import {createSignatureJson, signatureSchema} from "../templates/signature";
-//import {isValidJson} from "./jsonUtils";
 
 var dateFormat = require('dateformat');
 var merge = require('merge');
@@ -18,7 +13,7 @@ export class SovrinUtils {
         return bip39.generateMnemonic();
     }
 
-    generateSdidFromMnemonic(mnemonic: any){
+    generateSdidFromMnemonic(mnemonic: any) {
         // Create sha256 hash from Menmonic
         const seed = crypto.createHash('sha256').update(mnemonic).digest("hex");
 
@@ -47,14 +42,22 @@ export class SovrinUtils {
         }
     }
 
+    //Signs a document using signKey from generated SDID and returns the signature
+    signDocumentNoEncoding(signKey: string, verifyKey: string, did: string, input: any) {
+        console.log('INPUT: ' + JSON.stringify(input));
+        console.log('SIGNKEY: ' + signKey);
+        console.log('VERIFYKEY: ' + verifyKey);
+        return new Buffer(sovrin.signMessage(JSON.stringify(input), signKey, verifyKey)).toString('hex').toUpperCase();
+    }
+
     //Generates signature json from generated doc signature
     generateDocumentSignature(did: any, signature: any) {
         var signatureJson = {
-                "type": cc.Ed25519Sha256.TYPE_NAME,
-                "created": dateFormat(new Date(), "isoDateTime"),
-                "creator": did,
-                "signatureValue": signature
-            };
+            "type": cc.Ed25519Sha256.TYPE_NAME,
+            "created": dateFormat(new Date(), "isoDateTime"),
+            "creator": did,
+            "signatureValue": signature
+        };
         //if (isValidJson(signatureSchema, signatureJson)) {
         return signatureJson;
         //} else {

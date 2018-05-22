@@ -93,17 +93,53 @@ export class RequestHandler extends AbstractHandler {
     }
   }
 
-  msgToPublish(obj: any, methodCall: string): any {
+  msgToPublish(obj: any, creator: string, methodCall: string): any {
     return new Promise((resolve: Function, reject: Function) => {
+      var blockChainPayload : any;
       switch (methodCall) {
         case 'CreateProject': {
-          resolve(this.signMessageForBlockchain(obj, methodCall));
+          blockChainPayload = {payload: [16,{data:{
+              ...obj,
+              projectDid: this.getWallet().did,
+              pubKey: this.getWallet().verifyKey,
+              senderDid: creator
+            }}]}
+           break;
+        }
+        case 'CreateAgent': {
+          blockChainPayload = {payload: [17,{data:{
+              ...obj,
+              senderDid: creator
+            }}]}
+          break;
+        }
+        case 'UpdateAgentStatus': {
+          blockChainPayload = {payload: [18,{data:{
+              ...obj,
+              senderDid: creator
+            }}]}
+          break;
+        }
+        case 'SubmitClaim': {
+          blockChainPayload = {payload: [19,{data:{
+              ...obj,
+              senderDid: creator
+            }}]}
+          break;
+        }
+        case 'EvaluateClaim': {
+          blockChainPayload = {payload: [20,{data:{
+              ...obj,
+              senderDid: creator
+            }}]}
+          break;
         }
         default: {
-          resolve(this.signMessageForBlockchain('', methodCall))
+          reject('Capability does not exist')
           break;
         }
       }
+      resolve(this.signMessageForBlockchain(blockChainPayload));
     });
   }
 

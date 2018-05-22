@@ -19,7 +19,10 @@ import { SovrinUtils } from '../crypto/SovrinUtils';
 import { json } from 'body-parser';
 import mq from '../MessageQ';
 import { IWalletModel } from "../model/project/Wallet";
+import { IWallet } from "../model/project/IWallet";
 
+
+var wallet : IWalletModel;
 
 export abstract class AbstractHandler {
 
@@ -70,7 +73,7 @@ export abstract class AbstractHandler {
                                   .then((transaction: ITransactionModel) => {
                                     var obj = {
                                       ...request.data,
-                                      tx: transaction.hash,
+                                      txHash: transaction.hash,
                                       version: request.version + 1
                                     };
                                     console.log(new Date().getUTCMilliseconds() + ' updating the capabilities');
@@ -78,7 +81,7 @@ export abstract class AbstractHandler {
                                     console.log(new Date().getUTCMilliseconds() + ' commit to Elysian');
                                     resolve(model.create(obj));
                                     console.log(new Date().getUTCMilliseconds() + ' publish to blockchain');
-                                    this.msgToPublish(obj, capabilityMap.capability)
+                                    this.msgToPublish(obj, request.signature.creator, capabilityMap.capability)
                                       .then((msg: any) => {
                                         mq.publish(msg);
                                       });
@@ -92,14 +95,14 @@ export abstract class AbstractHandler {
                             .then((transaction: ITransactionModel) => {
                               var obj = {
                                 ...request.data,
-                                tx: transaction.hash
+                                txHash: transaction.hash
                               };
                               console.log(new Date().getUTCMilliseconds() + ' updating the capabilities');
                               inst.updateCapabilities(request.signature.creator, capabilityMap.capability);
                               console.log(new Date().getUTCMilliseconds() + ' commit to Elysian');
                               resolve(model.create(obj));
                               console.log(new Date().getUTCMilliseconds() + ' publish to blockchain');
-                              this.msgToPublish(obj, capabilityMap.capability)
+                              this.msgToPublish(obj, request.signature.creator, capabilityMap.capability)
                                 .then((msg: any) => {
                                   mq.publish(msg);
                                 });
@@ -188,25 +191,41 @@ export abstract class AbstractHandler {
       var sovrinWallet = sovrinUtils.generateSdidFromMnemonic(mnemonic);
       var did = String("did:ixo:" + sovrinWallet.did);
       console.log(new Date().getUTCMilliseconds() + ' project wallet created');
-      walletService.createWallet(sovrinWallet.did, sovrinWallet.secret.signKey, sovrinWallet.verifyKey);
+      walletService.createWallet(did, sovrinWallet.secret.signKey, sovrinWallet.verifyKey)
+      .then((resp: IWalletModel) => {
+        wallet = resp;
+        resolve(mnemonic);
+      });      
     });
   }
 
   abstract updateCapabilities(obj: any, methodCall: string): void;
 
-  abstract msgToPublish(obj: any, methodCall: string): any;
+  abstract msgToPublish(obj: any, creator: string, methodCall: string): any;
 
-  signMessageForBlockchain(msgToSign: any, methodName: string) {
+  getWallet() : IWalletModel{
+    return wallet;
+  }
+
+  signMessageForBlockchain(msgToSign: any) {
     return new Promise((resolve: Function, reject: Function) => {
       walletService.getWallet()
         .then((wallet: IWalletModel) => {
           var sovrinUtils = new SovrinUtils();
           var signedMsg = {
-            method: methodName,
-            data: msgToSign,
-            signature: sovrinUtils.signDocument(wallet.signKey, wallet.verifyKey, wallet.did, msgToSign)
+            ...msgToSign,
+            signature: {
+              signatureValue:[1, sovrinUtils.signDocumentNoEncoding(wallet.signKey, wallet.verifyKey, wallet.did, msgToSign.payload[1])],
+              created: new Date(),
+              creator: wallet.did
+            }            
           }
-          resolve(signedMsg);
+
+          var hex = '';
+          for(var i=0;i<JSON.stringify(signedMsg).length;i++) {
+              hex += ''+JSON.stringify(signedMsg).charCodeAt(i).toString(16);
+          }
+          resolve(hex);
         });
     });
   }
