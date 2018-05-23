@@ -35,14 +35,12 @@ export class TransactionLogService {
   }
 
   findLatestTransaction(): Promise<ITransactionModel> {
-    console.log("find last transaction")
     return new Promise(function (resolve: Function, reject: Function) {
       resolve (Transaction.findOne().sort({$natural:-1}));
     });
   }
 
   findTransaction(): any {
-    console.log("query transaction log")
     return Transaction.find();
   }
 }

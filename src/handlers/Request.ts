@@ -1,8 +1,12 @@
 import { IRequest } from './IRequest';
 import { CryptoUtils } from '../crypto/Utils';
-import {RequestValidator} from '../templates/RequestValidator';
+import { RequestValidator } from '../templates/RequestValidator';
+import Cache from '../Cache';
+import axios from 'axios';
 
 var cryptoUtils = new CryptoUtils();
+
+const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
 
 export class Request {
 
@@ -17,7 +21,7 @@ export class Request {
 
 
   constructor(requestData: any) {
-    this.payload = JSON.stringify(requestData.payload);    
+    this.payload = JSON.stringify(requestData.payload);
 
     if (requestData.payload.data) {
       this.data = requestData.payload.data;
@@ -37,19 +41,42 @@ export class Request {
     return (this.signature != undefined);
   }
 
-  verifySignature = (): RequestValidator => {
-    var validator = new RequestValidator();
-    if (!this.hasSignature) {
-      validator.addError("Signature is not present in request");
-      validator.valid = false;
-     }
-
-    if (!cryptoUtils.validateSignature(this.payload, this.signature.type, this.signature.signature, this.signature.publicKey)) {
-      validator.addError("Invalid request input signature '" + JSON.stringify(this.payload));
-      //validator.valid = false;
-    }
-    console.log("Request.verifySignature: return true");
-    return validator;
+  verifySignature = (): Promise<RequestValidator> => {
+    return new Promise((resolve: Function, reject: Function) => {
+      var validator = new RequestValidator();
+      if (!this.hasSignature) {
+        validator.addError("Signature is not present in request");
+        validator.valid = false;
+      }
+      Cache.get(this.signature.signature.creator)
+        .then((pubKey: string) => {
+          if (pubKey) {
+            console.log(new Date().getUTCMilliseconds() + ' WE HAVE RECEIVED THE KEY FORM CACHE ' + pubKey);
+            if (!cryptoUtils.validateSignature(this.payload, this.signature.type, this.signature.signature, pubKey)) {
+              validator.addError("Invalid request input signature '" + JSON.stringify(this.payload));
+              //validator.valid = false;
+            }
+            resolve(validator);
+          } else {
+            axios.get(BLOCKCHAIN_URI_REST + 'did/' + this.signature.creator.substring(8))
+              .then((response) => {
+                console.log(new Date().getUTCMilliseconds() + ' pubKey received from blockchain ' + response.data.pubKey);
+                if (!cryptoUtils.validateSignature(this.payload, this.signature.type, this.signature.signature, pubKey)) {
+                  validator.addError("Invalid request input signature '" + JSON.stringify(this.payload));
+                  //validator.valid = false;
+                } else {
+                  Cache.set(this.signature.signature.creator, pubKey);
+                }
+                resolve(validator);
+              });
+          }
+          console.log(new Date().getUTCMilliseconds() + ' PUBKEY IS ' + pubKey);
+          if (!cryptoUtils.validateSignature(this.payload, this.signature.type, this.signature.signature, pubKey)) {
+            validator.addError("Invalid request input signature '" + JSON.stringify(this.payload));
+            //validator.valid = false;
+          }
+        });
+    })
   }
 
   verifyCapability = (allow: any): RequestValidator => {
@@ -62,8 +89,8 @@ export class Request {
       if (inst.signature.creator.match(new RegExp(element))) {
         validator.valid = true;
         break;
-      } 
-    } 
+      }
+    }
     return validator;
   }
 }

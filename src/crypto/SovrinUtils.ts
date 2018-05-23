@@ -1,9 +1,4 @@
 import * as crypto from 'crypto';
-//import * as sovrin from 'sovrin-did';
-//import {ISovrinDidModel} from "../db/models";
-//import {writeToFile} from "./fileUtils";
-//import {createSignatureJson, signatureSchema} from "../templates/signature";
-//import {isValidJson} from "./jsonUtils";
 
 var dateFormat = require('dateformat');
 var merge = require('merge');
@@ -18,7 +13,7 @@ export class SovrinUtils {
         return bip39.generateMnemonic();
     }
 
-    generateSdidFromMnemonic(mnemonic: any){
+    generateSdidFromMnemonic(mnemonic: any) {
         // Create sha256 hash from Menmonic
         const seed = crypto.createHash('sha256').update(mnemonic).digest("hex");
 
@@ -33,27 +28,33 @@ export class SovrinUtils {
     }
 
     verifyDocumentSignature(signature: any, publicKey: any): boolean {
+        //return !(sovrin.verifySignedMessage(base58.decode(signature), base58.decode(publicKey)) === false);
         return !(sovrin.verifySignedMessage(base58.decode(signature), publicKey) === false);
     }
 
     //Signs a document using signKey from generated SDID and returns the signature
-    signDocument(sdid: any, input: any) {
-        var signature = base58.encode(sovrin.signMessage(new Buffer(JSON.stringify(input)), sdid.secret.signKey, sdid.verifyKey));
-        if (this.verifyDocumentSignature(signature, sdid.verifyKey)) {
-            return this.generateDocumentSignature(sdid.did, signature);
+    signDocument(signKey: string, verifyKey: string, did: string, input: any) {
+        var signature = base58.encode(sovrin.signMessage(new Buffer(JSON.stringify(input)), signKey, verifyKey));
+        if (this.verifyDocumentSignature(signature, verifyKey)) {
+            return this.generateDocumentSignature(did, signature);
         } else {
             throw new Error('fulfillment validation failed');
         }
     }
 
+    //Signs a document using signKey from generated SDID and returns the signature
+    signDocumentNoEncoding(signKey: string, verifyKey: string, did: string, input: any) {
+        return new Buffer(sovrin.signMessage(JSON.stringify(input), signKey, verifyKey)).toString('hex').toUpperCase();
+    }
+
     //Generates signature json from generated doc signature
     generateDocumentSignature(did: any, signature: any) {
         var signatureJson = {
-                "type": cc.Ed25519Sha256.TYPE_NAME,
-                "created": dateFormat(new Date(), "isoDateTime"),
-                "creator": did,
-                "signatureValue": signature
-            };
+            "type": cc.Ed25519Sha256.TYPE_NAME,
+            "created": dateFormat(new Date(), "isoDateTime"),
+            "creator": did,
+            "signatureValue": signature
+        };
         //if (isValidJson(signatureSchema, signatureJson)) {
         return signatureJson;
         //} else {
