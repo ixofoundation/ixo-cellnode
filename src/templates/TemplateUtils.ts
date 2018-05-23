@@ -46,7 +46,14 @@ export class TemplateUtils {
   getTemplateFromCache(templateType: string, name: string): Promise<string> {
     return new Promise((resolve: Function, reject: Function) => {
       var key = this.getCacheKey(templateType, name);
-      return Cache.get(key);
+      Cache.get(key)
+      .then ((template: string) =>{
+        if (template) {
+          resolve(template);
+        } else {
+          resolve(this.getTemplateFromRegistry(templateType, name));
+        }
+      })
     });
   }
 

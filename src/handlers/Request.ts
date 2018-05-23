@@ -48,16 +48,33 @@ export class Request {
         validator.addError("Signature is not present in request");
         validator.valid = false;
       }
-      axios.get(BLOCKCHAIN_URI_REST + 'did/' + this.signature.creator.substring(8))
-        .then((response) => {
-          console.log(new Date().getUTCMilliseconds() + ' pubKey received from blockchain ' + response.data.pubKey);
-          if (!cryptoUtils.validateSignature(this.payload, this.signature.type, this.signature.signature, response.data.pubKey)) {
+      Cache.get(this.signature.signature.creator)
+        .then((pubKey: string) => {
+          if (pubKey) {
+            console.log(new Date().getUTCMilliseconds() + ' WE HAVE RECEIVED THE KEY FORM CACHE ' + pubKey);
+            if (!cryptoUtils.validateSignature(this.payload, this.signature.type, this.signature.signature, pubKey)) {
+              validator.addError("Invalid request input signature '" + JSON.stringify(this.payload));
+              //validator.valid = false;
+            }
+            resolve(validator);
+          } else {
+            axios.get(BLOCKCHAIN_URI_REST + 'did/' + this.signature.creator.substring(8))
+              .then((response) => {
+                console.log(new Date().getUTCMilliseconds() + ' pubKey received from blockchain ' + response.data.pubKey);
+                if (!cryptoUtils.validateSignature(this.payload, this.signature.type, this.signature.signature, pubKey)) {
+                  validator.addError("Invalid request input signature '" + JSON.stringify(this.payload));
+                  //validator.valid = false;
+                } else {
+                  Cache.set(this.signature.signature.creator, pubKey);
+                }
+                resolve(validator);
+              });
+          }
+          console.log(new Date().getUTCMilliseconds() + ' PUBKEY IS ' + pubKey);
+          if (!cryptoUtils.validateSignature(this.payload, this.signature.type, this.signature.signature, pubKey)) {
             validator.addError("Invalid request input signature '" + JSON.stringify(this.payload));
             //validator.valid = false;
-          } else {
-            Cache.set(this.signature.signature.creator, response.data.url);
           }
-          resolve(validator);
         });
     })
   }

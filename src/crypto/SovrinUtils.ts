@@ -44,9 +44,6 @@ export class SovrinUtils {
 
     //Signs a document using signKey from generated SDID and returns the signature
     signDocumentNoEncoding(signKey: string, verifyKey: string, did: string, input: any) {
-        console.log('INPUT: ' + JSON.stringify(input));
-        console.log('SIGNKEY: ' + signKey);
-        console.log('VERIFYKEY: ' + verifyKey);
         return new Buffer(sovrin.signMessage(JSON.stringify(input), signKey, verifyKey)).toString('hex').toUpperCase();
     }
 

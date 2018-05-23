@@ -18,12 +18,14 @@ export class Cache {
         });
     }
 
-    get(key: string): any {
-        cache.get(key, function (err: any, data: any) {
-            if (err) throw new Error(err);
-            console.log(new Date().getUTCMilliseconds() + ' got cached value ' + JSON.stringify(data));
-            return data;
-        });
+    get(key: string): Promise<any> {
+        return new Promise((resolve: Function, reject: Function) => {
+            cache.get(key, function (err: any, data: any) {
+                if (err) throw new Error(err);
+                console.log(new Date().getUTCMilliseconds() + ' got cached value ' + JSON.stringify(data));
+                resolve(data);
+            });
+        });        
     }
 
     set(key: string, value: any) {

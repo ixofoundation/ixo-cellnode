@@ -47,9 +47,9 @@ export abstract class AbstractHandler {
         })
         .then((capabilityMap: any) => {
           console.log(new Date().getUTCMilliseconds() + ' have capability ' + capabilityMap.capability);
-          TemplateUtils.getTemplate(capabilityMap.template, request.template)
+          TemplateUtils.getTemplateFromCache(capabilityMap.template, request.template)
             .then((schema: any) => {
-              console.log(new Date().getUTCMilliseconds() + ' template to validate ' + JSON.stringify(schema));
+              console.log(new Date().getUTCMilliseconds() + ' validate the template');
               var validator: ValidatorResult;
               validator = validateJson(schema, args);
               if (validator.valid) {
@@ -145,21 +145,22 @@ export abstract class AbstractHandler {
           return capabilityMap;
         })
         .then((capabilityMap: any) => {
-          console.log('have capability ' + capabilityMap.capability);
-          TemplateUtils.getTemplate(capabilityMap.template, request.template)
+          console.log(new Date().getUTCMilliseconds() + ' have capability ' + capabilityMap.capability);
+          TemplateUtils.getTemplateFromCache(capabilityMap.template, request.template)
             .then((schema: any) => {
+              console.log(new Date().getUTCMilliseconds() + ' validate the template');
               var validator: ValidatorResult;
               validator = validateJson(schema, args);
               if (validator.valid) {
-                console.log('validate the capability');
+                console.log(new Date().getUTCMilliseconds() + ' validate the capability');
                 var capValid: RequestValidator;
                 capValid = request.verifyCapability(capabilityMap.allow);
                 if (capValid.valid) {
-                  console.log('verify the signature');
+                  console.log(new Date().getUTCMilliseconds() + ' verify the signature');
                   request.verifySignature()
                     .then((sigValid: RequestValidator) => {
                       if (sigValid.valid) {
-                        console.log('query Elysian');
+                        console.log(new Date().getUTCMilliseconds() + ' query Elysian');
                         resolve(query(request.data));
                       } else {
                         reject(new ValidationError(sigValid.errors[0]));
@@ -222,8 +223,9 @@ export abstract class AbstractHandler {
           }
 
           var hex = '';
-          for(var i=0;i<JSON.stringify(signedMsg).length;i++) {
-              hex += ''+JSON.stringify(signedMsg).charCodeAt(i).toString(16);
+          var jsonMsg = JSON.stringify(signedMsg);
+          for(var i = 0; i < jsonMsg.length; i++) {
+              hex += '' + jsonMsg.charCodeAt(i).toString(16);
           }
           resolve(hex);
         });
