@@ -18,7 +18,7 @@ docker-compose start cache
 sleep 7
 docker-compose start app
 #docker-compose exec cli /bin/sh -c "/usr/src/cli/bin/run" 
-echo -n "Creating Elysian ..."
+echo -n "Starting Elysian ..."
 sleep 5
 echo ${green} "done"
 docker-compose logs --tail 20 app
