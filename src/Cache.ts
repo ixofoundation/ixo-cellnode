@@ -7,7 +7,6 @@ export class Cache {
 
     constructor() {
         this.host = (process.env.MEMCACHE_URI || '');
-        console.log(new Date().getUTCMilliseconds() + ' connect to cache')
         cache = new Memcached(this.host);        
     }
 

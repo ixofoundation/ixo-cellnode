@@ -113,7 +113,6 @@ export abstract class AbstractHandler {
                         reject(new ValidationError(sigValid.errors[0]));
                       }
                     })
-                  mq.subscribe();
                 } else {
                   reject(new ValidationError(capValid.errors[0]));
                 }

@@ -16,6 +16,7 @@ docker-compose start db
 docker-compose start mq
 docker-compose start cache
 sleep 7
+docker-compose start pol
 docker-compose start app
 #docker-compose exec cli /bin/sh -c "/usr/src/cli/bin/run" 
 echo -n "Starting Elysian ..."

@@ -1,12 +1,15 @@
 import { TransactionError } from "./error/TransactionError";
 import axios from 'axios';
+import { timingSafeEqual } from "crypto";
 
 var amqplib = require('amqplib');
 
-var connection: any;
+
 const BLOCKCHAIN_URI_TENDERMINT = (process.env.BLOCKCHAIN_URI_TENDERMINT || '');
 
 export class MessageQ {
+
+    connection: any;
 
     private queue: string;
     host: string;
@@ -18,7 +21,7 @@ export class MessageQ {
 
     connect(): void {
         amqplib.connect(this.host).then((conn: any) => {
-            connection = conn;
+            this.connection = conn;
             console.log('RabbitMQ connected');
         }, () => {
             console.log("Could not initialize RabbitMQ Server");
@@ -29,8 +32,7 @@ export class MessageQ {
     async publish(content: any) {
         try {
 
-            const channel = await connection.createChannel();
-
+            const channel = await this.connection.createChannel();
             channel.assertQueue(this.queue, {
                 durable: true
             }).then(() => {
@@ -50,42 +52,13 @@ export class MessageQ {
         }
     }
 
-    public async subscribe() {
-        try {
-            const channel = await connection.createChannel();
-            channel.assertQueue(this.queue, {
-                durable: true
-            }).then(() => {
-                channel.prefetch(1);
-                channel.consume(this.queue, (messageData: any) => {
-
-                    if (messageData === null) {
-                        return;
-                    }
-
-                    const message = JSON.parse(messageData.content.toString());
-
-                    this.handleMessage(message).then(() => {
-                        return channel.ack(messageData);
-                    }, () => {
-                        return channel.nack(messageData);
-                    });
-                }, { noAck: false });
-            }, (error: any) => {
-                throw error;
-            });
-
-        } catch (error) {
-            throw new TransactionError(error.message);
-        }
-    }
-
-    private handleMessage(message: any): Promise<any> {
+ 
+   private handleMessage(message: any): Promise<any> {
         return new Promise((resolve: Function, reject: Function) => {
             console.log(new Date().getUTCMilliseconds() + ' consume from queue');
             axios.get(BLOCKCHAIN_URI_TENDERMINT + message)
                 .then((response: any) => {
-                    console.log(new Date().getUTCMilliseconds() + ' received response from blockchaind');
+                    console.log(new Date().getUTCMilliseconds() + ' received response from blockchain');
                     resolve(true);
                 })
 
