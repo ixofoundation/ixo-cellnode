@@ -5,7 +5,6 @@ export interface IPublicModel extends IPublic, Document { }
 
 export var PublicSchema: Schema = new Schema({
 
-    key: String,
     data: Buffer,
     contentType: String
 

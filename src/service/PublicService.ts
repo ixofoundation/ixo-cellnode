@@ -14,27 +14,28 @@ export class PublicService {
   }
 
 
-  createPublic(key: String, data: Buffer, contentType: String, emit = true): Promise<IPublicModel> {
+  createPublic(data: Buffer, contentType: String, emit = true): Promise<IPublicModel> {
     return new Promise(function (resolve: Function, reject: Function) {
+      var key = Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36);
       Public.create(
         {
           "key": key,
           "data": data,
           "contentType": contentType
-                            
+
         }, function (error: Error, newTransaction: IPublicModel) {
           if (error) {
             console.log("Error is " + error);
             reject(error);
           } else {
-            resolve(newTransaction);
+            resolve(key);
           }
         });
     });
   }
 
   findForKey(key: String): any {
-    return Public.findOne({key: key});
+    return Public.findOne({ key: key });
   }
 }
 
