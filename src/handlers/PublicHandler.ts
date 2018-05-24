@@ -8,7 +8,7 @@ export class PublicHandler {
 
     createPublic = (args: any) => {
         return new Promise((resolve: Function, reject: Function) => {
-            resolve(publicService.createPublic(new Buffer(args.data), args.contentType));
+            resolve(publicService.createPublic(args.data, args.contentType));
         });
     }
 
