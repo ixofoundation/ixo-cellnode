@@ -22,7 +22,7 @@ docker-compose start app
 echo -n "Starting Elysian ..."
 sleep 5
 echo ${green} "done"
-docker-compose logs --tail 20 app
+docker-compose logs --tail 13 app
 echo ""
 echo "***********************************"
 echo "* ELYSIAN SETUP COMPLETE          *"

@@ -57,6 +57,7 @@ export class Request {
             }
             resolve(validator);
           } else {
+            console.log(new Date().getUTCMilliseconds() + ' retrieve pubkey from blockchain');
             axios.get(BLOCKCHAIN_URI_REST + 'did/' + this.signature.creator)
               .then((response) => {
                 if (response.status == 200) {
@@ -74,7 +75,6 @@ export class Request {
                 resolve(validator);
               });
           }
-          console.log(new Date().getUTCMilliseconds() + ' PUBKEY IS ' + pubKey);
           if (!cryptoUtils.validateSignature(this.payload, this.signature.type, this.signature.signature, pubKey)) {
             validator.addError("Invalid request input signature '" + JSON.stringify(this.payload));
             //validator.valid = false;

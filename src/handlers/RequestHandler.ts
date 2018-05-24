@@ -176,11 +176,13 @@ export class RequestHandler extends AbstractHandler {
   /////////////////////////////////////////////////
 
   createAgent = (args: any) => {
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction');
     return this.createTransaction(args, 'CreateAgent', Agent);
   }
 
 
   updateAgentStatus = (args: any) => {
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction');
     return this.createTransaction(args, 'UpdateAgentStatus', AgentStatus, function (request: any): Promise<boolean> {
       let newVersion = request.version + 1;
       return new Promise(function (resolve: Function, reject: Function) {
@@ -204,6 +206,7 @@ export class RequestHandler extends AbstractHandler {
   }
 
   listAgents = (args: any) => {
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction');
     return this.queryTransaction(args, 'ListAgents', function (filter: any): Promise<any[]> {
       return new Promise(function (resolve: Function, reject: Function) {
         Agent.aggregate([
@@ -245,10 +248,12 @@ export class RequestHandler extends AbstractHandler {
   /////////////////////////////////////////////////
 
   submitClaim = (args: any) => {
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction');
     return this.createTransaction(args, 'SubmitClaim', Claim);
   }
 
   evaluateClaim = (args: any) => {
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction');
     return this.createTransaction(args, 'EvaluateClaim', EvaluateClaim, function (request: any): Promise<boolean> {
       let newVersion = request.version + 1;
       return new Promise(function (resolve: Function, reject: Function) {
@@ -272,6 +277,7 @@ export class RequestHandler extends AbstractHandler {
   }
 
   listClaims = (args: any) => {
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction');
     return this.queryTransaction(args, 'ListClaims', function (filter: any): Promise<any[]> {
       return new Promise(function (resolve: Function, reject: Function) {
         Claim.aggregate([
