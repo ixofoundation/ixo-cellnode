@@ -12,6 +12,7 @@ services:
       - cache
       - mq
       - pol
+      - cli
       
   db:
     container_name: db
@@ -39,8 +40,7 @@ services:
     image: trustlab/ixo-pol
 
 
-  # cli:
-  #   container_name: cli
-  #   image: trustlab/elysian-cli
-  #   stdin_open: true
-  #   tty: true
+  cli:
+    container_name: cli
+    image: trustlab/ixo-cli
+

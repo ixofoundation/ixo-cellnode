@@ -216,11 +216,10 @@ export abstract class AbstractHandler {
             ...msgToSign,
             signature: {
               signatureValue:[1, sovrinUtils.signDocumentNoEncoding(wallet.signKey, wallet.verifyKey, wallet.did, msgToSign.payload[1])],
-              created: new Date(),
-              creator: wallet.did
+              created: new Date()
             }            
           }
-
+          
           var hex = '';
           var jsonMsg = JSON.stringify(signedMsg);
           for(var i = 0; i < jsonMsg.length; i++) {

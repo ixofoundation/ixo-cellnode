@@ -104,11 +104,13 @@ export class RequestHandler extends AbstractHandler {
               pubKey: this.getWallet().verifyKey,
               senderDid: creator
             }}]}
+            delete blockChainPayload.data.version;
            break;
         }
         case 'CreateAgent': {
           blockChainPayload = {payload: [17,{data:{
               ...obj,
+              projectDid: this.getWallet().did,
               senderDid: creator
             }}]}
           break;
@@ -116,13 +118,16 @@ export class RequestHandler extends AbstractHandler {
         case 'UpdateAgentStatus': {
           blockChainPayload = {payload: [18,{data:{
               ...obj,
+              projectDid: this.getWallet().did,
               senderDid: creator
             }}]}
+            delete blockChainPayload.data.version;
           break;
         }
         case 'SubmitClaim': {
           blockChainPayload = {payload: [19,{data:{
               ...obj,
+              projectDid: this.getWallet().did,
               senderDid: creator
             }}]}
           break;
@@ -130,8 +135,10 @@ export class RequestHandler extends AbstractHandler {
         case 'EvaluateClaim': {
           blockChainPayload = {payload: [20,{data:{
               ...obj,
+              projectDid: this.getWallet().did,
               senderDid: creator
             }}]}
+            delete blockChainPayload.data.version;
           break;
         }
         default: {
