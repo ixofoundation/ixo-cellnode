@@ -95,50 +95,80 @@ export class RequestHandler extends AbstractHandler {
 
   msgToPublish(obj: any, creator: string, methodCall: string): any {
     return new Promise((resolve: Function, reject: Function) => {
-      var blockChainPayload : any;
+      var blockChainPayload: any;
+      var txHash = obj.txHash;
+      delete obj.version;
+      delete obj.txHash;
       switch (methodCall) {
         case 'CreateProject': {
-          blockChainPayload = {payload: [16,{data:{
-              ...obj,
+          blockChainPayload = {
+            payload: [16, {
+              data: {
+                ...obj
+              },
+              txHash: txHash,
+              senderDid: creator,
               projectDid: this.getWallet().did,
-              pubKey: this.getWallet().verifyKey,
-              senderDid: creator
-            }}]}
-            delete blockChainPayload.data.version;
-           break;
+              pubKey: this.getWallet().verifyKey
+            }]
+          }
+          break;
         }
         case 'CreateAgent': {
-          blockChainPayload = {payload: [17,{data:{
-              ...obj,
-              projectDid: this.getWallet().did,
-              senderDid: creator
-            }}]}
+          blockChainPayload = {
+            payload: [17, {
+              data: {
+                did: obj.agentDid,
+                role: obj.role,
+              },
+              txHash: txHash,
+              senderDid: creator,
+              projectDid: this.getWallet().did
+            }]
+          }
           break;
         }
         case 'UpdateAgentStatus': {
-          blockChainPayload = {payload: [18,{data:{
-              ...obj,
-              projectDid: this.getWallet().did,
-              senderDid: creator
-            }}]}
-            delete blockChainPayload.data.version;
+          blockChainPayload = {
+            payload: [18, {
+              data: {
+                did: obj.agentDid,
+                status: obj.status                
+              },
+              txHash: txHash,
+              senderDid: creator,
+              projectDid: this.getWallet().did              
+            }]
+          }
+
           break;
         }
         case 'SubmitClaim': {
-          blockChainPayload = {payload: [19,{data:{
-              ...obj,
-              projectDid: this.getWallet().did,
-              senderDid: creator
-            }}]}
+          blockChainPayload = {
+            payload: [19, {
+              data: {
+                claimID: obj.claimId,
+              },
+              txHash: txHash,
+              senderDid: creator,
+              projectDid: this.getWallet().did
+            }]
+          }
           break;
         }
         case 'EvaluateClaim': {
-          blockChainPayload = {payload: [20,{data:{
-              ...obj,
-              projectDid: this.getWallet().did,
-              senderDid: creator
-            }}]}
-            delete blockChainPayload.data.version;
+          blockChainPayload = {
+            payload: [20, {
+              data: {
+                claimID: obj.claimId,
+                status: obj.status             
+              },
+              txHash: txHash,
+              senderDid: creator,
+              projectDid: this.getWallet().did
+            }]
+          }
+
           break;
         }
         default: {

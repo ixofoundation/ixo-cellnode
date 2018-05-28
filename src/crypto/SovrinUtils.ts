@@ -47,7 +47,8 @@ export class SovrinUtils {
         console.log('INPUT ' + JSON.stringify(input));
         console.log('SIGN ' + signKey);
         console.log('VERIFY ' + verifyKey);
-        return new Buffer(sovrin.signMessage(JSON.stringify(input), signKey, verifyKey)).toString('hex').toUpperCase();
+        var signedMsg = sovrin.signMessage(JSON.stringify(input), signKey, verifyKey);
+        return new Buffer(signedMsg.slice(0,64)).toString('hex').toUpperCase();
     }
 
     //Generates signature json from generated doc signature
