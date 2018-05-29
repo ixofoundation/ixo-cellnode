@@ -44,7 +44,8 @@ export class SovrinUtils {
 
     //Signs a document using signKey from generated SDID and returns the signature
     signDocumentNoEncoding(signKey: string, verifyKey: string, did: string, input: any) {
-        return new Buffer(sovrin.signMessage(JSON.stringify(input), signKey, verifyKey)).toString('hex').toUpperCase();
+        var signedMsg = sovrin.signMessage(JSON.stringify(input), signKey, verifyKey);
+        return new Buffer(signedMsg.slice(0,64)).toString('hex').toUpperCase();
     }
 
     //Generates signature json from generated doc signature
@@ -55,11 +56,7 @@ export class SovrinUtils {
             "creator": did,
             "signatureValue": signature
         };
-        //if (isValidJson(signatureSchema, signatureJson)) {
         return signatureJson;
-        //} else {
-        //    throw new Error('signature json validation failed');
-        //}
     }
 }
 

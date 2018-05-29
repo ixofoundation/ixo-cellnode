@@ -51,11 +51,13 @@ db.once('open', function() {
 
 
 process.on('SIGTERM', function () {
+  console.log('Shut down');
   db.close();
   server.close(function () {
     process.exit(0);
   });
   cache.close();
+  mq.connection.close();
 });
 
 function normalizePort(val: number|string): number|string|boolean {

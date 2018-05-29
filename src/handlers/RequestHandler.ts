@@ -95,43 +95,80 @@ export class RequestHandler extends AbstractHandler {
 
   msgToPublish(obj: any, creator: string, methodCall: string): any {
     return new Promise((resolve: Function, reject: Function) => {
-      var blockChainPayload : any;
+      var blockChainPayload: any;
+      var txHash = obj.txHash;
+      delete obj.version;
+      delete obj.txHash;
       switch (methodCall) {
         case 'CreateProject': {
-          blockChainPayload = {payload: [16,{data:{
-              ...obj,
+          blockChainPayload = {
+            payload: [16, {
+              data: {
+                ...obj
+              },
+              txHash: txHash,
+              senderDid: creator,
               projectDid: this.getWallet().did,
-              pubKey: this.getWallet().verifyKey,
-              senderDid: creator
-            }}]}
-           break;
+              pubKey: this.getWallet().verifyKey
+            }]
+          }
+          break;
         }
         case 'CreateAgent': {
-          blockChainPayload = {payload: [17,{data:{
-              ...obj,
-              senderDid: creator
-            }}]}
+          blockChainPayload = {
+            payload: [17, {
+              data: {
+                did: obj.agentDid,
+                role: obj.role,
+              },
+              txHash: txHash,
+              senderDid: creator,
+              projectDid: this.getWallet().did
+            }]
+          }
           break;
         }
         case 'UpdateAgentStatus': {
-          blockChainPayload = {payload: [18,{data:{
-              ...obj,
-              senderDid: creator
-            }}]}
+          blockChainPayload = {
+            payload: [18, {
+              data: {
+                did: obj.agentDid,
+                status: obj.status                
+              },
+              txHash: txHash,
+              senderDid: creator,
+              projectDid: this.getWallet().did              
+            }]
+          }
+
           break;
         }
         case 'SubmitClaim': {
-          blockChainPayload = {payload: [19,{data:{
-              ...obj,
-              senderDid: creator
-            }}]}
+          blockChainPayload = {
+            payload: [19, {
+              data: {
+                claimID: obj.claimId,
+              },
+              txHash: txHash,
+              senderDid: creator,
+              projectDid: this.getWallet().did
+            }]
+          }
           break;
         }
         case 'EvaluateClaim': {
-          blockChainPayload = {payload: [20,{data:{
-              ...obj,
-              senderDid: creator
-            }}]}
+          blockChainPayload = {
+            payload: [20, {
+              data: {
+                claimID: obj.claimId,
+                status: obj.status             
+              },
+              txHash: txHash,
+              senderDid: creator,
+              projectDid: this.getWallet().did
+            }]
+          }
+
           break;
         }
         default: {
@@ -176,11 +213,13 @@ export class RequestHandler extends AbstractHandler {
   /////////////////////////////////////////////////
 
   createAgent = (args: any) => {
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction');
     return this.createTransaction(args, 'CreateAgent', Agent);
   }
 
 
   updateAgentStatus = (args: any) => {
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction');
     return this.createTransaction(args, 'UpdateAgentStatus', AgentStatus, function (request: any): Promise<boolean> {
       let newVersion = request.version + 1;
       return new Promise(function (resolve: Function, reject: Function) {
@@ -204,6 +243,7 @@ export class RequestHandler extends AbstractHandler {
   }
 
   listAgents = (args: any) => {
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction');
     return this.queryTransaction(args, 'ListAgents', function (filter: any): Promise<any[]> {
       return new Promise(function (resolve: Function, reject: Function) {
         Agent.aggregate([
@@ -245,10 +285,12 @@ export class RequestHandler extends AbstractHandler {
   /////////////////////////////////////////////////
 
   submitClaim = (args: any) => {
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction');
     return this.createTransaction(args, 'SubmitClaim', Claim);
   }
 
   evaluateClaim = (args: any) => {
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction');
     return this.createTransaction(args, 'EvaluateClaim', EvaluateClaim, function (request: any): Promise<boolean> {
       let newVersion = request.version + 1;
       return new Promise(function (resolve: Function, reject: Function) {
@@ -272,6 +314,7 @@ export class RequestHandler extends AbstractHandler {
   }
 
   listClaims = (args: any) => {
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction');
     return this.queryTransaction(args, 'ListClaims', function (filter: any): Promise<any[]> {
       return new Promise(function (resolve: Function, reject: Function) {
         Claim.aggregate([

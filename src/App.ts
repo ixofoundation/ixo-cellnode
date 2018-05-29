@@ -5,9 +5,9 @@ import * as bodyParser from 'body-parser';
 import { Request, Response } from 'express';
 import * as logger from './logger/Logger';
 
-//import {InitRouter} from './routes/InitRouter';
 import {RequestRouter} from './routes/RequestRouter';
 import {QueryRouter} from './routes/QueryRouter';
+import {PublicRouter} from './routes/PublicRouter';
 
 class App {
 
@@ -42,7 +42,7 @@ class App {
 
     this.express.use('/api/request', new RequestRouter().router);
     this.express.use('/api/query', new QueryRouter().router);
-   
+    this.express.use('/api/public', new PublicRouter().router);
     this.express.use(logger.after);
   } 
 

@@ -22,12 +22,12 @@ import { IWalletModel } from "../model/project/Wallet";
 import { IWallet } from "../model/project/IWallet";
 
 
-var wallet : IWalletModel;
+var wallet: IWalletModel;
 
 export abstract class AbstractHandler {
 
   public createTransaction(args: any, capability: string, model: Model<any>, checkIfExist?: Function) {
-    
+
     var inst = this;
     var request = new Request(args);
     return new Promise((resolve: Function, reject: Function) => {
@@ -85,7 +85,7 @@ export abstract class AbstractHandler {
                                       .then((msg: any) => {
                                         mq.publish(msg);
                                       });
-                                      console.log(new Date().getUTCMilliseconds() + ' transaction completed successfully');
+                                    console.log(new Date().getUTCMilliseconds() + ' transaction completed successfully');
                                   });
                               }
                             })
@@ -106,14 +106,13 @@ export abstract class AbstractHandler {
                                 .then((msg: any) => {
                                   mq.publish(msg);
                                 });
-                                console.log(new Date().getUTCMilliseconds() + ' transaction completed successfully');
+                              console.log(new Date().getUTCMilliseconds() + ' transaction completed successfully');
                             });
                         }
                       } else {
                         reject(new ValidationError(sigValid.errors[0]));
                       }
                     })
-                  mq.subscribe();
                 } else {
                   reject(new ValidationError(capValid.errors[0]));
                 }
@@ -193,10 +192,10 @@ export abstract class AbstractHandler {
       var did = String("did:ixo:" + sovrinWallet.did);
       console.log(new Date().getUTCMilliseconds() + ' project wallet created');
       walletService.createWallet(did, sovrinWallet.secret.signKey, sovrinWallet.verifyKey)
-      .then((resp: IWalletModel) => {
-        wallet = resp;
-        resolve(mnemonic);
-      });      
+        .then((resp: IWalletModel) => {
+          wallet = resp;
+          resolve(mnemonic);
+        });
     });
   }
 
@@ -204,9 +203,16 @@ export abstract class AbstractHandler {
 
   abstract msgToPublish(obj: any, creator: string, methodCall: string): any;
 
-  getWallet() : IWalletModel{
+  getWallet(): IWalletModel {
+    if (wallet == null) {
+      walletService.getWallet()
+        .then((resp: IWalletModel) => {
+          wallet = resp;
+        });
+    }
     return wallet;
   }
+
 
   signMessageForBlockchain(msgToSign: any) {
     return new Promise((resolve: Function, reject: Function) => {
@@ -216,16 +222,15 @@ export abstract class AbstractHandler {
           var signedMsg = {
             ...msgToSign,
             signature: {
-              signatureValue:[1, sovrinUtils.signDocumentNoEncoding(wallet.signKey, wallet.verifyKey, wallet.did, msgToSign.payload[1])],
-              created: new Date(),
-              creator: wallet.did
-            }            
+              signatureValue: [1, sovrinUtils.signDocumentNoEncoding(wallet.signKey, wallet.verifyKey, wallet.did, msgToSign.payload[1])],
+              created: new Date()
+            }
           }
 
           var hex = '';
           var jsonMsg = JSON.stringify(signedMsg);
-          for(var i = 0; i < jsonMsg.length; i++) {
-              hex += '' + jsonMsg.charCodeAt(i).toString(16);
+          for (var i = 0; i < jsonMsg.length; i++) {
+            hex += '' + jsonMsg.charCodeAt(i).toString(16);
           }
           resolve(hex);
         });

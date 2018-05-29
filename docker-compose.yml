@@ -11,6 +11,8 @@ services:
       - db
       - cache
       - mq
+      - pol
+      - cli
       
   db:
     container_name: db
@@ -33,8 +35,12 @@ services:
         - "5672:5672"
     restart: always
 
-  # cli:
-  #   container_name: cli
-  #   image: trustlab/elysian-cli
-  #   stdin_open: true
-  #   tty: true
+  pol:
+    container_name: pol
+    image: trustlab/ixo-pol
+
+
+  cli:
+    container_name: cli
+    image: trustlab/ixo-cli
+

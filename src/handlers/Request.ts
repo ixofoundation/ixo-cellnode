@@ -48,29 +48,32 @@ export class Request {
         validator.addError("Signature is not present in request");
         validator.valid = false;
       }
-      Cache.get(this.signature.signature.creator)
+      Cache.get(this.signature.creator)
         .then((pubKey: string) => {
           if (pubKey) {
-            console.log(new Date().getUTCMilliseconds() + ' WE HAVE RECEIVED THE KEY FORM CACHE ' + pubKey);
             if (!cryptoUtils.validateSignature(this.payload, this.signature.type, this.signature.signature, pubKey)) {
-              validator.addError("Invalid request input signature '" + JSON.stringify(this.payload));
+              validator.addError("Signature did not validate '" + JSON.stringify(this.payload));
               //validator.valid = false;
             }
             resolve(validator);
           } else {
-            axios.get(BLOCKCHAIN_URI_REST + 'did/' + this.signature.creator.substring(8))
+            console.log(new Date().getUTCMilliseconds() + ' retrieve pubkey from blockchain');
+            axios.get(BLOCKCHAIN_URI_REST + 'did/' + this.signature.creator)
               .then((response) => {
-                console.log(new Date().getUTCMilliseconds() + ' pubKey received from blockchain ' + response.data.pubKey);
-                if (!cryptoUtils.validateSignature(this.payload, this.signature.type, this.signature.signature, pubKey)) {
-                  validator.addError("Invalid request input signature '" + JSON.stringify(this.payload));
+                if (response.status == 200) {
+                  if (!cryptoUtils.validateSignature(this.payload, this.signature.type, this.signature.signature, pubKey)) {
+                    validator.addError("Signature did not validate '" + JSON.stringify(this.payload));
+                  } else {
+                    Cache.set(this.signature.creator, response.data.pubKey);
+                  }
+                }
+                else {
+                  validator.addError("DID not found for creator " + this.signature.creator);
                   //validator.valid = false;
-                } else {
-                  Cache.set(this.signature.signature.creator, pubKey);
                 }
                 resolve(validator);
               });
           }
-          console.log(new Date().getUTCMilliseconds() + ' PUBKEY IS ' + pubKey);
           if (!cryptoUtils.validateSignature(this.payload, this.signature.type, this.signature.signature, pubKey)) {
             validator.addError("Invalid request input signature '" + JSON.stringify(this.payload));
             //validator.valid = false;
