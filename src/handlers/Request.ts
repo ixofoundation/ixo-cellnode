@@ -66,7 +66,6 @@ export class Request {
                   } else {
                     Cache.set(this.signature.creator, response.data.pubKey);
                   }
-                  Cache.set(this.signature.creator, response.data.pubKey);
                 }
                 else {
                   validator.addError("DID not found for creator " + this.signature.creator);
