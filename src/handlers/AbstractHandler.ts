@@ -119,6 +119,10 @@ export abstract class AbstractHandler {
               } else {
                 reject(new ValidationError(validator.errors[0].message));
               };
+            })
+            .catch((reason) => {
+              console.log(new Date().getUTCMilliseconds() + 'template registry failed' + reason);
+              reject(new TransactionError('Cannot connect to template registry'));
             });
         });
     });
@@ -205,10 +209,13 @@ export abstract class AbstractHandler {
 
   getWallet(): IWalletModel {
     if (wallet == null) {
-      walletService.getWallet()
-        .then((resp: IWalletModel) => {
-          wallet = resp;
-        });
+      new Promise((resolve: Function, reject: Function) => {
+        walletService.getWallet()
+          .then((resp: IWalletModel) => {
+            wallet = resp;
+            return wallet;
+          });
+      });
     }
     return wallet;
   }

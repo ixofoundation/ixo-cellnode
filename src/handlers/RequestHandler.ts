@@ -1,7 +1,10 @@
 import { Document, Schema, Model, model } from "mongoose";
 import { AbstractHandler } from './AbstractHandler';
 import { Request } from "../handlers/Request";
+import axios, { AxiosResponse } from 'axios';
 
+const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
+var evaluatorPay = 0;
 
 /////////////////////////////////////////////////
 //  PROJECT MODEL                              //
@@ -9,9 +12,14 @@ import { Request } from "../handlers/Request";
 
 export interface IProjectModel extends Document { }
 
-var ProjectSchema: Schema = new Schema({}, { strict: false });
+var ProjectSchema: Schema = new Schema({
+  evaluatorPay: String
+}, { strict: false });
 
 ProjectSchema.pre("save", function (next) {
+  var inst: any;
+  inst = this;
+  evaluatorPay = Number(inst.evaluatorPay);
   next();
 });
 
@@ -72,6 +80,17 @@ export const EvaluateClaim: Model<IEvaluateClaimModel> = model<IEvaluateClaimMod
 
 export class RequestHandler extends AbstractHandler {
 
+  constructor() {
+    super();
+    this.getWallet();
+    Project.findOne()
+      .then((project: any) => {
+        if (project) {
+          evaluatorPay = Number(project.evaluatorPay);
+        }
+      });
+  }
+
   updateCapabilities(did: string, methodCall: string) {
     switch (methodCall) {
       case 'CreateAgent': {
@@ -87,7 +106,6 @@ export class RequestHandler extends AbstractHandler {
         break;
       }
       default: {
-        console.log('No capabilities to update');
         break;
       }
     }
@@ -133,11 +151,11 @@ export class RequestHandler extends AbstractHandler {
             payload: [18, {
               data: {
                 did: obj.agentDid,
-                status: obj.status                
+                status: obj.status
               },
               txHash: txHash,
               senderDid: creator,
-              projectDid: this.getWallet().did              
+              projectDid: this.getWallet().did
             }]
           }
 
@@ -161,7 +179,7 @@ export class RequestHandler extends AbstractHandler {
             payload: [20, {
               data: {
                 claimID: obj.claimId,
-                status: obj.status             
+                status: obj.status
               },
               txHash: txHash,
               senderDid: creator,
@@ -289,28 +307,61 @@ export class RequestHandler extends AbstractHandler {
     return this.createTransaction(args, 'SubmitClaim', Claim);
   }
 
+  checkForFunds(): Promise<boolean> {
+    return new Promise((resolve: Function, reject: Function) => {
+      console.log(new Date().getUTCMilliseconds() + ' confirm funds exists');
+      axios.get(BLOCKCHAIN_URI_REST + 'projectAccounts/' + this.getWallet().did)
+        .then((response) => {
+          var balance: any;
+          if (response.status == 200) {
+            response.data.forEach((element: any) => {
+              if (element.did == this.getWallet().did) {
+                balance = element.balance - evaluatorPay;
+                console.log(new Date().getUTCMilliseconds() + 'balance is ' + balance);
+              }
+            })
+            if (balance > 0) {
+              resolve(true);
+            }
+          }
+          resolve(false);
+        })
+        .catch(() => {
+          console.log(new Date().getUTCMilliseconds() + ' could not connect to blockchain');
+          resolve(false);
+        });
+    });
+  };
+
   evaluateClaim = (args: any) => {
     console.log(new Date().getUTCMilliseconds() + ' start new transaction');
-    return this.createTransaction(args, 'EvaluateClaim', EvaluateClaim, function (request: any): Promise<boolean> {
-      let newVersion = request.version + 1;
-      return new Promise(function (resolve: Function, reject: Function) {
-        EvaluateClaim.findOne(
-          {
-            claimId: request.data.claimId,
-            version: newVersion
-          },
-          function (error: Error, result: IEvaluateClaimModel) {
-            if (error) {
-              reject(error);
-            } else {
-              if (result) {
-                resolve(true);
-              }
-              resolve(false);
-            }
-          }).limit(1);
+    return this.checkForFunds()
+      .then((resp: boolean) => {
+        if (resp) {
+          return this.createTransaction(args, 'EvaluateClaim', EvaluateClaim, function (request: any): Promise<boolean> {
+            let newVersion = request.version + 1;
+            return new Promise(function (resolve: Function, reject: Function) {
+              EvaluateClaim.findOne(
+                {
+                  claimId: request.data.claimId,
+                  version: newVersion
+                },
+                function (error: Error, result: IEvaluateClaimModel) {
+                  if (error) {
+                    reject(error);
+                  } else {
+                    if (result) {
+                      resolve(true);
+                    }
+                    resolve(false);
+                  }
+                }).limit(1);
+            });
+          });
+        }
+        console.log(new Date().getUTCMilliseconds() + ' insufficient funds available');
+        return 'Service currently unavailable';
       });
-    });
   }
 
   listClaims = (args: any) => {
