@@ -92,18 +92,18 @@ export class RequestHandler extends AbstractHandler {
     //   });
   }
 
-  updateCapabilities(did: string, methodCall: string) {
+  updateCapabilities(projectDid: string, did: string, methodCall: string) {
     switch (methodCall) {
       case 'CreateAgent': {
-        this.saveCapabilities(did, 'SubmitClaim');
-        this.saveCapabilities(did, 'ListClaims');
+        this.saveCapabilities(projectDid, did, 'SubmitClaim');
+        this.saveCapabilities(projectDid, did, 'ListClaims');
         break;
       }
       case 'CreateProject': {
-        this.saveCapabilities(did, 'EvaluateClaim');
-        this.saveCapabilities('did:sov:*', 'CreateAgent');
-        this.saveCapabilities(did, 'UpdateAgentStatus');
-        this.saveCapabilities(did, 'ListAgents');
+        this.saveCapabilities(projectDid, did, 'EvaluateClaim');
+        this.saveCapabilities(projectDid, 'did:sov:*', 'CreateAgent');
+        this.saveCapabilities(projectDid, did, 'UpdateAgentStatus');
+        this.saveCapabilities(projectDid, did, 'ListAgents');
         break;
       }
       default: {
@@ -142,7 +142,7 @@ export class RequestHandler extends AbstractHandler {
               },
               txHash: txHash,
               senderDid: creator,
-              projectDid: this.getWallet().did
+              projectDid: obj.projectDid
             }]
           }
           break;
@@ -156,7 +156,7 @@ export class RequestHandler extends AbstractHandler {
               },
               txHash: txHash,
               senderDid: creator,
-              projectDid: this.getWallet().did
+              projectDid: obj.projectDid
             }]
           }
 
@@ -170,7 +170,7 @@ export class RequestHandler extends AbstractHandler {
               },
               txHash: txHash,
               senderDid: creator,
-              projectDid: this.getWallet().did
+              projectDid: obj.projectDid
             }]
           }
           break;
@@ -184,7 +184,7 @@ export class RequestHandler extends AbstractHandler {
               },
               txHash: txHash,
               senderDid: creator,
-              projectDid: this.getWallet().did
+              projectDid: obj.projectDid
             }]
           }
 

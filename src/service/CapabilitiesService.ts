@@ -47,13 +47,32 @@ export class CapabilitiesService {
           }
         });
     });
+  }  
+
+  findCapabilitiesForProject(projectDid: string): Promise<ICapabilitiesModel> {
+    return new Promise(function (resolve: Function, reject: Function) {
+      Capabilities.findOne(
+        {
+          projectDid: projectDid
+        },
+        function (error: Error, result: ICapabilitiesModel) {
+          if (error) {
+            console.log("Error is " + error);
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        });
+    });
   }
 
-  addCapabilities(did: string, requestType: string): Promise<ICapabilitiesModel> {
+  addCapabilities(projectDid: string, did: string, requestType: string): Promise<ICapabilitiesModel> {
     console.log(new Date().getUTCMilliseconds() + ' add capabilities for ' + did + ' for request type ' + requestType);
     return new Promise(function (resolve: Function, reject: Function) {
       Capabilities.updateOne(
-        {},
+        {
+          projectDid: projectDid
+        },
         { $addToSet: { "capabilities.$[elem].allow": did } },
         { arrayFilters: [{ "elem.capability": { $eq: requestType } }] },
         function (error: Error, result: ICapabilitiesModel) {

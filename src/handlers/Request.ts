@@ -17,6 +17,7 @@ export class Request {
   template: any;
   requestType: any;
   capabilities: any;
+  projectDid: string = '';
   data: any;
 
 
@@ -35,6 +36,7 @@ export class Request {
     if (requestData.signature) {
       this.signature = requestData.signature;
     }
+    this.projectDid = requestData.payload.projectDid;
   }
 
   hasSignature = (): boolean => {

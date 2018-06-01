@@ -31,7 +31,7 @@ export abstract class AbstractHandler {
     var inst = this;
     var request = new Request(args);
     return new Promise((resolve: Function, reject: Function) => {
-      capabilitiesService.findCapabilities()
+      capabilitiesService.findCapabilitiesForProject(request.projectDid)  
         .then((result: ICapabilitiesModel) => {
           var capabilityMap: any;
           result.capabilities.forEach(element => {
@@ -77,7 +77,7 @@ export abstract class AbstractHandler {
                                       version: request.version + 1
                                     };
                                     console.log(new Date().getUTCMilliseconds() + ' updating the capabilities');
-                                    this.updateCapabilities(request.signature.creator, capabilityMap.capability);
+                                    this.updateCapabilities(request.projectDid, request.signature.creator, capabilityMap.capability);
                                     console.log(new Date().getUTCMilliseconds() + ' commit to Elysian');
                                     resolve(model.create(obj));
                                     console.log(new Date().getUTCMilliseconds() + ' publish to blockchain');
@@ -98,7 +98,7 @@ export abstract class AbstractHandler {
                                 txHash: transaction.hash
                               };
                               console.log(new Date().getUTCMilliseconds() + ' updating the capabilities');
-                              inst.updateCapabilities(request.signature.creator, capabilityMap.capability);
+                              inst.updateCapabilities(request.projectDid, request.signature.creator, capabilityMap.capability);
                               console.log(new Date().getUTCMilliseconds() + ' commit to Elysian');
                               resolve(model.create(obj));
                               console.log(new Date().getUTCMilliseconds() + ' publish to blockchain');
@@ -133,7 +133,7 @@ export abstract class AbstractHandler {
     var inst = this;
     var request = new Request(args);
     return new Promise((resolve: Function, reject: Function) => {
-      capabilitiesService.findCapabilities()
+      capabilitiesService.findCapabilitiesForProject(request.projectDid)
         .then((result: ICapabilitiesModel) => {
           var capabilityMap: any;
           result.capabilities.forEach(element => {
@@ -181,8 +181,8 @@ export abstract class AbstractHandler {
   }
 
 
-  saveCapabilities(did: string, requestType: string) {
-    capabilitiesService.addCapabilities(did, requestType);
+  saveCapabilities(projectDid: string, did: string, requestType: string) {
+    capabilitiesService.addCapabilities(projectDid, did, requestType);
   }
 
   generateProjectWallet(): Promise<string> {
@@ -198,22 +198,22 @@ export abstract class AbstractHandler {
         .then((resp: IWalletModel) => {
           wallet = resp;
           console.log(new Date().getUTCMilliseconds() + ' project wallet created');
-          resolve(did);
+          resolve(wallet.did);
         });
     });
   }
 
-  abstract updateCapabilities(obj: any, methodCall: string): void;
+  abstract updateCapabilities(projectDid: string, obj: any, methodCall: string): void;
 
   abstract msgToPublish(obj: any, creator: string, methodCall: string): any;
 
   getWallet(): IWalletModel {
-    if (wallet == null) {
+   if (wallet == null) {
       new Promise((resolve: Function, reject: Function) => {
         walletService.getWallet()
           .then((resp: IWalletModel) => {
             wallet = resp;
-            return wallet;
+            return resp;
           });
       });
     }
