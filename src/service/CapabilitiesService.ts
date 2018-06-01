@@ -18,10 +18,11 @@ export class CapabilitiesService {
   }
 
 
-  createCapability(capability: any, emit = true): Promise<ICapabilitiesModel> {
+  createCapability(project: string, capability: any, emit = true): Promise<ICapabilitiesModel> {
     return new Promise(function (resolve: Function, reject: Function) {
       Capabilities.create(
         {
+          projectDid: project,
           capabilities: capability
         }, function (error: Error, newTransaction: ICapabilitiesModel) {
           if (error) {

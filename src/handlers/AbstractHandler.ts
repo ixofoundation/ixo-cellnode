@@ -198,7 +198,7 @@ export abstract class AbstractHandler {
       walletService.createWallet(did, sovrinWallet.secret.signKey, sovrinWallet.verifyKey)
         .then((resp: IWalletModel) => {
           wallet = resp;
-          resolve(mnemonic);
+          resolve(did);
         });
     });
   }

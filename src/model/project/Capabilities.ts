@@ -5,6 +5,7 @@ export interface ICapabilitiesModel extends ICapabilities, Document { }
 
 export var CapabilitiesSchema: Schema = new Schema({
 
+    projectDid: String,
     capabilities: [{
         capability: String,
         template: String,

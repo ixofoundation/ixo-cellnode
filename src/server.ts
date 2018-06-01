@@ -43,10 +43,10 @@ db.once('open', function() {
 
   //once we have a db connection, we must initialise it once only
   //careful not to re-initialize on server startup
-  InitHandler.initialise().then((response: any) => {
-    console.log(JSON.stringify(response));
-    return response;
-  });
+  // InitHandler.initialise().then((response: any) => {
+  //   console.log(JSON.stringify(response));
+  //   return response;
+  // });
 });
 
 

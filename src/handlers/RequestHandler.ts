@@ -2,6 +2,7 @@ import { Document, Schema, Model, model } from "mongoose";
 import { AbstractHandler } from './AbstractHandler';
 import { Request } from "../handlers/Request";
 import axios, { AxiosResponse } from 'axios';
+import InitHandler from './InitHandler';
 
 const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
 var evaluatorPay = 0;
@@ -204,26 +205,15 @@ export class RequestHandler extends AbstractHandler {
 
   createProject = (args: any) => {
     console.log(new Date().getUTCMilliseconds() + ' start new transaction');
-    this.generateProjectWallet();
-
-    return this.createTransaction(args, 'CreateProject', Project, function (request: any): Promise<boolean> {
-      return new Promise(function (resolve: Function, reject: Function) {
-        Project.findOne(
-          {
-            version: 1
-          },
-          function (error: Error, result: IProjectModel) {
-            if (error) {
-              reject(error);
-            } else {
-              if (result) {
-                resolve(true);
-              }
-              resolve(false);
-            }
-          }).limit(1);
+    this.generateProjectWallet()
+      .then((did: string) => {
+        InitHandler.initialise(did)
+          .then((response: any) => {
+            console.log(JSON.stringify(response));
+            //return response;
+            return this.createTransaction(args, 'CreateProject', Project);
+          });
       });
-    });
   }
 
   /////////////////////////////////////////////////
