@@ -14,14 +14,14 @@ export class TransactionLogService {
   }
 
 
-  createTransaction(data: String, signatureType: String, signature: String, publicKey: String, emit = true): Promise<ITransactionModel> {
+  createTransaction(data: String, signatureType: String, signature: String, projectDid: String, emit = true): Promise<ITransactionModel> {
     return new Promise(function (resolve: Function, reject: Function) {
       Transaction.create(
         {
           "data": data,
           "signatureType": signatureType,
           "signature": signature,
-          "publicKey": publicKey
+          "projectDid": projectDid
                             
         }, function (error: Error, newTransaction: ITransactionModel) {
           if (error) {

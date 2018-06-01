@@ -206,10 +206,10 @@ export class RequestHandler extends AbstractHandler {
   createProject = (args: any) => {
     console.log(new Date().getUTCMilliseconds() + ' start new transaction');
     return this.generateProjectWallet()
-      .then((did: any) => {
+      .then((did: any) => {        
         return InitHandler.initialise(did)
           .then((response: any) => {
-            console.log(JSON.stringify(response));
+            console.log(JSON.stringify(response));            
             return this.createTransaction(args, 'CreateProject', Project);
           });
       });

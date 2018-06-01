@@ -30,6 +30,7 @@ export const Transaction: Model<ITransactionModel> = model<ITransactionModel>("T
 TransactionSchema.pre('save', function (next) {
   var inst : any;
   inst = this;
+  console.log('#############' + this);
   transactionLog.findLatestTransaction()
     .then((prevTxn: ITransactionModel) => {
       let prevHash = (prevTxn ? prevTxn.hash : '');
