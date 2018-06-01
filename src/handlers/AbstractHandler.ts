@@ -194,10 +194,10 @@ export abstract class AbstractHandler {
       var mnemonic = sovrinUtils.generateBip39Mnemonic();
       var sovrinWallet = sovrinUtils.generateSdidFromMnemonic(mnemonic);
       var did = String("did:ixo:" + sovrinWallet.did);
-      console.log(new Date().getUTCMilliseconds() + ' project wallet created');
       walletService.createWallet(did, sovrinWallet.secret.signKey, sovrinWallet.verifyKey)
         .then((resp: IWalletModel) => {
           wallet = resp;
+          console.log(new Date().getUTCMilliseconds() + ' project wallet created');
           resolve(did);
         });
     });

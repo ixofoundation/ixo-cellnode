@@ -83,13 +83,13 @@ export class RequestHandler extends AbstractHandler {
 
   constructor() {
     super();
-    this.getWallet();
-    Project.findOne()
-      .then((project: any) => {
-        if (project) {
-          evaluatorPay = Number(project.evaluatorPay);
-        }
-      });
+    //this.getWallet();
+    // Project.findOne()
+    //   .then((project: any) => {
+    //     if (project) {
+    //       evaluatorPay = Number(project.evaluatorPay);
+    //     }
+    //   });
   }
 
   updateCapabilities(did: string, methodCall: string) {
@@ -205,12 +205,11 @@ export class RequestHandler extends AbstractHandler {
 
   createProject = (args: any) => {
     console.log(new Date().getUTCMilliseconds() + ' start new transaction');
-    this.generateProjectWallet()
-      .then((did: string) => {
-        InitHandler.initialise(did)
+    return this.generateProjectWallet()
+      .then((did: any) => {
+        return InitHandler.initialise(did)
           .then((response: any) => {
             console.log(JSON.stringify(response));
-            //return response;
             return this.createTransaction(args, 'CreateProject', Project);
           });
       });
