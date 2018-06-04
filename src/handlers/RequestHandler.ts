@@ -83,13 +83,6 @@ export class RequestHandler extends AbstractHandler {
 
   constructor() {
     super();
-    //this.getWallet();
-    // Project.findOne()
-    //   .then((project: any) => {
-    //     if (project) {
-    //       evaluatorPay = Number(project.evaluatorPay);
-    //     }
-    //   });
   }
 
   updateCapabilities(projectDid: string, did: string, methodCall: string) {
@@ -112,7 +105,7 @@ export class RequestHandler extends AbstractHandler {
     }
   }
 
-  msgToPublish(obj: any, creator: string, methodCall: string): any {
+  msgToPublish(obj: any, creator: string, projectDid: string, methodCall: string): any {
     return new Promise((resolve: Function, reject: Function) => {
       var blockChainPayload: any;
       var txHash = obj.txHash;
@@ -142,7 +135,7 @@ export class RequestHandler extends AbstractHandler {
               },
               txHash: txHash,
               senderDid: creator,
-              projectDid: obj.projectDid
+              projectDid: projectDid
             }]
           }
           break;
@@ -156,7 +149,7 @@ export class RequestHandler extends AbstractHandler {
               },
               txHash: txHash,
               senderDid: creator,
-              projectDid: obj.projectDid
+              projectDid: projectDid
             }]
           }
 
@@ -170,7 +163,7 @@ export class RequestHandler extends AbstractHandler {
               },
               txHash: txHash,
               senderDid: creator,
-              projectDid: obj.projectDid
+              projectDid: projectDid
             }]
           }
           break;
@@ -184,7 +177,7 @@ export class RequestHandler extends AbstractHandler {
               },
               txHash: txHash,
               senderDid: creator,
-              projectDid: obj.projectDid
+              projectDid: projectDid
             }]
           }
 
@@ -209,7 +202,6 @@ export class RequestHandler extends AbstractHandler {
       .then((did: any) => {        
         return InitHandler.initialise(did)
           .then((response: any) => {
-            console.log(JSON.stringify(response));            
             return this.createTransaction(args, 'CreateProject', Project);
           });
       });
@@ -296,10 +288,10 @@ export class RequestHandler extends AbstractHandler {
     return this.createTransaction(args, 'SubmitClaim', Claim);
   }
 
-  checkForFunds(): Promise<boolean> {
+  checkForFunds(projectDid: string): Promise<boolean> {
     return new Promise((resolve: Function, reject: Function) => {
       console.log(new Date().getUTCMilliseconds() + ' confirm funds exists');
-      axios.get(BLOCKCHAIN_URI_REST + 'projectAccounts/' + this.getWallet().did)
+      axios.get(BLOCKCHAIN_URI_REST + 'projectAccounts/' + projectDid)
         .then((response) => {
           var balance: any;
           if (response.status == 200) {
@@ -324,7 +316,7 @@ export class RequestHandler extends AbstractHandler {
 
   evaluateClaim = (args: any) => {
     console.log(new Date().getUTCMilliseconds() + ' start new transaction');
-    return this.checkForFunds()
+    return this.checkForFunds(new Request(args).projectDid)
       .then((resp: boolean) => {
         if (resp) {
           return this.createTransaction(args, 'EvaluateClaim', EvaluateClaim, function (request: any): Promise<boolean> {

@@ -31,6 +31,7 @@ export abstract class AbstractHandler {
     var inst = this;
     var request = new Request(args);
     return new Promise((resolve: Function, reject: Function) => {
+      if (!request.projectDid) request.projectDid = this.getWallet().did;
       capabilitiesService.findCapabilitiesForProject(request.projectDid)  
         .then((result: ICapabilitiesModel) => {
           var capabilityMap: any;
@@ -81,7 +82,7 @@ export abstract class AbstractHandler {
                                     console.log(new Date().getUTCMilliseconds() + ' commit to Elysian');
                                     resolve(model.create(obj));
                                     console.log(new Date().getUTCMilliseconds() + ' publish to blockchain');
-                                    this.msgToPublish(obj, request.signature.creator, capabilityMap.capability)
+                                    this.msgToPublish(obj, request.signature.creator, request.projectDid, capabilityMap.capability)
                                       .then((msg: any) => {
                                         mq.publish(msg);
                                       });
@@ -102,7 +103,7 @@ export abstract class AbstractHandler {
                               console.log(new Date().getUTCMilliseconds() + ' commit to Elysian');
                               resolve(model.create(obj));
                               console.log(new Date().getUTCMilliseconds() + ' publish to blockchain');
-                              this.msgToPublish(obj, request.signature.creator, capabilityMap.capability)
+                              this.msgToPublish(obj, request.signature.creator, request.projectDid, capabilityMap.capability)
                                 .then((msg: any) => {
                                   mq.publish(msg);
                                 });
@@ -205,7 +206,7 @@ export abstract class AbstractHandler {
 
   abstract updateCapabilities(projectDid: string, obj: any, methodCall: string): void;
 
-  abstract msgToPublish(obj: any, creator: string, methodCall: string): any;
+  abstract msgToPublish(obj: any, creator: string, projectDid: string, methodCall: string): any;
 
   getWallet(): IWalletModel {
    if (wallet == null) {
@@ -234,12 +235,7 @@ export abstract class AbstractHandler {
             }
           }
 
-          var hex = '';
-          var jsonMsg = JSON.stringify(signedMsg);
-          for (var i = 0; i < jsonMsg.length; i++) {
-            hex += '' + jsonMsg.charCodeAt(i).toString(16);
-          }
-          resolve(hex);
+          resolve(new Buffer(JSON.stringify(signedMsg)).toString('hex'));
         });
     });
   }

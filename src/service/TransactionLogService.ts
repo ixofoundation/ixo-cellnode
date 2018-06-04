@@ -34,9 +34,9 @@ export class TransactionLogService {
     });
   }
 
-  findLatestTransaction(): Promise<ITransactionModel> {
+  findLatestTransaction(projectDid: String): Promise<ITransactionModel> {
     return new Promise(function (resolve: Function, reject: Function) {
-      resolve (Transaction.findOne().sort({$natural:-1}));
+      resolve (Transaction.findOne({projectDid: projectDid}).sort({$natural:-1}));
     });
   }
 
