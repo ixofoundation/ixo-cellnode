@@ -2,7 +2,6 @@ import * as crypto from 'crypto';
 import * as logger from '../logger/Logger';
 import * as nacl from 'tweetnacl';
 import * as bs58 from 'bs58';
-import {SovrinUtils} from '../crypto/SovrinUtils';
 
 var ethUtil = require('ethereumjs-util');
 var ethereumWallet = require('ethereumjs-wallet');
@@ -20,9 +19,7 @@ export class CryptoUtils {
       case "ECDSA": 
         return this.validateECDSASignature(data, signature, publicKey);
       case "ed25519-sha-256":
-        var sovrin = new SovrinUtils();
-        return sovrin.verifyDocumentSignature(signature, publicKey);
-        //return this.validateEd25519Signature(data, signature, publicKey);
+        return this.validateEd25519Signature(data, signature, publicKey);
         
       default: 
         throw Error("Signature: '" + type + "' not supported");
@@ -33,10 +30,8 @@ export class CryptoUtils {
   validateEd25519Signature(data: String, signature: String, publicKey: String): Boolean{
     console.log("validate: publicKey=" + publicKey);
     var decodedKey = new Uint8Array(bs58.decode(this.remove0x(publicKey).toString()));
-    var signatureBuffer = new Uint8Array(bs58.decode(this.remove0x(signature).toString()));
-    var recoveredMsgBuffer = nacl.sign.open(signatureBuffer, decodedKey) || new Buffer("");
-    var recoveredMsg = new Buffer(recoveredMsgBuffer).toString("utf8");
-    return (recoveredMsg == data)
+    var signatureBuffer = new Uint8Array(new Buffer(this.remove0x(signature).toString(),'hex'))
+    return nacl.sign.detached.verify(new Uint8Array(new Buffer(data.toString())), signatureBuffer, decodedKey)
   }
 
   validateECDSASignature(data: String, signature: String, publicKey: String): Boolean{
