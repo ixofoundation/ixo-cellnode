@@ -2,7 +2,7 @@ version: "2"
 services:
   app:
     container_name: app
-    image: trustlab/ixo-elysian
+    image: trustlab/ixo-elysian:latest
     restart: always
     build: .
     ports:
