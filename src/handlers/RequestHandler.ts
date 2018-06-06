@@ -188,7 +188,7 @@ export class RequestHandler extends AbstractHandler {
           break;
         }
       }
-      resolve(this.signMessageForBlockchain(blockChainPayload));
+      resolve(this.signMessageForBlockchain(blockChainPayload, projectDid));
     });
   }
 

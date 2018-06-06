@@ -211,7 +211,7 @@ export abstract class AbstractHandler {
   getWallet(): IWalletModel {
    if (wallet == null) {
       new Promise((resolve: Function, reject: Function) => {
-        walletService.getWallet()
+        walletService.getLatestWallet()
           .then((resp: IWalletModel) => {
             wallet = resp;
             return resp;
@@ -222,9 +222,9 @@ export abstract class AbstractHandler {
   }
 
 
-  signMessageForBlockchain(msgToSign: any) {
+  signMessageForBlockchain(msgToSign: any, projectDid: string) {
     return new Promise((resolve: Function, reject: Function) => {
-      walletService.getWallet()
+      walletService.getWallet(projectDid)
         .then((wallet: IWalletModel) => {
           var sovrinUtils = new SovrinUtils();
           var signedMsg = {
