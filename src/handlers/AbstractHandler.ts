@@ -70,7 +70,7 @@ export abstract class AbstractHandler {
                                 reject(new TransactionError('Record out of date, please refresh data'));
                               } else {
                                 console.log(new Date().getUTCMilliseconds() + ' write transaction to log')
-                                transactionService.createTransaction(request.payload, request.signature.type, request.signature.signature, request.projectDid)
+                                transactionService.createTransaction(request.payload, request.signature.type, request.signature.signatureValue, request.projectDid)
                                   .then((transaction: ITransactionModel) => {
                                     var obj = {
                                       ...request.data,
@@ -92,7 +92,7 @@ export abstract class AbstractHandler {
                             })
                         } else {
                           console.log(new Date().getUTCMilliseconds() + ' write transaction to log');
-                          transactionService.createTransaction(request.payload, request.signature.type, request.signature.signature, request.projectDid)
+                          transactionService.createTransaction(request.payload, request.signature.type, request.signature.signatureValue, request.projectDid)
                             .then((transaction: ITransactionModel) => {
                               var obj = {
                                 ...request.data,

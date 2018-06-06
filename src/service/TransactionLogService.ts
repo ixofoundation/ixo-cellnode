@@ -20,7 +20,7 @@ export class TransactionLogService {
         {
           "data": data,
           "signatureType": signatureType,
-          "signature": signature,
+          "signatureValue": signature,
           "projectDid": projectDid
                             
         }, function (error: Error, newTransaction: ITransactionModel) {

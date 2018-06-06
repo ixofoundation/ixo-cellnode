@@ -4,7 +4,7 @@ export interface ITransaction {
     nonce: String;
     type: String;
     signatureType: String;
-    signature: String;
+    signatureValue: String;
     publicKey: String;
     timestamp: Date;
   }
