@@ -22,8 +22,6 @@ export class CryptoUtils {
       case "ed25519-sha-256":
         var sovrin = new SovrinUtils();
         return sovrin.verifyDocumentSignature(signature, publicKey);
-        //return this.validateEd25519Signature(data, signature, publicKey);
-        
       default: 
         throw Error("Signature: '" + type + "' not supported");
       }
