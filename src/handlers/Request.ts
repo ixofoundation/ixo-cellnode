@@ -26,6 +26,7 @@ export class Request {
 
     if (requestData.payload.data) {
       this.data = requestData.payload.data;
+      this.projectDid = requestData.payload.data.projectDid;
     }
     if (requestData.payload.data.version > 0) {
       this.version = requestData.payload.data.version;
@@ -36,7 +37,7 @@ export class Request {
     if (requestData.signature) {
       this.signature = requestData.signature;
     }
-    this.projectDid = requestData.payload.projectDid;
+    
   }
 
   hasSignature = (): boolean => {
