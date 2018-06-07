@@ -42,7 +42,7 @@ export class WalletService {
   getWallet(projectDid: string): Promise<IWalletModel> {
     return new Promise(function (resolve: Function, reject: Function) {
       resolve (Wallet.findOne({
-        projectDid: projectDid
+        did: projectDid
       }));
     });
   }
