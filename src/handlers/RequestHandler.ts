@@ -263,7 +263,10 @@ export class RequestHandler extends AbstractHandler {
             $group: {
               "_id": "$_id",
               "name": { $first: "$name" },
-              "surname": { $first: "$surname" },
+              "agentDid": { $first: "$agentDid" },
+              "projectDid": { $first: "$projectDid" },
+              "role": { $first: "$role" },
+              "email": { $first: "$email" },
               "statuses": { $first: "$statuses" }
             }
           }
