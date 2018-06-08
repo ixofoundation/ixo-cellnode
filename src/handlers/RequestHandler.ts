@@ -145,7 +145,8 @@ export class RequestHandler extends AbstractHandler {
             payload: [18, {
               data: {
                 did: obj.agentDid,
-                status: obj.status
+                status: obj.status,
+                role: obj.role
               },
               txHash: txHash,
               senderDid: creator,
@@ -254,11 +255,11 @@ export class RequestHandler extends AbstractHandler {
               "from": "agentstatuses",
               "localField": "agentDid",
               "foreignField": "agentDid",
-              "as": "statuses"
+              "as": "currentStatus"
             }
           },
-          { $unwind: { path: "$statuses", preserveNullAndEmptyArrays: true } },
-          { $sort: { "statuses.version": -1 } },
+          { $unwind: { path: "$currentStatus", preserveNullAndEmptyArrays: true } },
+          { $sort: { "currentStatus.version": -1 } },
           {
             $group: {
               "_id": "$_id",
@@ -267,7 +268,7 @@ export class RequestHandler extends AbstractHandler {
               "projectDid": { $first: "$projectDid" },
               "role": { $first: "$role" },
               "email": { $first: "$email" },
-              "statuses": { $first: "$statuses" }
+              "currentStatus": { $first: "$currentStatus" }
             }
           }
         ],
