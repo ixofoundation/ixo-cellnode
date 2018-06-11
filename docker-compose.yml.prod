@@ -1,0 +1,46 @@
+version: "2"
+services:
+  app:
+    container_name: app
+    image: brennonh/ixo-elysian
+    restart: always
+    build: .
+    ports:
+      - "5000:5000"
+    links:
+      - db
+      - cache
+      - mq
+      - pol
+      - cli
+      
+  db:
+    container_name: db
+    image: mongo
+    volumes:
+      - ./data:/data/db
+    ports:
+      - "27017:27017"
+
+  cache:
+    container_name: cache
+    image: memcached:latest
+    ports:
+      - "11211:11211"
+
+  mq:
+    container_name: mq
+    image: rabbitmq:latest
+    ports:
+        - "5672:5672"
+    restart: always
+
+  pol:
+    container_name: pol
+    image: brennonh/ixo-pol
+
+
+  cli:
+    container_name: cli
+    image: brennonh/ixo-cli
+

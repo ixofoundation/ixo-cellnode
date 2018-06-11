@@ -14,14 +14,14 @@ export class TransactionLogService {
   }
 
 
-  createTransaction(data: String, signatureType: String, signature: String, publicKey: String, emit = true): Promise<ITransactionModel> {
+  createTransaction(data: String, signatureType: String, signature: String, projectDid: String, emit = true): Promise<ITransactionModel> {
     return new Promise(function (resolve: Function, reject: Function) {
       Transaction.create(
         {
           "data": data,
           "signatureType": signatureType,
-          "signature": signature,
-          "publicKey": publicKey
+          "signatureValue": signature,
+          "projectDid": projectDid
                             
         }, function (error: Error, newTransaction: ITransactionModel) {
           if (error) {
@@ -34,9 +34,9 @@ export class TransactionLogService {
     });
   }
 
-  findLatestTransaction(): Promise<ITransactionModel> {
+  findLatestTransaction(projectDid: String): Promise<ITransactionModel> {
     return new Promise(function (resolve: Function, reject: Function) {
-      resolve (Transaction.findOne().sort({$natural:-1}));
+      resolve (Transaction.findOne({projectDid: projectDid}).sort({$natural:-1}));
     });
   }
 

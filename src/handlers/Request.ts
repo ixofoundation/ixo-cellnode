@@ -17,6 +17,7 @@ export class Request {
   template: any;
   requestType: any;
   capabilities: any;
+  projectDid: string = '';
   data: any;
 
 
@@ -25,6 +26,7 @@ export class Request {
 
     if (requestData.payload.data) {
       this.data = requestData.payload.data;
+      this.projectDid = requestData.payload.data.projectDid;
     }
     if (requestData.payload.data.version > 0) {
       this.version = requestData.payload.data.version;
@@ -35,6 +37,7 @@ export class Request {
     if (requestData.signature) {
       this.signature = requestData.signature;
     }
+    
   }
 
   hasSignature = (): boolean => {
@@ -51,7 +54,7 @@ export class Request {
       Cache.get(this.signature.creator)
         .then((pubKey: string) => {
           if (pubKey) {
-            if (!cryptoUtils.validateSignature(JSON.stringify(this.data), this.signature.type, this.signature.signature, pubKey)) {
+            if (!cryptoUtils.validateSignature(JSON.stringify(this.data), this.signature.type, this.signature.signatureValue, pubKey)) {
               validator.addError("Signature did not validate '" + JSON.stringify(this.payload));
               validator.valid = false;
             }
@@ -61,7 +64,7 @@ export class Request {
             axios.get(BLOCKCHAIN_URI_REST + 'did/' + this.signature.creator)
               .then((response) => {
                 if (response.status == 200) {
-                  if (!cryptoUtils.validateSignature(JSON.stringify(this.data), this.signature.type, this.signature.signature, response.data.pubKey)) {
+                  if (!cryptoUtils.validateSignature(JSON.stringify(this.data), this.signature.type, this.signature.signatureValue, response.data.pubKey)) {
                     validator.addError("Signature did not validate '" + JSON.stringify(this.data));
                     validator.valid = false;
                   } else {

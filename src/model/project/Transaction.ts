@@ -11,6 +11,7 @@ export interface ITransactionModel extends ITransaction, Document { }
 
 
 export var TransactionSchema: Schema = new Schema({
+  projectDid: String,
   data: String,
   hash: {
     type: String,
@@ -20,7 +21,7 @@ export var TransactionSchema: Schema = new Schema({
   nonce: String,
   type: String,
   signatureType: String,
-  signature: String,
+  signatureValue: String,
   publicKey: String,
   timestamp: Date
 });
@@ -30,7 +31,7 @@ export const Transaction: Model<ITransactionModel> = model<ITransactionModel>("T
 TransactionSchema.pre('save', function (next) {
   var inst : any;
   inst = this;
-  transactionLog.findLatestTransaction()
+  transactionLog.findLatestTransaction(inst.projectDid)
     .then((prevTxn: ITransactionModel) => {
       let prevHash = (prevTxn ? prevTxn.hash : '');
       inst.nonce = cryptoUtils.createNonce();

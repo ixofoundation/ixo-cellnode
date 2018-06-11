@@ -31,7 +31,8 @@ export abstract class AbstractHandler {
     var inst = this;
     var request = new Request(args);
     return new Promise((resolve: Function, reject: Function) => {
-      capabilitiesService.findCapabilities()
+      if (!request.projectDid) request.projectDid = this.getWallet().did;
+      capabilitiesService.findCapabilitiesForProject(request.projectDid)  
         .then((result: ICapabilitiesModel) => {
           var capabilityMap: any;
           result.capabilities.forEach(element => {
@@ -69,7 +70,7 @@ export abstract class AbstractHandler {
                                 reject(new TransactionError('Record out of date, please refresh data'));
                               } else {
                                 console.log(new Date().getUTCMilliseconds() + ' write transaction to log')
-                                transactionService.createTransaction(request.payload, request.signature.type, request.signature.signature, request.signature.publicKey)
+                                transactionService.createTransaction(request.payload, request.signature.type, request.signature.signatureValue, request.projectDid)
                                   .then((transaction: ITransactionModel) => {
                                     var obj = {
                                       ...request.data,
@@ -77,11 +78,11 @@ export abstract class AbstractHandler {
                                       version: request.version + 1
                                     };
                                     console.log(new Date().getUTCMilliseconds() + ' updating the capabilities');
-                                    this.updateCapabilities(request.signature.creator, capabilityMap.capability);
+                                    this.updateCapabilities(request.projectDid, request.signature.creator, capabilityMap.capability);
                                     console.log(new Date().getUTCMilliseconds() + ' commit to Elysian');
                                     resolve(model.create(obj));
                                     console.log(new Date().getUTCMilliseconds() + ' publish to blockchain');
-                                    this.msgToPublish(obj, request.signature.creator, capabilityMap.capability)
+                                    this.msgToPublish(obj, request.signature.creator, request.projectDid, capabilityMap.capability)
                                       .then((msg: any) => {
                                         mq.publish(msg);
                                       });
@@ -91,18 +92,18 @@ export abstract class AbstractHandler {
                             })
                         } else {
                           console.log(new Date().getUTCMilliseconds() + ' write transaction to log');
-                          transactionService.createTransaction(request.payload, request.signature.type, request.signature.signature, request.signature.publicKey)
+                          transactionService.createTransaction(request.payload, request.signature.type, request.signature.signatureValue, request.projectDid)
                             .then((transaction: ITransactionModel) => {
                               var obj = {
                                 ...request.data,
                                 txHash: transaction.hash
                               };
                               console.log(new Date().getUTCMilliseconds() + ' updating the capabilities');
-                              inst.updateCapabilities(request.signature.creator, capabilityMap.capability);
+                              inst.updateCapabilities(request.projectDid, request.signature.creator, capabilityMap.capability);
                               console.log(new Date().getUTCMilliseconds() + ' commit to Elysian');
                               resolve(model.create(obj));
                               console.log(new Date().getUTCMilliseconds() + ' publish to blockchain');
-                              this.msgToPublish(obj, request.signature.creator, capabilityMap.capability)
+                              this.msgToPublish(obj, request.signature.creator, request.projectDid, capabilityMap.capability)
                                 .then((msg: any) => {
                                   mq.publish(msg);
                                 });
@@ -133,7 +134,7 @@ export abstract class AbstractHandler {
     var inst = this;
     var request = new Request(args);
     return new Promise((resolve: Function, reject: Function) => {
-      capabilitiesService.findCapabilities()
+      capabilitiesService.findCapabilitiesForProject(request.projectDid)
         .then((result: ICapabilitiesModel) => {
           var capabilityMap: any;
           result.capabilities.forEach(element => {
@@ -181,8 +182,8 @@ export abstract class AbstractHandler {
   }
 
 
-  saveCapabilities(did: string, requestType: string) {
-    capabilitiesService.addCapabilities(did, requestType);
+  saveCapabilities(projectDid: string, did: string, requestType: string) {
+    capabilitiesService.addCapabilities(projectDid, did, requestType);
   }
 
   generateProjectWallet(): Promise<string> {
@@ -194,26 +195,26 @@ export abstract class AbstractHandler {
       var mnemonic = sovrinUtils.generateBip39Mnemonic();
       var sovrinWallet = sovrinUtils.generateSdidFromMnemonic(mnemonic);
       var did = String("did:ixo:" + sovrinWallet.did);
-      console.log(new Date().getUTCMilliseconds() + ' project wallet created');
       walletService.createWallet(did, sovrinWallet.secret.signKey, sovrinWallet.verifyKey)
         .then((resp: IWalletModel) => {
           wallet = resp;
-          resolve(mnemonic);
+          console.log(new Date().getUTCMilliseconds() + ' project wallet created');
+          resolve(wallet.did);
         });
     });
   }
 
-  abstract updateCapabilities(obj: any, methodCall: string): void;
+  abstract updateCapabilities(projectDid: string, obj: any, methodCall: string): void;
 
-  abstract msgToPublish(obj: any, creator: string, methodCall: string): any;
+  abstract msgToPublish(obj: any, creator: string, projectDid: string, methodCall: string): any;
 
   getWallet(): IWalletModel {
-    if (wallet == null) {
+   if (wallet == null) {
       new Promise((resolve: Function, reject: Function) => {
-        walletService.getWallet()
+        walletService.getLatestWallet()
           .then((resp: IWalletModel) => {
             wallet = resp;
-            return wallet;
+            return resp;
           });
       });
     }
@@ -221,9 +222,9 @@ export abstract class AbstractHandler {
   }
 
 
-  signMessageForBlockchain(msgToSign: any) {
+  signMessageForBlockchain(msgToSign: any, projectDid: string) {
     return new Promise((resolve: Function, reject: Function) => {
-      walletService.getWallet()
+      walletService.getWallet(projectDid)
         .then((wallet: IWalletModel) => {
           var sovrinUtils = new SovrinUtils();
           var signedMsg = {
@@ -234,12 +235,7 @@ export abstract class AbstractHandler {
             }
           }
 
-          var hex = '';
-          var jsonMsg = JSON.stringify(signedMsg);
-          for (var i = 0; i < jsonMsg.length; i++) {
-            hex += '' + jsonMsg.charCodeAt(i).toString(16);
-          }
-          resolve(hex);
+          resolve(new Buffer(JSON.stringify(signedMsg)).toString('hex'));
         });
     });
   }

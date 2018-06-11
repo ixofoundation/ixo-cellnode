@@ -2,6 +2,7 @@ import { Document, Schema, Model, model } from "mongoose";
 import { AbstractHandler } from './AbstractHandler';
 import { Request } from "../handlers/Request";
 import axios, { AxiosResponse } from 'axios';
+import InitHandler from './InitHandler';
 
 const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
 var evaluatorPay = 0;
@@ -82,27 +83,20 @@ export class RequestHandler extends AbstractHandler {
 
   constructor() {
     super();
-    this.getWallet();
-    Project.findOne()
-      .then((project: any) => {
-        if (project) {
-          evaluatorPay = Number(project.evaluatorPay);
-        }
-      });
   }
 
-  updateCapabilities(did: string, methodCall: string) {
+  updateCapabilities(projectDid: string, did: string, methodCall: string) {
     switch (methodCall) {
       case 'CreateAgent': {
-        this.saveCapabilities(did, 'SubmitClaim');
-        this.saveCapabilities(did, 'ListClaims');
+        this.saveCapabilities(projectDid, did, 'SubmitClaim');
+        this.saveCapabilities(projectDid, did, 'ListClaims');
         break;
       }
       case 'CreateProject': {
-        this.saveCapabilities(did, 'EvaluateClaim');
-        this.saveCapabilities('did:sov:*', 'CreateAgent');
-        this.saveCapabilities(did, 'UpdateAgentStatus');
-        this.saveCapabilities(did, 'ListAgents');
+        this.saveCapabilities(projectDid, did, 'EvaluateClaim');
+        this.saveCapabilities(projectDid, 'did:sov:*', 'CreateAgent');
+        this.saveCapabilities(projectDid, did, 'UpdateAgentStatus');
+        this.saveCapabilities(projectDid, did, 'ListAgents');
         break;
       }
       default: {
@@ -111,7 +105,7 @@ export class RequestHandler extends AbstractHandler {
     }
   }
 
-  msgToPublish(obj: any, creator: string, methodCall: string): any {
+  msgToPublish(obj: any, creator: string, projectDid: string, methodCall: string): any {
     return new Promise((resolve: Function, reject: Function) => {
       var blockChainPayload: any;
       var txHash = obj.txHash;
@@ -141,7 +135,7 @@ export class RequestHandler extends AbstractHandler {
               },
               txHash: txHash,
               senderDid: creator,
-              projectDid: this.getWallet().did
+              projectDid: projectDid
             }]
           }
           break;
@@ -151,11 +145,12 @@ export class RequestHandler extends AbstractHandler {
             payload: [18, {
               data: {
                 did: obj.agentDid,
-                status: obj.status
+                status: obj.status,
+                role: obj.role
               },
               txHash: txHash,
               senderDid: creator,
-              projectDid: this.getWallet().did
+              projectDid: projectDid
             }]
           }
 
@@ -169,7 +164,7 @@ export class RequestHandler extends AbstractHandler {
               },
               txHash: txHash,
               senderDid: creator,
-              projectDid: this.getWallet().did
+              projectDid: projectDid
             }]
           }
           break;
@@ -183,7 +178,7 @@ export class RequestHandler extends AbstractHandler {
               },
               txHash: txHash,
               senderDid: creator,
-              projectDid: this.getWallet().did
+              projectDid: projectDid
             }]
           }
 
@@ -194,7 +189,7 @@ export class RequestHandler extends AbstractHandler {
           break;
         }
       }
-      resolve(this.signMessageForBlockchain(blockChainPayload));
+      resolve(this.signMessageForBlockchain(blockChainPayload, projectDid));
     });
   }
 
@@ -204,26 +199,13 @@ export class RequestHandler extends AbstractHandler {
 
   createProject = (args: any) => {
     console.log(new Date().getUTCMilliseconds() + ' start new transaction');
-    this.generateProjectWallet();
-
-    return this.createTransaction(args, 'CreateProject', Project, function (request: any): Promise<boolean> {
-      return new Promise(function (resolve: Function, reject: Function) {
-        Project.findOne(
-          {
-            version: 1
-          },
-          function (error: Error, result: IProjectModel) {
-            if (error) {
-              reject(error);
-            } else {
-              if (result) {
-                resolve(true);
-              }
-              resolve(false);
-            }
-          }).limit(1);
+    return this.generateProjectWallet()
+      .then((did: any) => {        
+        return InitHandler.initialise(did)
+          .then((response: any) => {
+            return this.createTransaction(args, 'CreateProject', Project);
+          });
       });
-    });
   }
 
   /////////////////////////////////////////////////
@@ -273,17 +255,20 @@ export class RequestHandler extends AbstractHandler {
               "from": "agentstatuses",
               "localField": "agentDid",
               "foreignField": "agentDid",
-              "as": "statuses"
+              "as": "currentStatus"
             }
           },
-          { $unwind: { path: "$statuses", preserveNullAndEmptyArrays: true } },
-          { $sort: { "statuses.version": -1 } },
+          { $unwind: { path: "$currentStatus", preserveNullAndEmptyArrays: true } },
+          { $sort: { "currentStatus.version": -1 } },
           {
             $group: {
               "_id": "$_id",
               "name": { $first: "$name" },
-              "surname": { $first: "$surname" },
-              "statuses": { $first: "$statuses" }
+              "agentDid": { $first: "$agentDid" },
+              "projectDid": { $first: "$projectDid" },
+              "role": { $first: "$role" },
+              "email": { $first: "$email" },
+              "currentStatus": { $first: "$currentStatus" }
             }
           }
         ],
@@ -307,10 +292,10 @@ export class RequestHandler extends AbstractHandler {
     return this.createTransaction(args, 'SubmitClaim', Claim);
   }
 
-  checkForFunds(): Promise<boolean> {
+  checkForFunds(projectDid: string): Promise<boolean> {
     return new Promise((resolve: Function, reject: Function) => {
       console.log(new Date().getUTCMilliseconds() + ' confirm funds exists');
-      axios.get(BLOCKCHAIN_URI_REST + 'projectAccounts/' + this.getWallet().did)
+      axios.get(BLOCKCHAIN_URI_REST + 'projectAccounts/' + projectDid)
         .then((response) => {
           var balance: any;
           if (response.status == 200) {
@@ -335,7 +320,7 @@ export class RequestHandler extends AbstractHandler {
 
   evaluateClaim = (args: any) => {
     console.log(new Date().getUTCMilliseconds() + ' start new transaction');
-    return this.checkForFunds()
+    return this.checkForFunds(new Request(args).projectDid)
       .then((resp: boolean) => {
         if (resp) {
           return this.createTransaction(args, 'EvaluateClaim', EvaluateClaim, function (request: any): Promise<boolean> {
