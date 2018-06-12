@@ -5,7 +5,7 @@ import axios, { AxiosResponse } from 'axios';
 import InitHandler from './InitHandler';
 
 const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
-var evaluatorPay = 0;
+var evaluatorPayPerClaim = 0;
 
 /////////////////////////////////////////////////
 //  PROJECT MODEL                              //
@@ -14,13 +14,13 @@ var evaluatorPay = 0;
 export interface IProjectModel extends Document { }
 
 var ProjectSchema: Schema = new Schema({
-  evaluatorPay: String
+  evaluatorPayPerClaim: String
 }, { strict: false });
 
 ProjectSchema.pre("save", function (next) {
   var inst: any;
   inst = this;
-  evaluatorPay = Number(inst.evaluatorPay);
+  evaluatorPayPerClaim = Number(inst.evaluatorPayPerClaim);
   next();
 });
 
@@ -85,18 +85,19 @@ export class RequestHandler extends AbstractHandler {
     super();
   }
 
-  updateCapabilities(projectDid: string, did: string, methodCall: string) {
+  updateCapabilities(request: Request, methodCall: string) {
     switch (methodCall) {
       case 'CreateAgent': {
-        this.saveCapabilities(projectDid, did, 'SubmitClaim');
-        this.saveCapabilities(projectDid, did, 'ListClaims');
+        if (request.data.role === 'SA') this.saveCapabilities(request.projectDid, request.signature.creator, 'SubmitClaim');
+        if (request.data.role === 'EA') this.saveCapabilities(request.projectDid, request.signature.creator, 'EvaluateClaim');
+        this.saveCapabilities(request.projectDid, request.signature.creator, 'ListClaims');
         break;
       }
       case 'CreateProject': {
-        this.saveCapabilities(projectDid, did, 'EvaluateClaim');
-        this.saveCapabilities(projectDid, 'did:sov:*', 'CreateAgent');
-        this.saveCapabilities(projectDid, did, 'UpdateAgentStatus');
-        this.saveCapabilities(projectDid, did, 'ListAgents');
+        this.saveCapabilities(request.projectDid, 'did:sov:*', 'CreateAgent');
+        this.saveCapabilities(request.projectDid, request.signature.creator, 'UpdateAgentStatus');
+        this.saveCapabilities(request.projectDid, request.signature.creator, 'ListAgents');
+        this.saveCapabilities(request.projectDid, request.signature.creator, 'ListClaims');
         break;
       }
       default: {
@@ -193,6 +194,15 @@ export class RequestHandler extends AbstractHandler {
     });
   }
 
+  preVerifyDidSignature(didResponse: AxiosResponse, request: Request) {
+    if (!didResponse.data.kyc && request.data.role) {
+      if (request.data.role === 'SA' || request.data.role === 'EA') {
+        return false;
+      }
+    }
+    return true;
+  }
+
   /////////////////////////////////////////////////
   //  HANDLE CREATE PROJECT                      //
   /////////////////////////////////////////////////
@@ -200,7 +210,7 @@ export class RequestHandler extends AbstractHandler {
   createProject = (args: any) => {
     console.log(new Date().getUTCMilliseconds() + ' start new transaction');
     return this.generateProjectWallet()
-      .then((did: any) => {        
+      .then((did: any) => {
         return InitHandler.initialise(did)
           .then((response: any) => {
             return this.createTransaction(args, 'CreateProject', Project);
@@ -301,7 +311,7 @@ export class RequestHandler extends AbstractHandler {
           if (response.status == 200) {
             response.data.forEach((element: any) => {
               if (element.did == this.getWallet().did) {
-                balance = element.balance - evaluatorPay;
+                balance = element.balance - evaluatorPayPerClaim;
                 console.log(new Date().getUTCMilliseconds() + 'balance is ' + balance);
               }
             })

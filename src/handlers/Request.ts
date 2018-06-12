@@ -15,8 +15,6 @@ export class Request {
 
   version: number = 0;
   template: any;
-  requestType: any;
-  capabilities: any;
   projectDid: string = '';
   data: any;
 
@@ -37,14 +35,14 @@ export class Request {
     if (requestData.signature) {
       this.signature = requestData.signature;
     }
-    
+
   }
 
   hasSignature = (): boolean => {
     return (this.signature != undefined);
   }
 
-  verifySignature = (): Promise<RequestValidator> => {
+  verifySignature = (preVerifyDidSignature: Function): Promise<RequestValidator> => {
     return new Promise((resolve: Function, reject: Function) => {
       var validator = new RequestValidator();
       if (!this.hasSignature) {
@@ -64,17 +62,27 @@ export class Request {
             axios.get(BLOCKCHAIN_URI_REST + 'did/' + this.signature.creator)
               .then((response) => {
                 if (response.status == 200) {
-                  if (!cryptoUtils.validateSignature(JSON.stringify(this.data), this.signature.type, this.signature.signatureValue, response.data.pubKey)) {
-                    validator.addError("Signature did not validate '" + JSON.stringify(this.data));
-                    validator.valid = false;
+                  if (preVerifyDidSignature(response, this)) {
+                    if (!cryptoUtils.validateSignature(JSON.stringify(this.data), this.signature.type, this.signature.signatureValue, response.data.pubKey)) {
+                      validator.addError("Signature did not validate '" + JSON.stringify(this.data));
+                      validator.valid = false;
+                    } else {
+                      Cache.set(this.signature.creator, response.data.pubKey);
+                    }
                   } else {
-                    Cache.set(this.signature.creator, response.data.pubKey);
+                    validator.addError("Signature failed pre verification " + this.signature.creator);
+                    validator.valid = false;
                   }
                 }
                 else {
                   validator.addError("DID not found for creator " + this.signature.creator);
                   validator.valid = false;
                 }
+                resolve(validator);
+              })
+              .catch((reason) => {
+                validator.addError("Cannot validate signature " + reason);
+                validator.valid = false;
                 resolve(validator);
               });
           }
