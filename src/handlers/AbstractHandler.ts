@@ -33,7 +33,7 @@ export abstract class AbstractHandler {
     var request = new Request(args);
     return new Promise((resolve: Function, reject: Function) => {
       if (!request.projectDid) request.projectDid = this.getWallet().did;
-      capabilitiesService.findCapabilitiesForProject(request.projectDid)  
+      capabilitiesService.findCapabilitiesForProject(request.projectDid)
         .then((result: ICapabilitiesModel) => {
           var capabilityMap: any;
           result.capabilities.forEach(element => {
@@ -46,6 +46,9 @@ export abstract class AbstractHandler {
             }
           })
           return capabilityMap;
+        }).catch((reason) => {
+          console.log(new Date().getUTCMilliseconds() + 'capabilities not found for project' + request.projectDid);
+          reject(new TransactionError('Capabilities not found for project'));
         })
         .then((capabilityMap: any) => {
           console.log(new Date().getUTCMilliseconds() + ' have capability ' + capabilityMap.capability);
@@ -182,7 +185,7 @@ export abstract class AbstractHandler {
     });
   }
 
-  
+
   preVerifyDidSignature(didResponse: AxiosResponse, data: Request): boolean {
     return true;
   }
@@ -214,7 +217,7 @@ export abstract class AbstractHandler {
   abstract msgToPublish(obj: any, creator: string, projectDid: string, methodCall: string): any;
 
   getWallet(): IWalletModel {
-   if (wallet == null) {
+    if (wallet == null) {
       new Promise((resolve: Function, reject: Function) => {
         walletService.getLatestWallet()
           .then((resp: IWalletModel) => {
