@@ -210,7 +210,7 @@ export class RequestHandler extends AbstractHandler {
   /////////////////////////////////////////////////
 
   createProject = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction');
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
     return this.generateProjectWallet()
       .then((did: any) => {
         return InitHandler.initialise(did)
@@ -225,7 +225,7 @@ export class RequestHandler extends AbstractHandler {
   /////////////////////////////////////////////////
 
   createAgent = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction');
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
     return this.createTransaction(args, 'CreateAgent', Agent, function (request: any): Promise<boolean> {
       return new Promise(function (resolve: Function, reject: Function) {
         Agent.find(
@@ -252,7 +252,7 @@ export class RequestHandler extends AbstractHandler {
 
 
   updateAgentStatus = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction');
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
     return this.createTransaction(args, 'UpdateAgentStatus', AgentStatus, function (request: any): Promise<boolean> {
       let newVersion = request.version + 1;
       return new Promise(function (resolve: Function, reject: Function) {
@@ -277,7 +277,7 @@ export class RequestHandler extends AbstractHandler {
   }
 
   listAgents = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction');
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
     return this.queryTransaction(args, 'ListAgents', function (filter: any): Promise<any[]> {
       return new Promise(function (resolve: Function, reject: Function) {
         Agent.aggregate([
@@ -322,7 +322,7 @@ export class RequestHandler extends AbstractHandler {
   /////////////////////////////////////////////////
 
   submitClaim = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction');
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
     return this.createTransaction(args, 'SubmitClaim', Claim);
   }
 
@@ -353,7 +353,7 @@ export class RequestHandler extends AbstractHandler {
   };
 
   evaluateClaim = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction');
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
     return this.checkForFunds(new Request(args).projectDid)
       .then((resp: boolean) => {
         if (resp) {
@@ -385,7 +385,7 @@ export class RequestHandler extends AbstractHandler {
   }
 
   listClaims = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction');
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
     return this.queryTransaction(args, 'ListClaims', function (filter: any): Promise<any[]> {
       return new Promise(function (resolve: Function, reject: Function) {
         Claim.aggregate([

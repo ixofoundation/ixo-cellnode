@@ -21,7 +21,7 @@ export class Cache {
         return new Promise((resolve: Function, reject: Function) => {
             cache.get(key, function (err: any, data: any) {
                 if (err) throw new Error(err);
-                console.log(new Date().getUTCMilliseconds() + ' got cached value ' + JSON.stringify(data));
+                console.log(new Date().getUTCMilliseconds() + ' got cache record for key ' + key);
                 resolve(data);
             });
         });        
