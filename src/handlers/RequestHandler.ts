@@ -29,7 +29,7 @@ export const Project: Model<IProjectModel> = model<IProjectModel>("Project", Pro
 /////////////////////////////////////////////////
 //   AGENT MODEL                               //
 /////////////////////////////////////////////////
-export interface IAgentModel extends Document {role: string }
+export interface IAgentModel extends Document { role: string }
 
 var AgentSchema: Schema = new Schema({
   role: String
@@ -197,12 +197,7 @@ export class RequestHandler extends AbstractHandler {
   }
 
   preVerifyDidSignature(didResponse: any, request: Request) {
-    if (!didResponse.kyc && request.data.role) {
-      if (request.data.role === 'SA' || request.data.role === 'EA') {
-        return false;
-      }
-    }
-    return true;
+    return (!didResponse.kyc && (request.data.role === 'EA' || request.data.role === 'IA')) ? false : true;
   }
 
   /////////////////////////////////////////////////
@@ -239,9 +234,9 @@ export class RequestHandler extends AbstractHandler {
               reject(error);
             } else {
               results.forEach(element => {
-                  if (element.role === request.data.role) resolve(true);
-                  if (element.role === 'EA' && request.data.role === 'SA') resolve(true);
-                  if (element.role === 'SA' && request.data.role === 'EA') resolve(true);
+                if (element.role === request.data.role) resolve(true);
+                if (element.role === 'EA' && request.data.role === 'SA') resolve(true);
+                if (element.role === 'SA' && request.data.role === 'EA') resolve(true);
               });
               resolve(false);
             }
