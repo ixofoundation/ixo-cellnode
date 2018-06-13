@@ -71,7 +71,7 @@ export abstract class AbstractHandler {
                           checkIfExist(request)
                             .then((found: boolean) => {
                               if (found) {
-                                reject(new TransactionError('Record out of date, please refresh data'));
+                                reject(new TransactionError('Record out of date or already exists'));
                               } else {
                                 console.log(new Date().getUTCMilliseconds() + ' write transaction to log')
                                 transactionService.createTransaction(request.payload, request.signature.type, request.signature.signatureValue, request.projectDid)

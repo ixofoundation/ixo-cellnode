@@ -50,9 +50,9 @@ export class Request {
         validator.valid = false;
       }
       Cache.get(this.signature.creator)
-        .then((pubKey: string) => {
-          if (pubKey) {
-            if (!cryptoUtils.validateSignature(JSON.stringify(this.data), this.signature.type, this.signature.signatureValue, pubKey)) {
+        .then((didDoc: any) => {
+          if (didDoc && preVerifyDidSignature(didDoc, this)) {
+            if (!cryptoUtils.validateSignature(JSON.stringify(this.data), this.signature.type, this.signature.signatureValue, didDoc.pubKey)) {
               validator.addError("Signature did not validate '" + JSON.stringify(this.payload));
               validator.valid = false;
             }
@@ -62,12 +62,12 @@ export class Request {
             axios.get(BLOCKCHAIN_URI_REST + 'did/' + this.signature.creator)
               .then((response) => {
                 if (response.status == 200) {
-                  if (preVerifyDidSignature(response, this)) {
+                  if (preVerifyDidSignature(response.data, this)) {
                     if (!cryptoUtils.validateSignature(JSON.stringify(this.data), this.signature.type, this.signature.signatureValue, response.data.pubKey)) {
                       validator.addError("Signature did not validate '" + JSON.stringify(this.data));
                       validator.valid = false;
                     } else {
-                      Cache.set(this.signature.creator, response.data.pubKey);
+                      Cache.set(this.signature.creator, response.data);
                     }
                   } else {
                     validator.addError("Signature failed pre verification " + this.signature.creator);

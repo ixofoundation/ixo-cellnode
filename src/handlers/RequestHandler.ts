@@ -29,9 +29,11 @@ export const Project: Model<IProjectModel> = model<IProjectModel>("Project", Pro
 /////////////////////////////////////////////////
 //   AGENT MODEL                               //
 /////////////////////////////////////////////////
-export interface IAgentModel extends Document { }
+export interface IAgentModel extends Document {role: string }
 
-var AgentSchema: Schema = new Schema({}, { strict: false });
+var AgentSchema: Schema = new Schema({
+  role: String
+}, { strict: false });
 
 AgentSchema.pre("save", function (next) {
   next();
@@ -194,8 +196,8 @@ export class RequestHandler extends AbstractHandler {
     });
   }
 
-  preVerifyDidSignature(didResponse: AxiosResponse, request: Request) {
-    if (!didResponse.data.kyc && request.data.role) {
+  preVerifyDidSignature(didResponse: any, request: Request) {
+    if (!didResponse.kyc && request.data.role) {
       if (request.data.role === 'SA' || request.data.role === 'EA') {
         return false;
       }
@@ -224,7 +226,28 @@ export class RequestHandler extends AbstractHandler {
 
   createAgent = (args: any) => {
     console.log(new Date().getUTCMilliseconds() + ' start new transaction');
-    return this.createTransaction(args, 'CreateAgent', Agent);
+    return this.createTransaction(args, 'CreateAgent', Agent, function (request: any): Promise<boolean> {
+      return new Promise(function (resolve: Function, reject: Function) {
+        Agent.find(
+          {
+            projectDid: request.data.projectDid,
+            agentDid: request.data.agentDid,
+            role: request.data.role
+          },
+          function (error: Error, results: IAgentModel[]) {
+            if (error) {
+              reject(error);
+            } else {
+              results.forEach(element => {
+                  if (element.role === request.data.role) resolve(true);
+                  if (element.role === 'EA' && request.data.role === 'SA') resolve(true);
+                  if (element.role === 'SA' && request.data.role === 'EA') resolve(true);
+              });
+              resolve(false);
+            }
+          });
+      });
+    });
   }
 
 
@@ -235,6 +258,7 @@ export class RequestHandler extends AbstractHandler {
       return new Promise(function (resolve: Function, reject: Function) {
         AgentStatus.findOne(
           {
+            projectDid: request.data.projectDid,
             agentDid: request.data.agentDid,
             version: newVersion
           },
@@ -338,6 +362,7 @@ export class RequestHandler extends AbstractHandler {
             return new Promise(function (resolve: Function, reject: Function) {
               EvaluateClaim.findOne(
                 {
+                  projectDid: request.data.projectDid,
                   claimId: request.data.claimId,
                   version: newVersion
                 },
