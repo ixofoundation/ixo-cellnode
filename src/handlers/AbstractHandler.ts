@@ -151,6 +151,9 @@ export abstract class AbstractHandler {
             }
           })
           return capabilityMap;
+        }).catch((reason) => {
+          console.log(new Date().getUTCMilliseconds() + 'capabilities not found for project' + request.projectDid);
+          reject(new TransactionError('Capabilities not found for project'));
         })
         .then((capabilityMap: any) => {
           console.log(new Date().getUTCMilliseconds() + ' have capability ' + capabilityMap.capability);
@@ -173,6 +176,7 @@ export abstract class AbstractHandler {
                       } else {
                         reject(new ValidationError(sigValid.errors[0]));
                       }
+                      console.log(new Date().getUTCMilliseconds() + ' transaction completed successfully');
                     })
                 } else {
                   reject(new ValidationError(capValid.errors[0]));
@@ -180,6 +184,10 @@ export abstract class AbstractHandler {
               } else {
                 reject(new ValidationError(validator.errors[0].message));
               };
+            })
+            .catch((reason) => {
+              console.log(new Date().getUTCMilliseconds() + 'template registry failed' + reason);
+              reject(new TransactionError('Cannot connect to template registry'));
             });
         });
     });
