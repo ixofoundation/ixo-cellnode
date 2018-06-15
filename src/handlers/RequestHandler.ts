@@ -390,7 +390,7 @@ export class RequestHandler extends AbstractHandler {
               "as": "evaluations"
             }
           },
-          { $unwind: { path: "$claims", preserveNullAndEmptyArrays: true } },
+          { $unwind: { path: "$evaluations", preserveNullAndEmptyArrays: true } },
           { $sort: { "evaluations.version": -1 } },
           {
             $group: {
