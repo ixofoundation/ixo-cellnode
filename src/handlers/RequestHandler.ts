@@ -226,8 +226,7 @@ export class RequestHandler extends AbstractHandler {
         Agent.find(
           {
             projectDid: request.data.projectDid,
-            agentDid: request.data.agentDid,
-            role: request.data.role
+            agentDid: request.data.agentDid
           },
           function (error: Error, results: IAgentModel[]) {
             if (error) {
