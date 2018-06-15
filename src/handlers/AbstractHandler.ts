@@ -20,6 +20,7 @@ import { json } from 'body-parser';
 import mq from '../MessageQ';
 import { IWalletModel } from "../model/project/Wallet";
 import { IWallet } from "../model/project/IWallet";
+import { AxiosResponse } from "axios";
 
 
 var wallet: IWalletModel;
@@ -32,7 +33,7 @@ export abstract class AbstractHandler {
     var request = new Request(args);
     return new Promise((resolve: Function, reject: Function) => {
       if (!request.projectDid) request.projectDid = this.getWallet().did;
-      capabilitiesService.findCapabilitiesForProject(request.projectDid)  
+      capabilitiesService.findCapabilitiesForProject(request.projectDid)
         .then((result: ICapabilitiesModel) => {
           var capabilityMap: any;
           result.capabilities.forEach(element => {
@@ -45,6 +46,9 @@ export abstract class AbstractHandler {
             }
           })
           return capabilityMap;
+        }).catch((reason) => {
+          console.log(new Date().getUTCMilliseconds() + 'capabilities not found for project' + request.projectDid);
+          reject(new TransactionError('Capabilities not found for project'));
         })
         .then((capabilityMap: any) => {
           console.log(new Date().getUTCMilliseconds() + ' have capability ' + capabilityMap.capability);
@@ -59,7 +63,7 @@ export abstract class AbstractHandler {
                 capValid = request.verifyCapability(capabilityMap.allow);
                 if (capValid.valid) {
                   console.log(new Date().getUTCMilliseconds() + ' verify the signature');
-                  request.verifySignature()
+                  request.verifySignature(this.preVerifyDidSignature)
                     .then((sigValid: RequestValidator) => {
                       if (sigValid.valid) {
                         console.log(new Date().getUTCMilliseconds() + ' signature verified');
@@ -67,7 +71,7 @@ export abstract class AbstractHandler {
                           checkIfExist(request)
                             .then((found: boolean) => {
                               if (found) {
-                                reject(new TransactionError('Record out of date, please refresh data'));
+                                reject(new TransactionError('Record out of date or already exists'));
                               } else {
                                 console.log(new Date().getUTCMilliseconds() + ' write transaction to log')
                                 transactionService.createTransaction(request.payload, request.signature.type, request.signature.signatureValue, request.projectDid)
@@ -78,7 +82,7 @@ export abstract class AbstractHandler {
                                       version: request.version + 1
                                     };
                                     console.log(new Date().getUTCMilliseconds() + ' updating the capabilities');
-                                    this.updateCapabilities(request.projectDid, request.signature.creator, capabilityMap.capability);
+                                    this.updateCapabilities(request, capabilityMap.capability);
                                     console.log(new Date().getUTCMilliseconds() + ' commit to Elysian');
                                     resolve(model.create(obj));
                                     console.log(new Date().getUTCMilliseconds() + ' publish to blockchain');
@@ -99,7 +103,7 @@ export abstract class AbstractHandler {
                                 txHash: transaction.hash
                               };
                               console.log(new Date().getUTCMilliseconds() + ' updating the capabilities');
-                              inst.updateCapabilities(request.projectDid, request.signature.creator, capabilityMap.capability);
+                              inst.updateCapabilities(request, capabilityMap.capability);
                               console.log(new Date().getUTCMilliseconds() + ' commit to Elysian');
                               resolve(model.create(obj));
                               console.log(new Date().getUTCMilliseconds() + ' publish to blockchain');
@@ -147,6 +151,9 @@ export abstract class AbstractHandler {
             }
           })
           return capabilityMap;
+        }).catch((reason) => {
+          console.log(new Date().getUTCMilliseconds() + 'capabilities not found for project' + request.projectDid);
+          reject(new TransactionError('Capabilities not found for project'));
         })
         .then((capabilityMap: any) => {
           console.log(new Date().getUTCMilliseconds() + ' have capability ' + capabilityMap.capability);
@@ -161,7 +168,7 @@ export abstract class AbstractHandler {
                 capValid = request.verifyCapability(capabilityMap.allow);
                 if (capValid.valid) {
                   console.log(new Date().getUTCMilliseconds() + ' verify the signature');
-                  request.verifySignature()
+                  request.verifySignature(this.preVerifyDidSignature)
                     .then((sigValid: RequestValidator) => {
                       if (sigValid.valid) {
                         console.log(new Date().getUTCMilliseconds() + ' query Elysian');
@@ -169,6 +176,7 @@ export abstract class AbstractHandler {
                       } else {
                         reject(new ValidationError(sigValid.errors[0]));
                       }
+                      console.log(new Date().getUTCMilliseconds() + ' transaction completed successfully');
                     })
                 } else {
                   reject(new ValidationError(capValid.errors[0]));
@@ -176,11 +184,19 @@ export abstract class AbstractHandler {
               } else {
                 reject(new ValidationError(validator.errors[0].message));
               };
+            })
+            .catch((reason) => {
+              console.log(new Date().getUTCMilliseconds() + 'template registry failed' + reason);
+              reject(new TransactionError('Cannot connect to template registry'));
             });
         });
     });
   }
 
+
+  preVerifyDidSignature(didResponse: AxiosResponse, data: Request): boolean {
+    return true;
+  }
 
   saveCapabilities(projectDid: string, did: string, requestType: string) {
     capabilitiesService.addCapabilities(projectDid, did, requestType);
@@ -204,12 +220,12 @@ export abstract class AbstractHandler {
     });
   }
 
-  abstract updateCapabilities(projectDid: string, obj: any, methodCall: string): void;
+  abstract updateCapabilities(request: Request, methodCall: string): void;
 
   abstract msgToPublish(obj: any, creator: string, projectDid: string, methodCall: string): any;
 
   getWallet(): IWalletModel {
-   if (wallet == null) {
+    if (wallet == null) {
       new Promise((resolve: Function, reject: Function) => {
         walletService.getLatestWallet()
           .then((resp: IWalletModel) => {
@@ -220,7 +236,6 @@ export abstract class AbstractHandler {
     }
     return wallet;
   }
-
 
   signMessageForBlockchain(msgToSign: any, projectDid: string) {
     return new Promise((resolve: Function, reject: Function) => {

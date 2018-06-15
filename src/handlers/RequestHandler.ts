@@ -5,7 +5,7 @@ import axios, { AxiosResponse } from 'axios';
 import InitHandler from './InitHandler';
 
 const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
-var evaluatorPay = 0;
+var evaluatorPayPerClaim = 0;
 
 /////////////////////////////////////////////////
 //  PROJECT MODEL                              //
@@ -14,13 +14,13 @@ var evaluatorPay = 0;
 export interface IProjectModel extends Document { }
 
 var ProjectSchema: Schema = new Schema({
-  evaluatorPay: String
+  evaluatorPayPerClaim: String
 }, { strict: false });
 
 ProjectSchema.pre("save", function (next) {
   var inst: any;
   inst = this;
-  evaluatorPay = Number(inst.evaluatorPay);
+  evaluatorPayPerClaim = Number(inst.evaluatorPayPerClaim);
   next();
 });
 
@@ -29,9 +29,11 @@ export const Project: Model<IProjectModel> = model<IProjectModel>("Project", Pro
 /////////////////////////////////////////////////
 //   AGENT MODEL                               //
 /////////////////////////////////////////////////
-export interface IAgentModel extends Document { }
+export interface IAgentModel extends Document { role: string }
 
-var AgentSchema: Schema = new Schema({}, { strict: false });
+var AgentSchema: Schema = new Schema({
+  role: String
+}, { strict: false });
 
 AgentSchema.pre("save", function (next) {
   next();
@@ -85,18 +87,19 @@ export class RequestHandler extends AbstractHandler {
     super();
   }
 
-  updateCapabilities(projectDid: string, did: string, methodCall: string) {
+  updateCapabilities(request: Request, methodCall: string) {
     switch (methodCall) {
       case 'CreateAgent': {
-        this.saveCapabilities(projectDid, did, 'SubmitClaim');
-        this.saveCapabilities(projectDid, did, 'ListClaims');
+        if (request.data.role === 'SA') this.saveCapabilities(request.projectDid, request.signature.creator, 'SubmitClaim');
+        if (request.data.role === 'EA') this.saveCapabilities(request.projectDid, request.signature.creator, 'EvaluateClaim');
+        this.saveCapabilities(request.projectDid, request.signature.creator, 'ListClaims');
         break;
       }
       case 'CreateProject': {
-        this.saveCapabilities(projectDid, did, 'EvaluateClaim');
-        this.saveCapabilities(projectDid, 'did:sov:*', 'CreateAgent');
-        this.saveCapabilities(projectDid, did, 'UpdateAgentStatus');
-        this.saveCapabilities(projectDid, did, 'ListAgents');
+        this.saveCapabilities(request.projectDid, 'did:sov:*', 'CreateAgent');
+        this.saveCapabilities(request.projectDid, request.signature.creator, 'UpdateAgentStatus');
+        this.saveCapabilities(request.projectDid, request.signature.creator, 'ListAgents');
+        this.saveCapabilities(request.projectDid, request.signature.creator, 'ListClaims');
         break;
       }
       default: {
@@ -193,14 +196,18 @@ export class RequestHandler extends AbstractHandler {
     });
   }
 
+  preVerifyDidSignature(didResponse: any, request: Request) {
+    return (!didResponse.kyc && (request.data.role === 'EA' || request.data.role === 'IA')) ? false : true;
+  }
+
   /////////////////////////////////////////////////
   //  HANDLE CREATE PROJECT                      //
   /////////////////////////////////////////////////
 
   createProject = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction');
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
     return this.generateProjectWallet()
-      .then((did: any) => {        
+      .then((did: any) => {
         return InitHandler.initialise(did)
           .then((response: any) => {
             return this.createTransaction(args, 'CreateProject', Project);
@@ -213,18 +220,40 @@ export class RequestHandler extends AbstractHandler {
   /////////////////////////////////////////////////
 
   createAgent = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction');
-    return this.createTransaction(args, 'CreateAgent', Agent);
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
+    return this.createTransaction(args, 'CreateAgent', Agent, function (request: any): Promise<boolean> {
+      return new Promise(function (resolve: Function, reject: Function) {
+        Agent.find(
+          {
+            projectDid: request.data.projectDid,
+            agentDid: request.data.agentDid,
+            role: request.data.role
+          },
+          function (error: Error, results: IAgentModel[]) {
+            if (error) {
+              reject(error);
+            } else {
+              results.forEach(element => {
+                if (element.role === request.data.role) resolve(true);
+                if (element.role === 'EA' && request.data.role === 'SA') resolve(true);
+                if (element.role === 'SA' && request.data.role === 'EA') resolve(true);
+              });
+              resolve(false);
+            }
+          });
+      });
+    });
   }
 
 
   updateAgentStatus = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction');
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
     return this.createTransaction(args, 'UpdateAgentStatus', AgentStatus, function (request: any): Promise<boolean> {
       let newVersion = request.version + 1;
       return new Promise(function (resolve: Function, reject: Function) {
         AgentStatus.findOne(
           {
+            projectDid: request.data.projectDid,
             agentDid: request.data.agentDid,
             version: newVersion
           },
@@ -243,7 +272,7 @@ export class RequestHandler extends AbstractHandler {
   }
 
   listAgents = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction');
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
     return this.queryTransaction(args, 'ListAgents', function (filter: any): Promise<any[]> {
       return new Promise(function (resolve: Function, reject: Function) {
         Agent.aggregate([
@@ -288,7 +317,7 @@ export class RequestHandler extends AbstractHandler {
   /////////////////////////////////////////////////
 
   submitClaim = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction');
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
     return this.createTransaction(args, 'SubmitClaim', Claim);
   }
 
@@ -301,7 +330,7 @@ export class RequestHandler extends AbstractHandler {
           if (response.status == 200) {
             response.data.forEach((element: any) => {
               if (element.did == this.getWallet().did) {
-                balance = element.balance - evaluatorPay;
+                balance = element.balance - evaluatorPayPerClaim;
                 console.log(new Date().getUTCMilliseconds() + 'balance is ' + balance);
               }
             })
@@ -319,7 +348,7 @@ export class RequestHandler extends AbstractHandler {
   };
 
   evaluateClaim = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction');
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
     return this.checkForFunds(new Request(args).projectDid)
       .then((resp: boolean) => {
         if (resp) {
@@ -328,6 +357,7 @@ export class RequestHandler extends AbstractHandler {
             return new Promise(function (resolve: Function, reject: Function) {
               EvaluateClaim.findOne(
                 {
+                  projectDid: request.data.projectDid,
                   claimId: request.data.claimId,
                   version: newVersion
                 },
@@ -350,7 +380,7 @@ export class RequestHandler extends AbstractHandler {
   }
 
   listClaims = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction');
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
     return this.queryTransaction(args, 'ListClaims', function (filter: any): Promise<any[]> {
       return new Promise(function (resolve: Function, reject: Function) {
         Claim.aggregate([

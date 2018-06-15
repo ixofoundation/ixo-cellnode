@@ -37,10 +37,10 @@ services:
 
   pol:
     container_name: pol
-    image: brennonh/ixo-pol
+    image: trustlab/ixo-pol
 
 
   cli:
     container_name: cli
-    image: brennonh/ixo-cli
+    image: trustlab/ixo-cli
 
