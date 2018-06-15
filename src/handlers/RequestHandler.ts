@@ -385,7 +385,7 @@ export class RequestHandler extends AbstractHandler {
           {
             $lookup: {
               "from": "evaluateclaims",
-              "localField": "_id",
+              "localField": "txHash",
               "foreignField": "claimId",
               "as": "evaluations"
             }
@@ -397,6 +397,7 @@ export class RequestHandler extends AbstractHandler {
               "_id": "$_id",
               "name": { $first: "$name" },
               "type": { $first: "$type" },
+              "txHash": { $first: "$txHash" },
               "evaluations": { $first: "$evaluations" }
             }
           }
