@@ -158,7 +158,7 @@ export class RequestHandler extends AbstractHandler {
           blockChainPayload = {
             payload: [19, {
               data: {
-                claimID: obj.claimId,
+                claimID: txHash
               },
               txHash: txHash,
               senderDid: creator,
@@ -320,14 +320,14 @@ export class RequestHandler extends AbstractHandler {
       console.log(new Date().getUTCMilliseconds() + ' confirm funds exists');
       axios.get(BLOCKCHAIN_URI_REST + 'projectAccounts/' + projectDid)
         .then((response) => {
-          var balance: any;
+          var balance = 0;
           if (response.status == 200) {
             response.data.forEach((element: any) => {
-              if (element.did == this.getWallet().did) {
+              //if (element.did == this.getWallet().did) {
                 // TODO: calculate if funds available for evaluators
                 //balance = element.balance - element.evaluatorPayPerClaim;
-                console.log(new Date().getUTCMilliseconds() + 'balance is ' + balance);
-              }
+              //  console.log(new Date().getUTCMilliseconds() + 'balance is ' + balance);
+              //}
             })
             if (balance >= 0) {
               resolve(true);
@@ -335,8 +335,8 @@ export class RequestHandler extends AbstractHandler {
           }
           resolve(false);
         })
-        .catch(() => {
-          console.log(new Date().getUTCMilliseconds() + ' could not connect to blockchain');
+        .catch((reason) => {
+          console.log(new Date().getUTCMilliseconds() + ' could not connect to blockchain ' + reason);
           resolve(false);
         });
     });
@@ -385,7 +385,7 @@ export class RequestHandler extends AbstractHandler {
           {
             $lookup: {
               "from": "evaluateclaims",
-              "localField": "claimid",
+              "localField": "_id",
               "foreignField": "claimId",
               "as": "evaluations"
             }
