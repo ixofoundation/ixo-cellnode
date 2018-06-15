@@ -5,7 +5,6 @@ import axios, { AxiosResponse } from 'axios';
 import InitHandler from './InitHandler';
 
 const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
-var evaluatorPayPerClaim = 0;
 
 /////////////////////////////////////////////////
 //  PROJECT MODEL                              //
@@ -14,13 +13,9 @@ var evaluatorPayPerClaim = 0;
 export interface IProjectModel extends Document { }
 
 var ProjectSchema: Schema = new Schema({
-  evaluatorPayPerClaim: String
 }, { strict: false });
 
 ProjectSchema.pre("save", function (next) {
-  var inst: any;
-  inst = this;
-  evaluatorPayPerClaim = Number(inst.evaluatorPayPerClaim);
   next();
 });
 
@@ -89,10 +84,10 @@ export class RequestHandler extends AbstractHandler {
 
   updateCapabilities(request: Request, methodCall: string) {
     switch (methodCall) {
-      case 'CreateAgent': {
-        if (request.data.role === 'SA') this.saveCapabilities(request.projectDid, request.signature.creator, 'SubmitClaim');
-        if (request.data.role === 'EA') this.saveCapabilities(request.projectDid, request.signature.creator, 'EvaluateClaim');
-        this.saveCapabilities(request.projectDid, request.signature.creator, 'ListClaims');
+      case 'UpdateAgentStatus': {
+        if (request.data.role === 'SA' && request.data.status === '1') this.saveCapabilities(request.projectDid, request.data.agentDid, 'SubmitClaim');
+        if (request.data.role === 'EA' && request.data.status === '1') this.saveCapabilities(request.projectDid, request.data.agentDid, 'EvaluateClaim');
+        if (request.data.status === '1') this.saveCapabilities(request.projectDid, request.data.agentDid, 'ListClaims');
         break;
       }
       case 'CreateProject': {
@@ -329,11 +324,12 @@ export class RequestHandler extends AbstractHandler {
           if (response.status == 200) {
             response.data.forEach((element: any) => {
               if (element.did == this.getWallet().did) {
-                balance = element.balance - evaluatorPayPerClaim;
+                // TODO: calculate if funds available for evaluators
+                //balance = element.balance - element.evaluatorPayPerClaim;
                 console.log(new Date().getUTCMilliseconds() + 'balance is ' + balance);
               }
             })
-            if (balance > 0) {
+            if (balance >= 0) {
               resolve(true);
             }
           }
