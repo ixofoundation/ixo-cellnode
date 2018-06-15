@@ -196,9 +196,9 @@ export class RequestHandler extends AbstractHandler {
     });
   }
 
-  preVerifyDidSignature(didResponse: any, request: Request) {
-    return (!didResponse.kyc && (request.data.role === 'EA' || request.data.role === 'IA')) ? false : true;
-  }
+  // preVerifyDidSignature(didResponse: any, request: Request) {
+  //   return (!didResponse.kyc && (request.data.role === 'EA' || request.data.role === 'IA')) ? false : true;
+  // }
 
   /////////////////////////////////////////////////
   //  HANDLE CREATE PROJECT                      //
