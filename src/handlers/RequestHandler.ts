@@ -103,7 +103,7 @@ export class RequestHandler extends AbstractHandler {
     }
   }
 
-  msgToPublish(obj: any, creator: string, projectDid: string, methodCall: string): any {
+  msgToPublish(obj: any, request: Request, methodCall: string): any {
     return new Promise((resolve: Function, reject: Function) => {
       var blockChainPayload: any;
       var txHash = obj.txHash;
@@ -114,10 +114,12 @@ export class RequestHandler extends AbstractHandler {
           blockChainPayload = {
             payload: [16, {
               data: {
-                ...obj
+                ...obj,
+                createdOn:request.signature.created,
+                createdBy:request.signature.creator
               },
               txHash: txHash,
-              senderDid: creator,
+              senderDid: request.signature.creator,
               projectDid: this.getWallet().did,
               pubKey: this.getWallet().verifyKey
             }]
@@ -132,8 +134,8 @@ export class RequestHandler extends AbstractHandler {
                 role: obj.role,
               },
               txHash: txHash,
-              senderDid: creator,
-              projectDid: projectDid
+              senderDid: request.signature.creator,
+              projectDid: request.projectDid
             }]
           }
           break;
@@ -147,8 +149,8 @@ export class RequestHandler extends AbstractHandler {
                 role: obj.role
               },
               txHash: txHash,
-              senderDid: creator,
-              projectDid: projectDid
+              senderDid: request.signature.creator,
+              projectDid: request.projectDid
             }]
           }
 
@@ -161,8 +163,8 @@ export class RequestHandler extends AbstractHandler {
                 claimID: txHash
               },
               txHash: txHash,
-              senderDid: creator,
-              projectDid: projectDid
+              senderDid: request.signature.creator,
+              projectDid: request.projectDid
             }]
           }
           break;
@@ -175,8 +177,8 @@ export class RequestHandler extends AbstractHandler {
                 status: obj.status
               },
               txHash: txHash,
-              senderDid: creator,
-              projectDid: projectDid
+              senderDid: request.signature.creator,
+              projectDid: request.projectDid
             }]
           }
 
@@ -187,7 +189,7 @@ export class RequestHandler extends AbstractHandler {
           break;
         }
       }
-      resolve(this.signMessageForBlockchain(blockChainPayload, projectDid));
+      resolve(this.signMessageForBlockchain(blockChainPayload, request.projectDid));
     });
   }
 
@@ -205,7 +207,7 @@ export class RequestHandler extends AbstractHandler {
       .then((did: any) => {
         return InitHandler.initialise(did)
           .then((response: any) => {
-            return this.createTransaction(args, 'CreateProject', Project);
+            return this.createTransaction(args, 'CreateProject', Project, undefined, did);
           });
       });
   }
@@ -323,11 +325,11 @@ export class RequestHandler extends AbstractHandler {
           var balance = 0;
           if (response.status == 200) {
             response.data.forEach((element: any) => {
-              //if (element.did == this.getWallet().did) {
+              if (element.did == projectDid) {
                 // TODO: calculate if funds available for evaluators
                 //balance = element.balance - element.evaluatorPayPerClaim;
-              //  console.log(new Date().getUTCMilliseconds() + 'balance is ' + balance);
-              //}
+              console.log(new Date().getUTCMilliseconds() + 'balance is ' + balance);
+              }
             })
             if (balance >= 0) {
               resolve(true);
@@ -342,74 +344,74 @@ export class RequestHandler extends AbstractHandler {
     });
   };
 
-  evaluateClaim = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
-    return this.checkForFunds(new Request(args).projectDid)
-      .then((resp: boolean) => {
-        if (resp) {
-          return this.createTransaction(args, 'EvaluateClaim', EvaluateClaim, function (request: any): Promise<boolean> {
-            let newVersion = request.version + 1;
-            return new Promise(function (resolve: Function, reject: Function) {
-              EvaluateClaim.findOne(
-                {
-                  projectDid: request.data.projectDid,
-                  claimId: request.data.claimId,
-                  version: newVersion
-                },
-                function (error: Error, result: IEvaluateClaimModel) {
-                  if (error) {
-                    reject(error);
-                  } else {
-                    if (result) {
-                      resolve(true);
+    evaluateClaim = (args: any) => {
+      console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
+      return this.checkForFunds(new Request(args).projectDid)
+        .then((resp: boolean) => {
+          if (resp) {
+            return this.createTransaction(args, 'EvaluateClaim', EvaluateClaim, function (request: any): Promise<boolean> {
+              let newVersion = request.version + 1;
+              return new Promise(function (resolve: Function, reject: Function) {
+                EvaluateClaim.findOne(
+                  {
+                    projectDid: request.data.projectDid,
+                    claimId: request.data.claimId,
+                    version: newVersion
+                  },
+                  function (error: Error, result: IEvaluateClaimModel) {
+                    if (error) {
+                      reject(error);
+                    } else {
+                      if (result) {
+                        resolve(true);
+                      }
+                      resolve(false);
                     }
-                    resolve(false);
-                  }
-                }).limit(1);
+                  }).limit(1);
+              });
             });
-          });
-        }
-        console.log(new Date().getUTCMilliseconds() + ' insufficient funds available');
-        return 'Service currently unavailable';
-      });
-  }
-
-  listClaims = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
-    return this.queryTransaction(args, 'ListClaims', function (filter: any): Promise<any[]> {
-      return new Promise(function (resolve: Function, reject: Function) {
-        Claim.aggregate([
-          {
-            $match: filter
-          },
-          {
-            $lookup: {
-              "from": "evaluateclaims",
-              "localField": "txHash",
-              "foreignField": "claimId",
-              "as": "evaluations"
-            }
-          },
-          { $unwind: { path: "$evaluations", preserveNullAndEmptyArrays: true } },
-          { $sort: { "evaluations.version": -1 } },
-          {
-            $group: {
-              "_id": "$_id",
-              "name": { $first: "$name" },
-              "type": { $first: "$type" },
-              "txHash": { $first: "$txHash" },
-              "evaluations": { $first: "$evaluations" }
-            }
           }
-        ],
-          function (error: Error, result: any[]) {
-            if (error) {
-              reject(error);
-            } else {
-              resolve(result);
+          console.log(new Date().getUTCMilliseconds() + ' insufficient funds available');
+          return 'Service currently unavailable';
+        });
+    }
+
+    listClaims = (args: any) => {
+      console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
+      return this.queryTransaction(args, 'ListClaims', function (filter: any): Promise<any[]> {
+        return new Promise(function (resolve: Function, reject: Function) {
+          Claim.aggregate([
+            {
+              $match: filter
+            },
+            {
+              $lookup: {
+                "from": "evaluateclaims",
+                "localField": "txHash",
+                "foreignField": "claimId",
+                "as": "evaluations"
+              }
+            },
+            { $unwind: { path: "$evaluations", preserveNullAndEmptyArrays: true } },
+            { $sort: { "evaluations.version": -1 } },
+            {
+              $group: {
+                "_id": "$_id",
+                "name": { $first: "$name" },
+                "type": { $first: "$type" },
+                "txHash": { $first: "$txHash" },
+                "evaluations": { $first: "$evaluations" }
+              }
             }
-          });
+          ],
+            function (error: Error, result: any[]) {
+              if (error) {
+                reject(error);
+              } else {
+                resolve(result);
+              }
+            });
+        });
       });
-    });
+    }
   }
-}

@@ -1,6 +1,5 @@
 import { Document, Schema, Model, model } from "mongoose";
 import { ITransactionModel, Transaction } from '../model/project/Transaction';
-import { ITransaction } from '../model/project/ITransaction';
 import { ICapabilitiesModel } from '../model/project/Capabilities';
 
 import transactionService from '../service/TransactionLogService';
@@ -16,23 +15,20 @@ import { TransactionError } from '../error/TransactionError';
 import { Request } from "../handlers/Request";
 import TemplateUtils from '../templates/TemplateUtils';
 import { SovrinUtils } from '../crypto/SovrinUtils';
-import { json } from 'body-parser';
 import mq from '../MessageQ';
 import { IWalletModel } from "../model/project/Wallet";
-import { IWallet } from "../model/project/IWallet";
 import { AxiosResponse } from "axios";
-
 
 var wallet: IWalletModel;
 
 export abstract class AbstractHandler {
 
-  public createTransaction(args: any, capability: string, model: Model<any>, checkIfExist?: Function) {
+  public createTransaction(args: any, capability: string, model: Model<any>, checkIfExist?: Function, projectDid?: string) {
 
     var inst = this;
     var request = new Request(args);
     return new Promise((resolve: Function, reject: Function) => {
-      if (!request.projectDid) request.projectDid = this.getWallet().did;
+      if (!request.projectDid) request.projectDid = (projectDid || "");
       capabilitiesService.findCapabilitiesForProject(request.projectDid)
         .then((result: ICapabilitiesModel) => {
           var capabilityMap: any;
@@ -86,7 +82,7 @@ export abstract class AbstractHandler {
                                     console.log(new Date().getUTCMilliseconds() + ' commit to Elysian');
                                     resolve(model.create(obj));
                                     console.log(new Date().getUTCMilliseconds() + ' publish to blockchain');
-                                    this.msgToPublish(obj, request.signature.creator, request.projectDid, capabilityMap.capability)
+                                    this.msgToPublish(obj, request, capabilityMap.capability)
                                       .then((msg: any) => {
                                         mq.publish(msg);
                                       });
@@ -107,7 +103,7 @@ export abstract class AbstractHandler {
                               console.log(new Date().getUTCMilliseconds() + ' commit to Elysian');
                               resolve(model.create(obj));
                               console.log(new Date().getUTCMilliseconds() + ' publish to blockchain');
-                              this.msgToPublish(obj, request.signature.creator, request.projectDid, capabilityMap.capability)
+                              this.msgToPublish(obj, request, capabilityMap.capability)
                                 .then((msg: any) => {
                                   mq.publish(msg);
                                 });
@@ -222,18 +218,9 @@ export abstract class AbstractHandler {
 
   abstract updateCapabilities(request: Request, methodCall: string): void;
 
-  abstract msgToPublish(obj: any, creator: string, projectDid: string, methodCall: string): any;
+  abstract msgToPublish(obj: any, request: Request, methodCall: string): any;
 
   getWallet(): IWalletModel {
-    if (wallet == null) {
-      new Promise((resolve: Function, reject: Function) => {
-        walletService.getLatestWallet()
-          .then((resp: IWalletModel) => {
-            wallet = resp;
-            return resp;
-          });
-      });
-    }
     return wallet;
   }
 
