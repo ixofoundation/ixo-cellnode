@@ -198,6 +198,10 @@ export abstract class AbstractHandler {
     capabilitiesService.addCapabilities(projectDid, did, requestType);
   }
 
+  removeCapabilities(projectDid: string, did: string, requestType: string) {
+    capabilitiesService.removeCapabilities(projectDid, did, requestType);
+  }
+
   generateProjectWallet(): Promise<string> {
     return new Promise((resolve: Function, reject: Function) => {
       var fileSystem = require('fs');

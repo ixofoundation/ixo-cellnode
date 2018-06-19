@@ -88,6 +88,9 @@ export class RequestHandler extends AbstractHandler {
         if (request.data.role === 'SA' && request.data.status === '1') this.saveCapabilities(request.projectDid, request.data.agentDid, 'SubmitClaim');
         if (request.data.role === 'EA' && request.data.status === '1') this.saveCapabilities(request.projectDid, request.data.agentDid, 'EvaluateClaim');
         if (request.data.status === '1') this.saveCapabilities(request.projectDid, request.data.agentDid, 'ListClaims');
+        if (request.data.role === 'SA' && request.data.status === '2') this.removeCapabilities(request.projectDid, request.data.agentDid, 'SubmitClaim');
+        if (request.data.role === 'EA' && request.data.status === '2') this.removeCapabilities(request.projectDid, request.data.agentDid, 'EvaluateClaim');
+        if (request.data.status === '2') this.removeCapabilities(request.projectDid, request.data.agentDid, 'ListClaims');
         break;
       }
       case 'CreateProject': {
