@@ -88,6 +88,7 @@ export abstract class AbstractHandler {
                                       .then((msg: any) => {
                                         mq.publish(msg);
                                       });
+                                    model.emit('postCommit', obj);
                                     console.log(new Date().getUTCMilliseconds() + ' transaction completed successfully');
                                   });
                               }

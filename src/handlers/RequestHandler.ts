@@ -31,17 +31,19 @@ var AgentSchema: Schema = new Schema({
 }, { strict: false });
 
 AgentSchema.pre("save", function (next) {
-  var inst: any;
-  inst = this;;
+  next();
+});
+
+AgentSchema.on("postCommit", function (obj, next) {
   let requestHandler = new RequestHandler();
-  if (inst.role === 'SA') {
+  if (obj.role === 'SA') {
     var data: any = {
-      projectDid: inst.projectDid,
+      projectDid: obj.projectDid,
       status: "1",
-      agentDid: inst.agentDid,
-      role: inst.role
+      agentDid: obj.agentDid,
+      role: obj.role
     }
-    requestHandler.selfSignMessage(data, inst.projectDid)
+    requestHandler.selfSignMessage(data, obj.projectDid)
       .then((signature: any) => {
         var statusRequest: any = {
           payload: {
@@ -53,7 +55,7 @@ AgentSchema.pre("save", function (next) {
           signature: {
             type: "ed25519-sha-256",
             created: new Date().toISOString(),
-            creator: inst.projectDid,
+            creator: obj.projectDid,
             signatureValue: signature
           }
         }
