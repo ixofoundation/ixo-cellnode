@@ -31,6 +31,36 @@ var AgentSchema: Schema = new Schema({
 }, { strict: false });
 
 AgentSchema.pre("save", function (next) {
+  var inst: any;
+  inst = this;;
+  let requestHandler = new RequestHandler();
+  if (inst.role === 'SA') {
+    var data: any = {
+      projectDid: inst.projectDid,
+      status: "1",
+      agentDid: inst.agentDid,
+      role: inst.role
+    }
+    requestHandler.selfSignMessage(data, inst.projectDid)
+      .then((signature: any) => {
+        var statusRequest: any = {
+          payload: {
+            template: {
+              name: "agent_status"
+            },
+            data: data
+          },
+          signature: {
+            type: "ed25519-sha-256",
+            created: new Date().toISOString(),
+            creator: inst.projectDid,
+            signatureValue: signature
+          }
+        }
+        console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(statusRequest));
+        requestHandler.updateAgentStatus(statusRequest);
+      });
+  }
   next();
 });
 
@@ -85,19 +115,20 @@ export class RequestHandler extends AbstractHandler {
   updateCapabilities(request: Request, methodCall: string) {
     switch (methodCall) {
       case 'UpdateAgentStatus': {
-        if (request.data.role === 'SA' && request.data.status === '1') this.saveCapabilities(request.projectDid, request.data.agentDid, 'SubmitClaim');
-        if (request.data.role === 'EA' && request.data.status === '1') this.saveCapabilities(request.projectDid, request.data.agentDid, 'EvaluateClaim');
-        if (request.data.status === '1') this.saveCapabilities(request.projectDid, request.data.agentDid, 'ListClaims');
+        if (request.data.role === 'SA' && request.data.status === '1') this.addCapabilities(request.projectDid, request.data.agentDid, 'SubmitClaim');
+        if (request.data.role === 'EA' && request.data.status === '1') this.addCapabilities(request.projectDid, request.data.agentDid, 'EvaluateClaim');
+        if (request.data.status === '1') this.addCapabilities(request.projectDid, request.data.agentDid, 'ListClaims');
         if (request.data.role === 'SA' && request.data.status === '2') this.removeCapabilities(request.projectDid, request.data.agentDid, 'SubmitClaim');
         if (request.data.role === 'EA' && request.data.status === '2') this.removeCapabilities(request.projectDid, request.data.agentDid, 'EvaluateClaim');
         if (request.data.status === '2') this.removeCapabilities(request.projectDid, request.data.agentDid, 'ListClaims');
         break;
       }
       case 'CreateProject': {
-        this.saveCapabilities(request.projectDid, 'did:sov:*', 'CreateAgent');
-        this.saveCapabilities(request.projectDid, request.signature.creator, 'UpdateAgentStatus');
-        this.saveCapabilities(request.projectDid, request.signature.creator, 'ListAgents');
-        this.saveCapabilities(request.projectDid, request.signature.creator, 'ListClaims');
+        this.addCapabilities(request.projectDid, 'did:sov:*', 'CreateAgent');
+        this.addCapabilities(request.projectDid, request.signature.creator, 'UpdateAgentStatus');
+        this.addCapabilities(request.projectDid, request.projectDid, 'UpdateAgentStatus');
+        this.addCapabilities(request.projectDid, request.signature.creator, 'ListAgents');
+        this.addCapabilities(request.projectDid, request.signature.creator, 'ListClaims');
         break;
       }
       default: {
@@ -118,12 +149,12 @@ export class RequestHandler extends AbstractHandler {
             payload: [16, {
               data: {
                 ...obj,
-                createdOn:request.signature.created,
-                createdBy:request.signature.creator
+                createdOn: request.signature.created,
+                createdBy: request.signature.creator
               },
               txHash: txHash,
               senderDid: request.signature.creator,
-              projectDid: this.getWallet().did,
+              projectDid: request.projectDid,
               pubKey: this.getWallet().verifyKey
             }]
           }
@@ -331,7 +362,7 @@ export class RequestHandler extends AbstractHandler {
               if (element.did == projectDid) {
                 // TODO: calculate if funds available for evaluators
                 //balance = element.balance - element.evaluatorPayPerClaim;
-              console.log(new Date().getUTCMilliseconds() + 'balance is ' + balance);
+                console.log(new Date().getUTCMilliseconds() + 'balance is ' + balance);
               }
             })
             if (balance >= 0) {
@@ -347,74 +378,74 @@ export class RequestHandler extends AbstractHandler {
     });
   };
 
-    evaluateClaim = (args: any) => {
-      console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
-      return this.checkForFunds(new Request(args).projectDid)
-        .then((resp: boolean) => {
-          if (resp) {
-            return this.createTransaction(args, 'EvaluateClaim', EvaluateClaim, function (request: any): Promise<boolean> {
-              let newVersion = request.version + 1;
-              return new Promise(function (resolve: Function, reject: Function) {
-                EvaluateClaim.findOne(
-                  {
-                    projectDid: request.data.projectDid,
-                    claimId: request.data.claimId,
-                    version: newVersion
-                  },
-                  function (error: Error, result: IEvaluateClaimModel) {
-                    if (error) {
-                      reject(error);
-                    } else {
-                      if (result) {
-                        resolve(true);
-                      }
-                      resolve(false);
+  evaluateClaim = (args: any) => {
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
+    return this.checkForFunds(new Request(args).projectDid)
+      .then((resp: boolean) => {
+        if (resp) {
+          return this.createTransaction(args, 'EvaluateClaim', EvaluateClaim, function (request: any): Promise<boolean> {
+            let newVersion = request.version + 1;
+            return new Promise(function (resolve: Function, reject: Function) {
+              EvaluateClaim.findOne(
+                {
+                  projectDid: request.data.projectDid,
+                  claimId: request.data.claimId,
+                  version: newVersion
+                },
+                function (error: Error, result: IEvaluateClaimModel) {
+                  if (error) {
+                    reject(error);
+                  } else {
+                    if (result) {
+                      resolve(true);
                     }
-                  }).limit(1);
-              });
+                    resolve(false);
+                  }
+                }).limit(1);
             });
-          }
-          console.log(new Date().getUTCMilliseconds() + ' insufficient funds available');
-          return 'Service currently unavailable';
-        });
-    }
-
-    listClaims = (args: any) => {
-      console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
-      return this.queryTransaction(args, 'ListClaims', function (filter: any): Promise<any[]> {
-        return new Promise(function (resolve: Function, reject: Function) {
-          Claim.aggregate([
-            {
-              $match: filter
-            },
-            {
-              $lookup: {
-                "from": "evaluateclaims",
-                "localField": "txHash",
-                "foreignField": "claimId",
-                "as": "evaluations"
-              }
-            },
-            { $unwind: { path: "$evaluations", preserveNullAndEmptyArrays: true } },
-            { $sort: { "evaluations.version": -1 } },
-            {
-              $group: {
-                "_id": "$_id",
-                "name": { $first: "$name" },
-                "type": { $first: "$type" },
-                "txHash": { $first: "$txHash" },
-                "evaluations": { $first: "$evaluations" }
-              }
-            }
-          ],
-            function (error: Error, result: any[]) {
-              if (error) {
-                reject(error);
-              } else {
-                resolve(result);
-              }
-            });
-        });
+          });
+        }
+        console.log(new Date().getUTCMilliseconds() + ' insufficient funds available');
+        return 'Service currently unavailable';
       });
-    }
   }
+
+  listClaims = (args: any) => {
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
+    return this.queryTransaction(args, 'ListClaims', function (filter: any): Promise<any[]> {
+      return new Promise(function (resolve: Function, reject: Function) {
+        Claim.aggregate([
+          {
+            $match: filter
+          },
+          {
+            $lookup: {
+              "from": "evaluateclaims",
+              "localField": "txHash",
+              "foreignField": "claimId",
+              "as": "evaluations"
+            }
+          },
+          { $unwind: { path: "$evaluations", preserveNullAndEmptyArrays: true } },
+          { $sort: { "evaluations.version": -1 } },
+          {
+            $group: {
+              "_id": "$_id",
+              "name": { $first: "$name" },
+              "type": { $first: "$type" },
+              "txHash": { $first: "$txHash" },
+              "evaluations": { $first: "$evaluations" }
+            }
+          }
+        ],
+          function (error: Error, result: any[]) {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(result);
+            }
+          });
+      });
+    });
+  }
+}

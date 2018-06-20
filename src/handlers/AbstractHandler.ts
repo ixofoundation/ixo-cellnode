@@ -19,6 +19,8 @@ import mq from '../MessageQ';
 import { IWalletModel } from "../model/project/Wallet";
 import { AxiosResponse } from "axios";
 
+import Cache from '../Cache';
+
 var wallet: IWalletModel;
 
 export abstract class AbstractHandler {
@@ -194,7 +196,7 @@ export abstract class AbstractHandler {
     return true;
   }
 
-  saveCapabilities(projectDid: string, did: string, requestType: string) {
+  addCapabilities(projectDid: string, did: string, requestType: string) {
     capabilitiesService.addCapabilities(projectDid, did, requestType);
   }
 
@@ -214,6 +216,7 @@ export abstract class AbstractHandler {
       walletService.createWallet(did, sovrinWallet.secret.signKey, sovrinWallet.verifyKey)
         .then((resp: IWalletModel) => {
           wallet = resp;
+          Cache.set(wallet.did, { pubKey: wallet.verifyKey });
           console.log(new Date().getUTCMilliseconds() + ' project wallet created');
           resolve(wallet.did);
         });
@@ -242,6 +245,17 @@ export abstract class AbstractHandler {
           }
 
           resolve(new Buffer(JSON.stringify(signedMsg)).toString('hex'));
+        });
+    });
+  }
+
+  selfSignMessage(msgToSign: any, projectDid: string) {
+    return new Promise((resolve: Function, reject: Function) => {
+      walletService.getWallet(projectDid)
+        .then((wallet: IWalletModel) => {
+          Cache.set(wallet.did, { pubKey: wallet.verifyKey });
+          var sovrinUtils = new SovrinUtils();
+          resolve(sovrinUtils.signDocumentNoEncoding(wallet.signKey, wallet.verifyKey, wallet.did, msgToSign));
         });
     });
   }
