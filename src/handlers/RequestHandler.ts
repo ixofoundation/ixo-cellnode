@@ -34,39 +34,36 @@ AgentSchema.pre("save", function (next) {
   next();
 });
 
-AgentSchema.on("postCommit", function (obj, next) {
-  let requestHandler = new RequestHandler();
-  if (obj.role === 'SA') {
-    var data: any = {
-      projectDid: obj.projectDid,
-      status: "1",
-      agentDid: obj.agentDid,
-      role: obj.role
-    }
-    requestHandler.selfSignMessage(data, obj.projectDid)
-      .then((signature: any) => {
-        var statusRequest: any = {
-          payload: {
-            template: {
-              name: "agent_status"
-            },
-            data: data
-          },
-          signature: {
-            type: "ed25519-sha-256",
-            created: new Date().toISOString(),
-            creator: obj.projectDid,
-            signatureValue: signature
-          }
-        }
-        console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(statusRequest));
-        requestHandler.updateAgentStatus(statusRequest);
-      });
-  }
-  next();
-});
-
 export const Agent: Model<IAgentModel> = model<IAgentModel>("Agent", AgentSchema);
+
+Agent.on("postCommit", function (obj) {
+  let status = (obj.role === 'SA') ? "1" : "0";
+  let requestHandler = new RequestHandler();
+  var data: any = {
+    projectDid: obj.projectDid,
+    status: status,
+    agentDid: obj.agentDid,
+    role: obj.role
+  }
+  requestHandler.selfSignMessage(data, obj.projectDid)
+    .then((signature: any) => {
+      var statusRequest: any = {
+        payload: {
+          template: {
+            name: "agent_status"
+          },
+          data: data
+        },
+        signature: {
+          type: "ed25519-sha-256",
+          created: new Date().toISOString(),
+          creator: obj.projectDid,
+          signatureValue: signature
+        }
+      }
+      requestHandler.updateAgentStatus(statusRequest);
+    });
+});
 
 /////////////////////////////////////////////////
 //   AGENT STATUS MODEL                        //
