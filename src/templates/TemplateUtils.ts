@@ -5,13 +5,9 @@ import Cache from '../Cache';
 export class TemplateUtils {
 
   gitUtils: GitUtils
-  repoName: string
-
 
   constructor() {
     this.gitUtils = new GitUtils();
-    this.repoName = 'ixofoundation';
-
   }
 
   getTemplateFromCache(templateType: string, name: string): Promise<string> {
@@ -20,6 +16,7 @@ export class TemplateUtils {
       Cache.get(key)
       .then ((template: string) =>{
         if (template) {
+          console.log(new Date().getUTCMilliseconds() + ' got cache record for key ' + key);
           resolve(template);
         } else {
           resolve(this.getTemplateFromRegistry(templateType, name));
@@ -31,7 +28,7 @@ export class TemplateUtils {
   getTemplateFromRegistry(templateType: string, name: string): any {
     var template = this.constructTemplate(templateType, name);
     console.log(new Date().getUTCMilliseconds() + ' load template contents from file');
-    return this.gitUtils.loadFileContents(this.repoName, template)
+    return this.gitUtils.loadFileContents(template)
       .then((templateContents: any) => {
         var res = JSON.parse(templateContents);
         var key = this.getCacheKey(templateType, name);

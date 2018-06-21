@@ -5,8 +5,8 @@ var fetch = require('node-fetch');
 
 export class GitUtils { 
 
-  loadFileContents(repo: string, path: string): Promise<string>{
-    var url = this.constructUrl(repo, path);
+  loadFileContents(path: string): Promise<string>{
+    var url = this.constructUrl(path);
     return fetch(url)
       .then((response: any) => {
         return response.json()
@@ -23,8 +23,8 @@ export class GitUtils {
     return decoded;
   }
 
-  constructUrl(repo: string, path: string){
-    return "https://api.github.com/repos/" + repo + "/schema/" + "contents/" + path;
+  constructUrl(path: string){
+    return process.env.TEMPLATE_REPO + path;
   }
 
 }

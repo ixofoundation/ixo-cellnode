@@ -85,6 +85,26 @@ export class CapabilitiesService {
         });
     });
   }
+
+  removeCapabilities(projectDid: string, did: string, requestType: string): Promise<ICapabilitiesModel> {
+    console.log(new Date().getUTCMilliseconds() + ' add capabilities for ' + did + ' for request type ' + requestType);
+    return new Promise(function (resolve: Function, reject: Function) {
+      Capabilities.updateOne(
+        {
+          projectDid: projectDid
+        },
+        { $pull: { "capabilities.$[elem].allow": did } },
+        { arrayFilters: [{ "elem.capability": { $eq: requestType } }] },
+        function (error: Error, result: ICapabilitiesModel) {
+          if (error) {
+            console.log('DB ERROR ' + error);
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        });
+    });
+  }
 }
 
 export default new CapabilitiesService();

@@ -51,6 +51,7 @@ export class Request {
       }
       Cache.get(this.signature.creator)
         .then((didDoc: any) => {
+          if (didDoc) console.log(new Date().getUTCMilliseconds() + ' got cache record for key ' + this.signature.creator);
           if (didDoc && preVerifyDidSignature(didDoc, this)) {
             if (!cryptoUtils.validateSignature(JSON.stringify(this.data), this.signature.type, this.signature.signatureValue, didDoc.pubKey)) {
               validator.addError("Signature did not validate '" + JSON.stringify(this.payload));
