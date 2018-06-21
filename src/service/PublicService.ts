@@ -34,8 +34,10 @@ export class PublicService {
     });
   }
 
-  findForKey(key: String): any {
-    return Public.findOne({ key: key });
+  findForKey(key: String): Promise<IPublicModel> {
+    return new Promise(function (resolve: Function, reject: Function) {
+      resolve (Public.findOne({ key: key }));
+    });
   }
 }
 
