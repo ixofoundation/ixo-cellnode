@@ -18,7 +18,11 @@ export class PublicHandler {
             .then((resp: IPublicModel) => {
                 console.log('response is:' + resp);
                 console.log('data is: ' + resp.data);
-                resolve(resp);
+                let obj = {
+                    data: resp.data.toString(),
+                    contentType: resp.contentType
+                }
+                resolve(obj);
             });
         });
     }
