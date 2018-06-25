@@ -50,6 +50,44 @@ app      | RabbitMQ connected
 
 ```
 
+Handlers are registered according to the capability loaded from the configuration file from the /bin folder. Template defines where the schema template directory can be found and the allow determines who has access to specified capability.
+
+```
+{
+	"configuration": [
+		{
+			"capability": "CreateProject",
+			"template": "projects",
+			"allow":["did:sov:*"]
+		},
+		{
+			"capability": "CreateAgent",
+			"template": "agents"
+		},
+		{
+			"capability": "UpdateAgentStatus",
+			"template": "agents"
+		},
+		{
+			"capability": "SubmitClaim",
+			"template": "claims"
+		},
+		{
+			"capability": "EvaluateClaim",
+			"template": "evaluations"
+		},
+		{
+			"capability": "ListClaims",
+			"template": "claims" 
+		},
+		{
+			"capability": "ListAgents",
+			"template": "agents" 
+		}
+	]
+}
+```
+
 ```
 ./stop.sh
 
