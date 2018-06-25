@@ -14,7 +14,16 @@ export class PublicHandler {
 
     fetchPublic = (args: any) => {
         return new Promise((resolve: Function, reject: Function) => {
-            resolve(publicService.findForKey(args.key));
+            var payload = publicService.findForKey(args.key)
+            .then((resp: IPublicModel) => {
+                console.log('response is:' + resp);
+                console.log('data is: ' + resp.data);
+                let obj = {
+                    data: resp.data.toString(),
+                    contentType: resp.contentType
+                }
+                resolve(obj);
+            });
         });
     }
 }
