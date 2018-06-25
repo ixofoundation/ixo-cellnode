@@ -12,7 +12,6 @@ cd ixo-pds/bin
 install npm packages
 ./start.sh
 
-````
 ***********************************
 * ELYSIAN START                   *
 ***********************************
@@ -48,7 +47,7 @@ app      | RabbitMQ connected
 ***********************************
 * ELYSIAN START COMPLETE          *
 ***********************************
-````
+
 ./stop.sh
 ```
 
