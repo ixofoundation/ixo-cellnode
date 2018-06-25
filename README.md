@@ -2,7 +2,7 @@
 
 The project to setup Elysian.  It runs Node.js app using [Express 4](http://expressjs.com/) in a dockerized container.
 
-## Running Locally
+## Running Elysian
 
 Make sure you have [Docker](https://docker.com/) installed.
 
@@ -117,5 +117,9 @@ Removing db    ... done
 ```
 
 API documents can be found at https://github.com/ixofoundation/mkdocs/blob/master/docs/api.md
+
+## License
+
+ - **MIT** : http://opensource.org/licenses/MIT
 
 
