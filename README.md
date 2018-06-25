@@ -9,7 +9,7 @@ Make sure you have [Docker](https://docker.com/) installed.
 Clone the repository from github
 ```sh
 git clone https://github.com/ixofoundation/ixo_pds.git # or clone your own fork
-cd ixo-pds
+cd ixo-pds/bin
 install npm packages
 ./start.sh
 ```
