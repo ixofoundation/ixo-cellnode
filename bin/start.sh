@@ -1,16 +1,17 @@
 #!/bin/bash
 #git clone https://github.com/ixofoundation/ixo-pds.git
 #cd ixo-pds
-green=`tput setaf 2`
+#green=`tput setaf 2`
 echo "***********************************"
 echo "* ELYSIAN START                   *"
 echo "***********************************"
 echo ""
-echo "Build Elysian"
-tsc 
-docker build -t trustlab/ixo-elysian ../.
+#echo "Build Elysian"
+#tsc 
+#docker build -t trustlab/ixo-elysian ../.
 
-docker-compose up --no-start
+#docker-compose up --no-start
+docker-compose create
 docker-compose start db
 docker-compose start mq
 docker-compose start cache
