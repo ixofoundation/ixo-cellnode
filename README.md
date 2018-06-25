@@ -78,4 +78,6 @@ Removing db    ... done
 
 ```
 
+API documents can be found at https://github.com/ixofoundation/mkdocs/blob/master/docs/api.md
+
 
