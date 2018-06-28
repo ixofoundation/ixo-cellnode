@@ -425,17 +425,7 @@ export class RequestHandler extends AbstractHandler {
               "as": "evaluations"
             }
           },
-          { $unwind: { path: "$evaluations", preserveNullAndEmptyArrays: true } },
-          { $sort: { "evaluations.version": -1 } },
-          {
-            $group: {
-              "_id": "$_id",
-              "name": { $first: "$name" },
-              "type": { $first: "$type" },
-              "txHash": { $first: "$txHash" },
-              "evaluations": { $first: "$evaluations" }
-            }
-          }
+          { $sort: { "evaluations.version": -1 } }
         ],
         function (error: Error, result: any[]) {
           if (error) {
