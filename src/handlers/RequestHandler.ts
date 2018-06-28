@@ -425,22 +425,15 @@ export class RequestHandler extends AbstractHandler {
               "as": "evaluations"
             }
           },
-          {
-            $lookup: {
-              "from": "claims",
-              "localField": "projectDid",
-              "foreignField": "projectDid",
-              "as": "claims"
-            }
-          },
           { $unwind: { path: "$evaluations", preserveNullAndEmptyArrays: true } },
           { $sort: { "evaluations.version": -1 } },
-          { $unwind: "$claims" },
           {
             $group: {
               "_id": "$_id",
-              "claim": { $first: "$claims" },
-              "evaluations": { $first: "$evaluations" },
+              "name": { $first: "$name" },
+              "type": { $first: "$type" },
+              "txHash": { $first: "$txHash" },
+              "evaluations": { $first: "$evaluations" }
             }
           }
         ],
