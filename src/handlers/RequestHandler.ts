@@ -142,6 +142,8 @@ export class RequestHandler extends AbstractHandler {
       var txHash = obj.txHash;
       delete obj.version;
       delete obj.txHash;
+      delete obj._creator;
+      delete obj._created;
       switch (methodCall) {
         case 'CreateProject': {
           blockChainPayload = {

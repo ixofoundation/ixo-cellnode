@@ -99,7 +99,9 @@ export abstract class AbstractHandler {
                             .then((transaction: ITransactionModel) => {
                               var obj = {
                                 ...request.data,
-                                txHash: transaction.hash
+                                txHash: transaction.hash,
+                                _creator: request.signature.creator,
+                                _created: request.signature.created
                               };
                               console.log(new Date().getUTCMilliseconds() + ' updating the capabilities');
                               inst.updateCapabilities(request, capabilityMap.capability);
