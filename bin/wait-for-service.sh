@@ -12,7 +12,7 @@ while [[ $MATCH_LENGTH -eq 0 && $COUNTER -lt $RETRY_LIMIT ]] ; do
     ((COUNTER++))
     sleep 1
 
-    echo "waiting for $SERVICE, retry: $COUNTER"
+    echo "waiting for $SERVICE (retry $COUNTER of $RETRY_LIMIT)"
     MATCH=$(docker logs $SERVICE | grep "$CONFIRMATION_TEXT")
     MATCH_LENGTH=${#MATCH}    
 done
