@@ -16,9 +16,10 @@ docker-compose start db
 docker-compose start mq
 docker-compose start cache
 
-sleep 14
-docker-compose start pol
+./bin/wait-for-mongo.sh 27017
 docker-compose start app
+./bin/wait-for-rabbit.sh 
+docker-compose start pol
 
 echo -n "Starting Elysian ..."
 sleep 5
