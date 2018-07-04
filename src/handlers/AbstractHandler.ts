@@ -77,6 +77,8 @@ export abstract class AbstractHandler {
                                     var obj = {
                                       ...request.data,
                                       txHash: transaction.hash,
+                                      _creator: request.signature.creator,
+                                      _created: request.signature.created,      
                                       version: request.version + 1
                                     };
                                     console.log(new Date().getUTCMilliseconds() + ' updating the capabilities');
