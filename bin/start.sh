@@ -20,7 +20,7 @@ docker-compose start cache
 ./bin/wait-for-service.sh db 'waiting for connections on port' 10
 docker-compose start app
 # attempt to wait for rabbitmq to be ready
-./bin/wait-for-service.sh mq 'Server startup complete;' 20
+./bin/wait-for-service.sh mq 'Server startup complete;' 10
 docker-compose start pol
 
 echo -n "Starting Elysian ..."
