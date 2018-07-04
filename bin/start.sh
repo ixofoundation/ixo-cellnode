@@ -16,10 +16,10 @@ docker-compose start db
 docker-compose start mq
 docker-compose start cache
 
-# attempt to wait for mongodb to be ready
+# attempting to wait for mongodb to be ready
 ./bin/wait-for-service.sh db 'waiting for connections on port' 10
 docker-compose start app
-# attempt to wait for rabbitmq to be ready
+# attempting to wait for rabbitmq to be ready
 ./bin/wait-for-service.sh mq 'Server startup complete;' 10
 docker-compose start pol
 
