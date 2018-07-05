@@ -7,8 +7,11 @@ echo "* ELYSIAN START                   *"
 echo "***********************************"
 echo ""
 echo "Build Elysian"
-tsc 
-docker build -t trustlab/ixo-elysian ../.
+CURRENT_DIR=`dirname $0`
+ROOT_DIR=$CURRENT_DIR/..
+
+$ROOT_DIR/node_modules/typescript/bin/tsc 
+docker build -t trustlab/ixo-elysian $ROOT_DIR
 
 docker-compose up --no-start
 # docker-compose create
@@ -17,10 +20,10 @@ docker-compose start mq
 docker-compose start cache
 
 # attempting to wait for mongodb to be ready
-./bin/wait-for-service.sh db 'waiting for connections on port' 10
+$ROOT_DIR/bin/wait-for-service.sh db 'waiting for connections on port' 10
 docker-compose start app
 # attempting to wait for rabbitmq to be ready
-./bin/wait-for-service.sh mq 'Server startup complete;' 10
+$ROOT_DIR/bin/wait-for-service.sh mq 'Server startup complete;' 10
 docker-compose start pol
 
 echo -n "Starting Elysian ..."
@@ -31,3 +34,4 @@ echo ""
 echo "***********************************"
 echo "* ELYSIAN START COMPLETE          *"
 echo "***********************************"
+docker-compose ps
