@@ -10,7 +10,7 @@ const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
 
 export class Request {
 
-  payload: any;
+  body: any;
   signature: any;
 
   version: number = 0;
@@ -19,21 +19,21 @@ export class Request {
   data: any;
 
 
-  constructor(requestData: any) {
-    this.payload = JSON.stringify(requestData.payload);
+  constructor(requestBody: any) {
+    this.body = JSON.stringify(requestBody);
 
-    if (requestData.payload.data) {
-      this.data = requestData.payload.data;
-      this.projectDid = requestData.payload.data.projectDid;
+    if (requestBody.payload.data) {
+      this.data = requestBody.payload.data;
+      this.projectDid = requestBody.payload.data.projectDid;
     }
-    if (requestData.payload.data.version > 0) {
-      this.version = requestData.payload.data.version;
+    if (requestBody.payload.data.version > 0) {
+      this.version = requestBody.payload.data.version;
     }
-    if (requestData.payload.template) {
-      this.template = requestData.payload.template.name;
+    if (requestBody.payload.template) {
+      this.template = requestBody.payload.template.name;
     }
-    if (requestData.signature) {
-      this.signature = requestData.signature;
+    if (requestBody.signature) {
+      this.signature = requestBody.signature;
     }
 
   }
@@ -54,7 +54,7 @@ export class Request {
           if (didDoc) console.log(new Date().getUTCMilliseconds() + ' got cache record for key ' + this.signature.creator);
           if (didDoc && preVerifyDidSignature(didDoc, this)) {
             if (!cryptoUtils.validateSignature(JSON.stringify(this.data), this.signature.type, this.signature.signatureValue, didDoc.pubKey)) {
-              validator.addError("Signature did not validate '" + JSON.stringify(this.payload));
+              validator.addError("Signature did not validate '" + JSON.stringify(this.body));
               validator.valid = false;
             }
             resolve(validator);

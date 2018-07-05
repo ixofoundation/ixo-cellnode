@@ -6,19 +6,22 @@ echo "***********************************"
 echo "* ELYSIAN START                   *"
 echo "***********************************"
 echo ""
-#echo "Build Elysian"
-#tsc 
-#docker build -t trustlab/ixo-elysian ../.
+echo "Build Elysian"
+tsc 
+docker build -t trustlab/ixo-elysian ../.
 
-#docker-compose up --no-start
-docker-compose create
+docker-compose up --no-start
+# docker-compose create
 docker-compose start db
 docker-compose start mq
 docker-compose start cache
 
-sleep 7
-docker-compose start pol
+# attempting to wait for mongodb to be ready
+./bin/wait-for-service.sh db 'waiting for connections on port' 10
 docker-compose start app
+# attempting to wait for rabbitmq to be ready
+./bin/wait-for-service.sh mq 'Server startup complete;' 10
+docker-compose start pol
 
 echo -n "Starting Elysian ..."
 sleep 5
