@@ -63,7 +63,6 @@ services:
         max-size: "1m"
         max-file: "1"
 
-
   cli:
     container_name: cli
     image: trustlab/ixo-cli

@@ -9,6 +9,8 @@ import {RequestRouter} from './routes/RequestRouter';
 import {QueryRouter} from './routes/QueryRouter';
 import {PublicRouter} from './routes/PublicRouter';
 
+const compression = require('compression')
+
 class App {
 
   // ref to Express instance
@@ -27,6 +29,7 @@ class App {
   // Configure Express middleware.
   private middleware(): void {
     this.express.use(cors());
+    this.express.use(compression({ threshold: 0 }))
     this.express.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
     this.express.use(bodyParser.json({limit: '4mb'}));
     this.express.use(logger.before);

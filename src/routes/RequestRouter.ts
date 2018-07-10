@@ -21,9 +21,9 @@ export class RequestRouter extends AbstractRouter {
         var inst: any = this;
         const handler = new RequestHandler();
         data.configuration.forEach(function(obj: any) { 
-            var type = obj.capability.charAt(0).toLowerCase() + obj.capability.slice(1);
-            console.log('register handler.' + type);
-            inst.register(config, type, eval('handler.' + type));
+            var capabilityMethod = obj.capability.charAt(0).toLowerCase() + obj.capability.slice(1);
+            console.log('register handler.' + capabilityMethod);
+            inst.register(config, capabilityMethod, eval('handler.' + capabilityMethod));
             }
         );
         return config;
