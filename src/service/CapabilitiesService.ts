@@ -71,10 +71,10 @@ export class CapabilitiesService {
     return new Promise(function (resolve: Function, reject: Function) {
       Capabilities.updateOne(
         {
-          projectDid: projectDid
+          'projectDid': projectDid,
+          'capabilities.capability': requestType,
         },
-        { $addToSet: { "capabilities.$[elem].allow": did } },
-        { arrayFilters: [{ "elem.capability": { $eq: requestType } }] },
+        { $addToSet: { "capabilities.$.allow": did } },
         function (error: Error, result: ICapabilitiesModel) {
           if (error) {
             console.log('DB ERROR ' + error);
@@ -87,14 +87,14 @@ export class CapabilitiesService {
   }
 
   removeCapabilities(projectDid: string, did: string, requestType: string): Promise<ICapabilitiesModel> {
-    console.log(new Date().getUTCMilliseconds() + ' add capabilities for ' + did + ' for request type ' + requestType);
+    console.log(new Date().getUTCMilliseconds() + ' remove capabilities for ' + did + ' for request type ' + requestType);
     return new Promise(function (resolve: Function, reject: Function) {
       Capabilities.updateOne(
         {
-          projectDid: projectDid
+          'projectDid': projectDid,
+          'capabilities.capability': requestType,
         },
-        { $pull: { "capabilities.$[elem].allow": did } },
-        { arrayFilters: [{ "elem.capability": { $eq: requestType } }] },
+        { $pull: { "capabilities.$.allow": did } },
         function (error: Error, result: ICapabilitiesModel) {
           if (error) {
             console.log('DB ERROR ' + error);

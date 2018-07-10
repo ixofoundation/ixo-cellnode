@@ -23,6 +23,10 @@ export class PublicHandler {
                     contentType: resp.contentType
                 }
                 resolve(obj);
+            })
+            .catch((err) => {
+                console.log('fetchPublic() ' + err);
+                reject(err);
             });
         });
     }

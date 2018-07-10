@@ -2,7 +2,7 @@ import { TransactionError } from "./error/TransactionError";
 import axios from 'axios';
 import { timingSafeEqual } from "crypto";
 
-var amqplib = require('amqplib');
+var amqplib = require('amqplib/callback_api');
 
 
 const BLOCKCHAIN_URI_TENDERMINT = (process.env.BLOCKCHAIN_URI_TENDERMINT || '');
@@ -17,15 +17,27 @@ export class MessageQ {
     constructor(queue: string) {
         this.queue = queue;
         this.host = (process.env.RABITMQ_URI || '');
-    }
+    }      
 
     connect(): void {
-        amqplib.connect(this.host).then((conn: any) => {
+        console.log('Checking MQ connection');
+        amqplib.connect(this.host + "?heartbeat=60", (err: any, conn: any) => {
+            let connFunc = this.connect;
+            if (err) {
+                console.error("[AMQP]", err.message);
+                return setTimeout(connFunc, 1000);
+            }
+            conn.on("error", function(err: any) {
+                if (err.message !== "Connection closing") {
+                  console.error("[AMQP] conn error", err.message);
+                }
+              });
+            conn.on("close", function() {
+                console.error("[AMQP] reconnecting");
+                return setTimeout(connFunc, 1000);
+            });
             this.connection = conn;
             console.log('RabbitMQ connected');
-        }, () => {
-            console.log("Could not initialize RabbitMQ Server");
-            throw new TransactionError("Cannot connect to RabbitMQ Server");
         });
     }
 
@@ -35,7 +47,10 @@ export class MessageQ {
             const channel = await this.connection.createChannel();
             channel.assertQueue(this.queue, {
                 durable: true
-            }).then(() => {
+            }, (error: any) => {
+                if (error) {
+                    throw error;
+                }
                 let jsonContent = JSON.stringify(content);
                 console.log(new Date().getUTCMilliseconds() + ' publish to queue');
                 channel.sendToQueue(this.queue, Buffer.from(jsonContent), {
@@ -43,8 +58,6 @@ export class MessageQ {
                     contentType: 'application/json'
                 });
                 return true;
-            }, (error: any) => {
-                throw error;
             });
 
         } catch (error) {

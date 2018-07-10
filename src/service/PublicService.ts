@@ -37,7 +37,12 @@ export class PublicService {
   findForKey(key: String): Promise<IPublicModel> {
     console.log(`PublicService findForKey(${key})`);
     return new Promise(function (resolve: Function, reject: Function) {
-      resolve (Public.findOne({ key: key }));
+      let result = Public.findOne({ key: key })
+      if (result === null) {
+        resolve (result);
+      } else {
+        reject('Key: ' + key + ' not found');
+      }
     });
   }
 }
