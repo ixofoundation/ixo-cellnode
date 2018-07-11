@@ -8,8 +8,8 @@ services:
       - MONGODB_URI=mongodb://db:27017/elysian
       - MEMCACHE_URI=cache:11211
       - RABITMQ_URI=amqp://guest:guest@mq:5672
-      - BLOCKCHAIN_URI_REST=http://34.201.48.61:1317/
-      - BLOCKCHAIN_URI_TENDERMINT=http://34.201.48.61:46657/broadcast_tx_sync?tx=0x
+      - BLOCKCHAIN_URI_REST=
+      - BLOCKCHAIN_URI_TENDERMINT=
       - CONFIG=/usr/src/app/bin/config.json
       - TEMPLATE_REPO=https://api.github.com/repos/ixofoundation/schema/contents/
     restart: always
@@ -55,7 +55,7 @@ services:
     image: trustlab/ixo-pol
     environment:
       - RABITMQ_URI=amqp://guest:guest@mq:5672
-      - BLOCKCHAIN_URI_TENDERMINT=http://35.192.187.110:46657/broadcast_tx_sync?tx=0x
+      - BLOCKCHAIN_URI_TENDERMINT=
       - POLLTIMER=3000
     logging:
       driver: "json-file"

@@ -1,0 +1,11 @@
+version: "2"
+services:
+  app:
+    environment:
+      - BLOCKCHAIN_URI_REST=http://34.201.48.61:1317/
+      - BLOCKCHAIN_URI_TENDERMINT=http://34.201.48.61:46657/broadcast_tx_sync?tx=0x
+
+  pol:
+    environment:
+      - BLOCKCHAIN_URI_TENDERMINT=http://34.201.48.61:46657/broadcast_tx_sync?tx=0x
+

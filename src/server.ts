@@ -6,6 +6,9 @@ import mq from './MessageQ';
 import App from './App';
 import InitHandler from './handlers/InitHandler';
 
+const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
+console.log('Connecting to blockchain on: ' + BLOCKCHAIN_URI_REST);
+
 var mongoose = require('mongoose');
 
 require('mongoose').Promise = global.Promise;
