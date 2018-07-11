@@ -55,7 +55,7 @@ services:
     image: trustlab/ixo-pol
     environment:
       - RABITMQ_URI=amqp://guest:guest@mq:5672
-      - BLOCKCHAIN_URI_TENDERMINT=http://35.192.187.110:46657/broadcast_tx_sync?tx=0x
+      - BLOCKCHAIN_URI_TENDERMINT=http://beta.cosmos.ixo.world:46657/broadcast_tx_sync?tx=0x
       - POLLTIMER=3000
     logging:
       driver: "json-file"
@@ -66,4 +66,5 @@ services:
   cli:
     container_name: cli
     image: trustlab/ixo-cli
+
 
