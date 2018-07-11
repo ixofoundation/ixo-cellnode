@@ -67,3 +67,4 @@ services:
     container_name: cli
     image: trustlab/ixo-cli
 
+
