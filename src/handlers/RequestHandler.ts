@@ -313,9 +313,33 @@ export class RequestHandler extends AbstractHandler {
           {
             $lookup: {
               "from": "agentstatuses",
-              "localField": "agentDid",
-              "foreignField": "agentDid",
-              "as": "currentStatus"
+              let: {
+                "agentDid": "$agentDid",
+                "projectDid": "$projectDid"
+               },
+               pipeline: [
+                {
+                   $match: {
+                      $expr: {
+                         $and: [
+                            {
+                               $eq: [
+                                  "$agentDid",
+                                  "$$agentDid"
+                               ]
+                            },
+                            {
+                               $eq: [
+                                  "$projectDid",
+                                  "$$projectDid"
+                               ]
+                            }
+                         ]
+                      }
+                   }
+                }
+             ],
+             as: "currentStatus"
             }
           },
           { $unwind: { path: "$currentStatus", preserveNullAndEmptyArrays: true } },
