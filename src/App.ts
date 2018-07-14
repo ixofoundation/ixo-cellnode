@@ -8,6 +8,7 @@ import * as logger from './logger/Logger';
 import {RequestRouter} from './routes/RequestRouter';
 import {QueryRouter} from './routes/QueryRouter';
 import {PublicRouter} from './routes/PublicRouter';
+import { PublicHandler } from './handlers/PublicHandler';
 
 const compression = require('compression')
 
@@ -41,7 +42,8 @@ class App {
   private routes(): void {
     this.express.get('/', (req, res, next) => {
       res.send('API is running');
-    });    
+    });
+    this.express.get('/public/:key', new PublicHandler().getPublic)
 
     this.express.use('/api/request', new RequestRouter().router);
     this.express.use('/api/query', new QueryRouter().router);

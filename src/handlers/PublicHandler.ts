@@ -30,4 +30,19 @@ export class PublicHandler {
             });
         });
     }
+
+    getPublic = (req: any, res: any) => {
+        return this.fetchPublic(req.params).then( (obj: any) => {
+            var img = new Buffer(obj.data, 'base64');
+            res.writeHead(200, {
+                'Content-Type': obj.contentType,
+                'Content-Length': img.length
+             });
+             console.log(img.length);
+             res.end(img);
+        }).catch((err: any) => {
+            res.status(404).send('Sorry, we cannot find that!');
+        });
+            
+    }
 }
