@@ -16,10 +16,10 @@ docker build -t trustlab/ixo-elysian $ROOT_DIR
 if [ "$1" = "prod" ]
  then
   echo "Building Production images"
-  docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --no-start
+  docker-compose -f $ROOT_DIR/docker-compose.yml -f $ROOT_DIR/docker-compose.prod.yml up --no-start
  else
   echo "Building Developer images"
-  docker-compose -f docker-compose.yml -f docker-compose.dev.yml up --no-start
+  docker-compose -f $ROOT_DIR/docker-compose.yml -f $ROOT_DIR/docker-compose.dev.yml up --no-start
 fi
 # docker-compose create
 docker-compose start db
