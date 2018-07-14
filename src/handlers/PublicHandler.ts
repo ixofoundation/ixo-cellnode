@@ -4,7 +4,10 @@ import { IPublicModel, Public } from '../model/project/Public';
 
 declare var Promise: any;
 
+const MAX_AGE = 60*60*24*7; // 1 week
+
 export class PublicHandler {
+
 
     createPublic = (args: any) => {
         return new Promise((resolve: Function, reject: Function) => {
@@ -33,8 +36,13 @@ export class PublicHandler {
 
     getPublic = (req: any, res: any) => {
         return this.fetchPublic(req.params).then( (obj: any) => {
-            var img = new Buffer(obj.data, 'base64');
+            let img = new Buffer(obj.data, 'base64');
+            let maxAge = 0;
+            if (obj.contentType.indexOf('image/') == 0){
+                maxAge = MAX_AGE;
+            } 
             res.writeHead(200, {
+                'Cache-Control':  'public, max-age=' + maxAge,
                 'Content-Type': obj.contentType,
                 'Content-Length': img.length
              });
