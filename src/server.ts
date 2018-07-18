@@ -18,7 +18,7 @@ const port = normalizePort(process.env.PORT || '');
 App.set('port', port);
 const server = http.createServer(App);
 
-mongoose.connect(process.env.MONGODB_URI || '');
+mongoose.connect(process.env.MONGODB_URI || '', { keepAlive: 1, connectTimeoutMS: 10000, reconnectTries: 30, reconnectInterval: 5000});
 
 cache.connect();
 mq.connect();
@@ -44,12 +44,6 @@ db.once('open', function() {
   server.on('error', onError);
   server.on('listening', onListening);
 
-  //once we have a db connection, we must initialise it once only
-  //careful not to re-initialize on server startup
-  // InitHandler.initialise().then((response: any) => {
-  //   console.log(JSON.stringify(response));
-  //   return response;
-  // });
 });
 
 

@@ -78,7 +78,7 @@ export abstract class AbstractHandler {
                                       ...request.data,
                                       txHash: transaction.hash,
                                       _creator: request.signature.creator,
-                                      _created: request.signature.created,      
+                                      _created: request.signature.created,
                                       version: request.version + 1
                                     };
                                     console.log(new Date().getUTCMilliseconds() + ' updating the capabilities');
@@ -116,6 +116,7 @@ export abstract class AbstractHandler {
                                   console.log('Queue ' + msg);
                                   mq.publish(msg);
                                 });
+                              model.emit('postCommit', obj);
                               console.log(new Date().getUTCMilliseconds() + ' transaction completed successfully');
                             });
                         }
@@ -137,7 +138,6 @@ export abstract class AbstractHandler {
         });
     });
   }
-
 
   public queryTransaction(args: any, capability: string, query: Function) {
     var inst = this;

@@ -16,12 +16,18 @@ export class TemplateUtils {
       Cache.get(key)
       .then ((template: string) =>{
         if (template) {
+          // cache-hit
           console.log(new Date().getUTCMilliseconds() + ' got cache record for key ' + key);
           resolve(template);
         } else {
           resolve(this.getTemplateFromRegistry(templateType, name));
         }
       })
+      .catch((reason) => {
+        // cannot connect to cache; cache-miss
+        console.log(new Date().getUTCMilliseconds() + ' template registry failed ' + reason);
+        resolve(this.getTemplateFromRegistry(templateType, name));
+      });
     });
   }
 
