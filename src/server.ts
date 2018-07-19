@@ -18,7 +18,7 @@ const port = normalizePort(process.env.PORT || '');
 App.set('port', port);
 const server = http.createServer(App);
 
-mongoose.connect(process.env.MONGODB_URI || '', { keepAlive: 1, connectTimeoutMS: 10000, reconnectTries: 30, reconnectInterval: 5000});
+mongoose.connect(process.env.MONGODB_URI || '', {keepAlive: 1, connectTimeoutMS: 10000, reconnectTries: 30, reconnectInterval: 5000});
 
 cache.connect();
 mq.connect();

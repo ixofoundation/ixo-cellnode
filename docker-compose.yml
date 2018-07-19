@@ -33,21 +33,15 @@ services:
     image: mongo
     volumes:
       - ./data:/data/db
-      - ./backup:/backup
-    ports:
-      - "27017:27017"
+      - $HOME/backup:/backup
 
   cache:
     container_name: cache
     image: memcached:latest
-    ports:
-      - "11211:11211"
 
   mq:
     container_name: mq
     image: rabbitmq:latest
-    ports:
-        - "5672:5672"
     restart: always
 
   pol:
