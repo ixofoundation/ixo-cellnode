@@ -84,7 +84,7 @@ export abstract class AbstractHandler {
                                     console.log(new Date().getUTCMilliseconds() + ' updating the capabilities');
                                     this.updateCapabilities(request, capabilityMap.capability);
                                     console.log(new Date().getUTCMilliseconds() + ' commit to Elysian');
-                                    resolve(model.create(obj));
+                                    resolve(model.create({...obj, projectDid: request.projectDid}));
                                     console.log(new Date().getUTCMilliseconds() + ' publish to blockchain');
                                     this.msgToPublish(obj, request, capabilityMap.capability)
                                       .then((msg: any) => {
@@ -109,7 +109,7 @@ export abstract class AbstractHandler {
                               console.log(new Date().getUTCMilliseconds() + ' updating the capabilities');
                               inst.updateCapabilities(request, capabilityMap.capability);
                               console.log(new Date().getUTCMilliseconds() + ' commit to Elysian');
-                              resolve(model.create(obj));
+                              resolve(model.create({...obj, projectDid: request.projectDid}));
                               console.log(new Date().getUTCMilliseconds() + ' publish to blockchain');
                               this.msgToPublish(obj, request, capabilityMap.capability)
                                 .then((msg: any) => {
