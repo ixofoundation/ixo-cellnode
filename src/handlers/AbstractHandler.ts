@@ -1,5 +1,5 @@
-import { Document, Schema, Model, model } from "mongoose";
-import { ITransactionModel, Transaction } from '../model/project/Transaction';
+import { Model, connection} from "mongoose";
+import { ITransactionModel } from '../model/project/Transaction';
 import { ICapabilitiesModel } from '../model/project/Capabilities';
 
 import transactionService from '../service/TransactionLogService';
@@ -30,6 +30,9 @@ export abstract class AbstractHandler {
     var inst = this;
     var request = new Request(args);
     return new Promise((resolve: Function, reject: Function) => {
+      if (connection.readyState != 1) {
+        throw new TransactionError('Elysian not available');
+      }
       if (!request.projectDid) request.projectDid = (projectDid || "");
       capabilitiesService.findCapabilitiesForProject(request.projectDid)
         .then((result: ICapabilitiesModel) => {
@@ -45,7 +48,7 @@ export abstract class AbstractHandler {
           })
           return capabilityMap;
         }).catch((reason) => {
-          console.log(new Date().getUTCMilliseconds() + 'capabilities not found for project' + request.projectDid);
+          console.log(new Date().getUTCMilliseconds() + ' capabilities not found for project' + request.projectDid);
           reject(new TransactionError('Capabilities not found for project'));
         })
         .then((capabilityMap: any) => {
@@ -65,61 +68,69 @@ export abstract class AbstractHandler {
                     .then((sigValid: RequestValidator) => {
                       if (sigValid.valid) {
                         console.log(new Date().getUTCMilliseconds() + ' signature verified');
-                        if (checkIfExist) {
-                          checkIfExist(request)
-                            .then((found: boolean) => {
-                              if (found) {
-                                reject(new TransactionError('Record out of date or already exists'));
-                              } else {
-                                console.log(new Date().getUTCMilliseconds() + ' write transaction to log')
-                                transactionService.createTransaction(request.body, request.signature.type, request.signature.signatureValue, request.projectDid)
-                                  .then((transaction: ITransactionModel) => {
-                                    var obj = {
-                                      ...request.data,
-                                      txHash: transaction.hash,
-                                      _creator: request.signature.creator,
-                                      _created: request.signature.created,
-                                      version: request.version + 1
-                                    };
-                                    console.log(new Date().getUTCMilliseconds() + ' updating the capabilities');
-                                    this.updateCapabilities(request, capabilityMap.capability);
-                                    console.log(new Date().getUTCMilliseconds() + ' commit to Elysian');
-                                    resolve(model.create({...obj, projectDid: request.projectDid}));
-                                    console.log(new Date().getUTCMilliseconds() + ' publish to blockchain');
-                                    this.msgToPublish(obj, request, capabilityMap.capability)
-                                      .then((msg: any) => {
-                                        console.log('Queue ' + msg);
-                                        mq.publish(msg);
+                        mq.connect()
+                          .then(() => {
+                            if (checkIfExist) {
+                              checkIfExist(request)
+                                .then((found: boolean) => {
+                                  if (found) {
+                                    reject(new TransactionError('Record out of date or already exists'));
+                                  } else {
+                                    console.log(new Date().getUTCMilliseconds() + ' write transaction to log')
+                                    transactionService.createTransaction(request.body, request.signature.type, request.signature.signatureValue, request.projectDid)
+                                      .then((transaction: ITransactionModel) => {
+                                        var obj = {
+                                          ...request.data,
+                                          txHash: transaction.hash,
+                                          _creator: request.signature.creator,
+                                          _created: request.signature.created,
+                                          version: request.version + 1
+                                        };
+                                        console.log(new Date().getUTCMilliseconds() + ' updating the capabilities');
+                                        this.updateCapabilities(request, capabilityMap.capability);
+                                        console.log(new Date().getUTCMilliseconds() + ' commit to Elysian');
+                                        resolve(model.create({ ...obj, projectDid: request.projectDid }));
+                                        console.log(new Date().getUTCMilliseconds() + ' publish to blockchain');
+                                        this.msgToPublish(obj, request, capabilityMap.capability)
+                                          .then((msg: any) => {
+                                            console.log(new Date().getUTCMilliseconds() + ' sent to queue ' + msg);
+                                            mq.publish(msg);
+                                          });
+                                        model.emit('postCommit', obj);
+                                        console.log(new Date().getUTCMilliseconds() + ' transaction completed successfully');
                                       });
-                                    model.emit('postCommit', obj);
-                                    console.log(new Date().getUTCMilliseconds() + ' transaction completed successfully');
-                                  });
-                              }
-                            })
-                        } else {
-                          console.log(new Date().getUTCMilliseconds() + ' write transaction to log');
-                          transactionService.createTransaction(request.body, request.signature.type, request.signature.signatureValue, request.projectDid)
-                            .then((transaction: ITransactionModel) => {
-                              var obj = {
-                                ...request.data,
-                                txHash: transaction.hash,
-                                _creator: request.signature.creator,
-                                _created: request.signature.created
-                              };
-                              console.log(new Date().getUTCMilliseconds() + ' updating the capabilities');
-                              inst.updateCapabilities(request, capabilityMap.capability);
-                              console.log(new Date().getUTCMilliseconds() + ' commit to Elysian');
-                              resolve(model.create({...obj, projectDid: request.projectDid}));
-                              console.log(new Date().getUTCMilliseconds() + ' publish to blockchain');
-                              this.msgToPublish(obj, request, capabilityMap.capability)
-                                .then((msg: any) => {
-                                  console.log('Queue ' + msg);
-                                  mq.publish(msg);
+                                  }
+                                })
+                            } else {
+                              console.log(new Date().getUTCMilliseconds() + ' write transaction to log');
+                              transactionService.createTransaction(request.body, request.signature.type, request.signature.signatureValue, request.projectDid)
+                                .then((transaction: ITransactionModel) => {
+                                  var obj = {
+                                    ...request.data,
+                                    txHash: transaction.hash,
+                                    _creator: request.signature.creator,
+                                    _created: request.signature.created
+                                  };
+                                  console.log(new Date().getUTCMilliseconds() + ' updating the capabilities');
+                                  inst.updateCapabilities(request, capabilityMap.capability);
+                                  console.log(new Date().getUTCMilliseconds() + ' commit to Elysian');
+                                  resolve(model.create({ ...obj, projectDid: request.projectDid }));
+                                  console.log(new Date().getUTCMilliseconds() + ' publish to blockchain');
+                                  this.msgToPublish(obj, request, capabilityMap.capability)
+                                    .then((msg: any) => {
+                                      console.log(new Date().getUTCMilliseconds() + ' sent to queue ' + msg);
+                                      mq.publish(msg);
+                                    });
+                                  model.emit('postCommit', obj);
+                                  console.log(new Date().getUTCMilliseconds() + ' transaction completed successfully');
                                 });
-                              model.emit('postCommit', obj);
-                              console.log(new Date().getUTCMilliseconds() + ' transaction completed successfully');
-                            });
-                        }
+                            }
+                          })
+                          .catch((error) => {
+                            console.log(new Date().getUTCMilliseconds() + 'mq failed to connect' + error);
+                            reject(new TransactionError(error));
+                          })
+
                       } else {
                         reject(new ValidationError(sigValid.errors[0]));
                       }
@@ -213,9 +224,9 @@ export abstract class AbstractHandler {
 
   generateProjectWallet(): Promise<string> {
     return new Promise((resolve: Function, reject: Function) => {
-      var fileSystem = require('fs');
-      var data = JSON.parse(fileSystem.readFileSync(process.env.CONFIG, 'utf8'));
-
+      if (connection.readyState != 1) {
+        throw new TransactionError('Elysian not available');
+      }
       var sovrinUtils = new SovrinUtils();
       var mnemonic = sovrinUtils.generateBip39Mnemonic();
       var sovrinWallet = sovrinUtils.generateSdidFromMnemonic(mnemonic);

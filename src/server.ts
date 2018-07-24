@@ -4,7 +4,6 @@ import * as logger from './logger/Logger';
 import cache from './Cache';
 import mq from './MessageQ';
 import App from './App';
-import InitHandler from './handlers/InitHandler';
 
 const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
 console.log('Connecting to blockchain on: ' + BLOCKCHAIN_URI_REST);
@@ -18,25 +17,27 @@ const port = normalizePort(process.env.PORT || '');
 App.set('port', port);
 const server = http.createServer(App);
 
-mongoose.connect(process.env.MONGODB_URI || '', {keepAlive: 1, connectTimeoutMS: 10000, reconnectTries: 30, reconnectInterval: 5000});
+mongoose.connect(process.env.MONGODB_URI || '',
+  { reconnectTries: Number.MAX_VALUE, reconnectInterval: 1000, connectTimeoutMS: 2000, keepAlive: 1 })
+  .catch(() => { });
 
 cache.connect();
-mq.connect();
+mq.connect().catch(() => { });
 
 var db = mongoose.connection;
 db.on('error', function (err: any) {
   if (err.message && err.message.match(/failed to connect to server .* on first connect/)) {
-      console.log(new Date(), String(err));
-      setTimeout(function () {
-          console.log("Retrying first connect...");
-          db.openUri(process.env.MONGODB_URI || '').catch(() => {});
-      }, 5 * 1000);
+    console.log(new Date(), String(err));
+    setTimeout(function () {
+      console.log("Retrying first connect...");
+      db.openUri(process.env.MONGODB_URI || '').catch(() => { });
+    }, 5 * 1000);
   } else {
-      console.error(new Date(), String(err));
+    console.error(new Date(), String(err));
   }
 });
 
-db.once('open', function() {
+db.once('open', function () {
   console.log('MongDB connected');
 
   // Once connected listen on server
@@ -57,7 +58,7 @@ process.on('SIGTERM', function () {
   mq.connection.close();
 });
 
-function normalizePort(val: number|string): number|string|boolean {
+function normalizePort(val: number | string): number | string | boolean {
   let port: number = (typeof val === 'string') ? parseInt(val, 10) : val;
   if (isNaN(port)) return val;
   else if (port >= 0) return port;
@@ -67,7 +68,7 @@ function normalizePort(val: number|string): number|string|boolean {
 function onError(error: NodeJS.ErrnoException): void {
   if (error.syscall !== 'listen') throw error;
   let bind = (typeof port === 'string') ? 'Pipe ' + port : 'Port ' + port;
-  switch(error.code) {
+  switch (error.code) {
     case 'EACCES':
       console.log(`${bind} requires elevated privileges`);
       process.exit(1);

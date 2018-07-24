@@ -1,8 +1,7 @@
 import { TransactionError } from "./error/TransactionError";
 import axios from 'axios';
-import { timingSafeEqual } from "crypto";
 
-var amqplib = require('amqplib/callback_api');
+var amqplib = require('amqplib');
 
 
 const BLOCKCHAIN_URI_TENDERMINT = (process.env.BLOCKCHAIN_URI_TENDERMINT || '');
@@ -19,25 +18,19 @@ export class MessageQ {
         this.host = (process.env.RABITMQ_URI || '');
     }      
 
-    connect(): void {
-        console.log('Checking MQ connection');
-        amqplib.connect(this.host + "?heartbeat=60", (err: any, conn: any) => {
-            let connFunc = this.connect;
-            if (err) {
-                console.error("[AMQP]", err.message);
-                return setTimeout(connFunc, 1000);
-            }
-            conn.on("error", function(err: any) {
-                if (err.message !== "Connection closing") {
-                  console.error("[AMQP] conn error", err.message);
-                }
-              });
-            conn.on("close", function() {
-                console.error("[AMQP] reconnecting");
-                return setTimeout(connFunc, 1000);
-            });
-            this.connection = conn;
-            console.log('RabbitMQ connected');
+    connect(): Promise<any> {
+        var inst: any;
+        inst = this;
+        return new Promise(function (resolve: Function, reject: Function) {
+            amqplib.connect(process.env.RABITMQ_URI || '')
+                .then((conn: any) => {
+                    inst.connection = conn;
+                    resolve(conn);
+                    console.log('RabbitMQ connected');
+                }, (reason: any) => {
+                    //console.log("Could not initialize RabbitMQ Server");
+                    reject("Cannot connect to RabbitMQ Server " + reason);
+                });
         });
     }
 
