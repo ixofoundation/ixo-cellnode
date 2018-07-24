@@ -10,9 +10,12 @@ const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
 //  PROJECT MODEL                              //
 /////////////////////////////////////////////////
 
-export interface IProjectModel extends Document { }
+export interface IProjectModel extends Document {
+  autoApprove: [string]
+}
 
 var ProjectSchema: Schema = new Schema({
+  autoApprove: []
 }, { strict: false });
 
 ProjectSchema.pre("save", function (next) {
@@ -20,6 +23,7 @@ ProjectSchema.pre("save", function (next) {
 });
 
 export const Project: Model<IProjectModel> = model<IProjectModel>("Project", ProjectSchema);
+
 
 /////////////////////////////////////////////////
 //   AGENT MODEL                               //
@@ -37,32 +41,38 @@ AgentSchema.pre("save", function (next) {
 export const Agent: Model<IAgentModel> = model<IAgentModel>("Agent", AgentSchema);
 
 Agent.on("postCommit", function (obj) {
-  let status = (obj.role === 'SA') ? "1" : "0";
-  let requestHandler = new RequestHandler();
-  var data: any = {
-    projectDid: obj.projectDid,
-    status: status,
-    agentDid: obj.agentDid,
-    role: obj.role
-  }
-  requestHandler.selfSignMessage(data, obj.projectDid)
-    .then((signature: any) => {
-      var statusRequest: any = {
-        payload: {
-          template: {
-            name: "agent_status"
-          },
-          data: data
-        },
-        signature: {
-          type: "ed25519-sha-256",
-          created: new Date().toISOString(),
-          creator: obj.projectDid,
-          signatureValue: signature
-        }
+  Project.findOne({
+    projectDid: obj.projectDid
+  }).then((project) => {
+    if (project) {
+      let status = (project.autoApprove.some(function (element) { return (obj.role === element) })) ? "1" : "0";
+      let requestHandler = new RequestHandler();
+      var data: any = {
+        projectDid: obj.projectDid,
+        status: status,
+        agentDid: obj.agentDid,
+        role: obj.role
       }
-      requestHandler.updateAgentStatus(statusRequest);
-    });
+      requestHandler.selfSignMessage(data, obj.projectDid)
+        .then((signature: any) => {
+          var statusRequest: any = {
+            payload: {
+              template: {
+                name: "agent_status"
+              },
+              data: data
+            },
+            signature: {
+              type: "ed25519-sha-256",
+              created: new Date().toISOString(),
+              creator: obj.projectDid,
+              signatureValue: signature
+            }
+          }
+          requestHandler.updateAgentStatus(statusRequest);
+        });
+    }
+  });
 });
 
 /////////////////////////////////////////////////
@@ -316,30 +326,30 @@ export class RequestHandler extends AbstractHandler {
               let: {
                 "agentDid": "$agentDid",
                 "projectDid": "$projectDid"
-               },
-               pipeline: [
+              },
+              pipeline: [
                 {
-                   $match: {
-                      $expr: {
-                         $and: [
-                            {
-                               $eq: [
-                                  "$agentDid",
-                                  "$$agentDid"
-                               ]
-                            },
-                            {
-                               $eq: [
-                                  "$projectDid",
-                                  "$$projectDid"
-                               ]
-                            }
-                         ]
-                      }
-                   }
+                  $match: {
+                    $expr: {
+                      $and: [
+                        {
+                          $eq: [
+                            "$agentDid",
+                            "$$agentDid"
+                          ]
+                        },
+                        {
+                          $eq: [
+                            "$projectDid",
+                            "$$projectDid"
+                          ]
+                        }
+                      ]
+                    }
+                  }
                 }
-             ],
-             as: "currentStatus"
+              ],
+              as: "currentStatus"
             }
           },
           { $unwind: { path: "$currentStatus", preserveNullAndEmptyArrays: true } },
@@ -453,13 +463,13 @@ export class RequestHandler extends AbstractHandler {
           },
           { $sort: { "evaluations.version": -1 } }
         ],
-        function (error: Error, result: any[]) {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(result);
-          }
-        });
+          function (error: Error, result: any[]) {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(result);
+            }
+          });
       });
     });
   }
