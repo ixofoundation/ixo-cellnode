@@ -93,7 +93,7 @@ export abstract class AbstractHandler {
                                         console.log(new Date().getUTCMilliseconds() + ' publish to blockchain');
                                         this.msgToPublish(obj, request, capabilityMap.capability)
                                           .then((msg: any) => {
-                                            console.log(new Date().getUTCMilliseconds() + ' sent to queue ' + msg);
+                                            console.log(new Date().getUTCMilliseconds() + ' message to be published ' + msg);
                                             mq.publish(msg);
                                           });
                                         model.emit('postCommit', obj);
@@ -118,7 +118,7 @@ export abstract class AbstractHandler {
                                   console.log(new Date().getUTCMilliseconds() + ' publish to blockchain');
                                   this.msgToPublish(obj, request, capabilityMap.capability)
                                     .then((msg: any) => {
-                                      console.log(new Date().getUTCMilliseconds() + ' sent to queue ' + msg);
+                                      console.log(new Date().getUTCMilliseconds() + ' message to be published ' + msg);
                                       mq.publish(msg);
                                     });
                                   model.emit('postCommit', obj);

@@ -16,7 +16,7 @@ export class MessageQ {
     constructor(queue: string) {
         this.queue = queue;
         this.host = (process.env.RABITMQ_URI || '');
-    }      
+    }
 
     connect(): Promise<any> {
         var inst: any;
@@ -39,36 +39,23 @@ export class MessageQ {
 
             const channel = await this.connection.createChannel();
             channel.assertQueue(this.queue, {
-                durable: true
-            }, (error: any) => {
-                if (error) {
-                    throw error;
-                }
-                let jsonContent = JSON.stringify(content);
-                console.log(new Date().getUTCMilliseconds() + ' publish to queue');
-                channel.sendToQueue(this.queue, Buffer.from(jsonContent), {
-                    persistent: true,
-                    contentType: 'application/json'
+                durable: true,
+                deadLetterExchange: "pds.dlx",
+                deadLetterRoutingKey: "dlx.rk"
+            })
+                .then(() => {
+                    let jsonContent = JSON.stringify(content);
+                    console.log(new Date().getUTCMilliseconds() + ' send to queue');
+                    channel.sendToQueue(this.queue, Buffer.from(jsonContent), {
+                        persistent: true,
+                        contentType: 'application/json'
+                    });
+                    return true;
                 });
-                return true;
-            });
 
         } catch (error) {
             throw new TransactionError(error.message);
         }
-    }
-
- 
-   private handleMessage(message: any): Promise<any> {
-        return new Promise((resolve: Function, reject: Function) => {
-            console.log(new Date().getUTCMilliseconds() + ' consume from queue');
-            axios.get(BLOCKCHAIN_URI_TENDERMINT + message)
-                .then((response: any) => {
-                    console.log(new Date().getUTCMilliseconds() + ' received response from blockchain');
-                    resolve(true);
-                })
-
-        });
     }
 }
 
