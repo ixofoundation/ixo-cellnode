@@ -11,11 +11,13 @@ const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
 /////////////////////////////////////////////////
 
 export interface IProjectModel extends Document {
-  autoApprove: [string]
+  autoApprove: [string],
+  evaluatorPayPerClaim: number
 }
 
 var ProjectSchema: Schema = new Schema({
-  autoApprove: []
+  autoApprove: [],
+  evaluatorPayPerClaim: Number
 }, { strict: false });
 
 ProjectSchema.pre("save", function (next) {
@@ -391,23 +393,31 @@ export class RequestHandler extends AbstractHandler {
       console.log(new Date().getUTCMilliseconds() + ' confirm funds exists');
       axios.get(BLOCKCHAIN_URI_REST + 'projectAccounts/' + projectDid)
         .then((response) => {
-          var balance = 0;
           if (response.status == 200) {
             response.data.forEach((element: any) => {
               if (element.did == projectDid) {
-                // TODO: calculate if funds available for evaluators
-                //balance = element.balance - element.evaluatorPayPerClaim;
-                console.log(new Date().getUTCMilliseconds() + 'balance is ' + balance);
+                Project.findOne({
+                  projectDid: projectDid
+                })
+                  .then((project) => {
+                    if (project) {
+                      resolve(element.balance - project.evaluatorPayPerClaim >= 0);
+                    }
+                    console.log(new Date().getUTCMilliseconds() + ' check for funds no project found for projectDid ' + projectDid);
+                    resolve(false);
+                  })
+                  .catch((err) => {
+                    console.log(new Date().getUTCMilliseconds() + ' error processing check for funds ' + err)
+                    resolve(false);
+                  });
               }
             })
-            if (balance >= 0) {
-              resolve(true);
-            }
           }
+          console.log(new Date().getUTCMilliseconds() + ' no valid response check for funds from blockchain ' + response.statusText);
           resolve(false);
         })
         .catch((reason) => {
-          console.log(new Date().getUTCMilliseconds() + ' could not connect to blockchain ' + reason);
+          console.log(new Date().getUTCMilliseconds() + ' check for funds could not connect to blockchain ' + reason);
           resolve(false);
         });
     });
@@ -441,7 +451,7 @@ export class RequestHandler extends AbstractHandler {
           });
         }
         console.log(new Date().getUTCMilliseconds() + ' insufficient funds available');
-        return 'Service currently unavailable';
+        return 'Insufficient funds available';
       });
   }
 
