@@ -158,6 +158,7 @@ export class RequestHandler extends AbstractHandler {
       delete obj._created;
       switch (methodCall) {
         case 'CreateProject': {
+          delete obj.autoApprove;
           blockChainPayload = {
             payload: [16, {
               data: {

@@ -35,9 +35,12 @@ export class MessageQ {
                         inst.connect();
                     });
                     console.log('RabbitMQ connected');
-                    resolve(conn);                    
+                    resolve(conn);
                 }, () => {
-                    inst.connect();
+                    setTimeout(function () {
+                        console.error("RabbitMQ reconnecting");
+                        inst.connect()
+                    }, 5000);
                 });
         });
     }
@@ -54,7 +57,7 @@ export class MessageQ {
             })
                 .then(() => {
                     channel.bindQueue(this.queue, 'pds.ex');
-                    channel.bindQueue(this.queue, 'pds.dlx');
+                    //channel.bindQueue(this.queue, 'pds.dlx');
                 })
                 .then(() => {
                     let jsonContent = JSON.stringify(content);
