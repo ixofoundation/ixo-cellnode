@@ -1,5 +1,4 @@
 import { TransactionError } from "./error/TransactionError";
-import axios from 'axios';
 
 var amqplib = require('amqplib');
 
@@ -21,28 +20,42 @@ export class MessageQ {
     connect(): Promise<any> {
         var inst: any;
         inst = this;
+
         return new Promise(function (resolve: Function, reject: Function) {
             amqplib.connect(process.env.RABITMQ_URI || '')
                 .then((conn: any) => {
                     inst.connection = conn;
-                    resolve(conn);
+                    conn.on("close", function () {
+                        inst.connection = null;
+                        console.error("!RabbitMQ reconnecting");
+                        inst.connect();
+                    });
+                    conn.on("error", function () {
+                        inst.connection = null;
+                        inst.connect();
+                    });
                     console.log('RabbitMQ connected');
-                }, (reason: any) => {
-                    //console.log("Could not initialize RabbitMQ Server");
-                    reject("Cannot connect to RabbitMQ Server " + reason);
+                    resolve(conn);                    
+                }, () => {
+                    inst.connect();
                 });
         });
     }
 
     async publish(content: any) {
         try {
-
             const channel = await this.connection.createChannel();
+            channel.assertExchange("pds.ex", "direct", { durable: true });
+            channel.assertExchange("pds.dlx", "fanout", { durable: true });
             channel.assertQueue(this.queue, {
                 durable: true,
                 deadLetterExchange: "pds.dlx",
                 deadLetterRoutingKey: "dlx.rk"
             })
+                .then(() => {
+                    channel.bindQueue(this.queue, 'pds.ex');
+                    channel.bindQueue(this.queue, 'pds.dlx');
+                })
                 .then(() => {
                     let jsonContent = JSON.stringify(content);
                     console.log(new Date().getUTCMilliseconds() + ' send to queue');
