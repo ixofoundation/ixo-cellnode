@@ -10,7 +10,7 @@ services:
       - RABITMQ_URI=amqp://guest:guest@mq:5672?heartbeat=2
       - BLOCKCHAIN_URI_REST=
       - BLOCKCHAIN_URI_TENDERMINT=
-      - CONFIG=/usr/src/app/bin/config.json
+      - CONFIG=/usr/src/app/config.json
       - TEMPLATE_REPO=https://api.github.com/repos/ixofoundation/schema/contents/
     restart: always
     build: .
