@@ -1,4 +1,6 @@
 import { TransactionError } from "./error/TransactionError";
+import { toASCII } from "punycode";
+import { resolve } from "path";
 
 var amqplib = require('amqplib');
 
@@ -37,7 +39,7 @@ export class MessageQ {
                     console.log('RabbitMQ connected');
                     resolve(conn);
                 }, () => {
-                    setTimeout(function () {
+                    setTimeout(() => {
                         console.error("RabbitMQ reconnecting");
                         inst.connect()
                     }, 5000);
@@ -57,7 +59,6 @@ export class MessageQ {
             })
                 .then(() => {
                     channel.bindQueue(this.queue, 'pds.ex');
-                    //channel.bindQueue(this.queue, 'pds.dlx');
                 })
                 .then(() => {
                     let jsonContent = JSON.stringify(content);
@@ -72,6 +73,36 @@ export class MessageQ {
         } catch (error) {
             throw new TransactionError(error.message);
         }
+    }
+
+    public subscribe(): Promise<any> {
+        var inst: any;
+        inst = this;
+        return new Promise(function (resolve: Function, reject: Function) {
+            try {
+                const channel = inst.connection.createChannel();
+                channel.assertExchange("pds.dlx", "fanout", { durable: true });
+                channel.assertQueue('pds.dlq', {
+                    durable: true
+                })
+                    .then(() => {
+                        channel.bindQueue('pds.dlq', 'pds.dlx');
+                    })
+                    .then(() => {
+                        channel.prefetch(1);
+
+                        channel.consume('pds.dlq', (messageData: any) => {
+                            console.log(new Date().getUTCMilliseconds() + " Received %s", messageData.content.toString());
+                            resolve(messageData.content);
+                        }, { noAck: true });
+                    }, (error: any) => {
+                        throw error;
+                    });
+
+            } catch (error) {
+                throw new Error(error.message);
+            }
+        });
     }
 }
 

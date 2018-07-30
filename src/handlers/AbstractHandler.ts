@@ -112,16 +112,24 @@ export abstract class AbstractHandler {
                                 };
                                 console.log(new Date().getUTCMilliseconds() + ' updating the capabilities');
                                 inst.updateCapabilities(request, capabilityMap.capability);
-                                console.log(new Date().getUTCMilliseconds() + ' commit to Elysian');
-                                resolve(model.create({ ...obj, projectDid: request.projectDid }));
+                                //console.log(new Date().getUTCMilliseconds() + ' commit to Elysian');
+                                //resolve(model.create({ ...obj, projectDid: request.projectDid }));
                                 console.log(new Date().getUTCMilliseconds() + ' publish to blockchain');
                                 this.msgToPublish(obj, request, capabilityMap.capability)
                                   .then((msg: any) => {
                                     console.log(new Date().getUTCMilliseconds() + ' message to be published ' + msg);
-                                    mq.publish(msg);
+                                    mq.publish(msg)
+                                      .then(() => {
+                                        mq.subscribe()
+                                          .then((bcresp) => {
+                                            console.log(new Date().getUTCMilliseconds() + ' commit to Elysian');
+                                            console.log(new Date().getUTCMilliseconds() + bcresp);
+                                            resolve(model.create({ ...obj, projectDid: request.projectDid }));
+                                            model.emit('postCommit', obj);
+                                            console.log(new Date().getUTCMilliseconds() + ' transaction completed successfully');
+                                           });
+                                      });
                                   });
-                                model.emit('postCommit', obj);
-                                console.log(new Date().getUTCMilliseconds() + ' transaction completed successfully');
                               });
                           }
                         } else {
