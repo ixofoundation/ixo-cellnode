@@ -14,7 +14,7 @@ then
   echo "Building Developer images"
   $ROOT_DIR/node_modules/typescript/bin/tsc 
   docker build -t trustlab/ixo-elysian $ROOT_DIR
-  docker-compose -f $ROOT_DIR/docker-compose.yml -f $ROOT_DIR/docker-compose.dev.yml build --no-start
+  docker-compose -f $ROOT_DIR/docker-compose.yml -f $ROOT_DIR/docker-compose.dev.yml up --no-start
 elif [ "$1" = "beta" ]
 then
   echo "Building Beta images"
