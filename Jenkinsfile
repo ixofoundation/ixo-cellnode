@@ -7,10 +7,15 @@ node {
         checkout scm
     }
 
+    stage('Update npm packages') {
+        /* Let's make sure we have the repository cloned to our workspace */
+
+        sh 'npm install'
+    }
+
     stage('Build source') {
         /* Let's make sure we have the repository cloned to our workspace */
 
-        sh 'npm install',
         sh './node_modules/typescript/bin/tsc'
     }
 
