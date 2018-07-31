@@ -1,4 +1,3 @@
-import { IRequest } from './IRequest';
 import { CryptoUtils } from '../crypto/Utils';
 import { RequestValidator } from '../templates/RequestValidator';
 import Cache from '../Cache';
