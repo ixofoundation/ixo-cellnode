@@ -30,7 +30,7 @@ services:
     restart: always
     volumes:
       - ./data:/data/db
-      - $HOME/backup:/backup
+      - ./backup:/backup
 
   cache:
     container_name: cache
