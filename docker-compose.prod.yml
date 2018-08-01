@@ -3,7 +3,7 @@ services:
   app:
     environment:
       - BLOCKCHAIN_URI_REST=http://beta.cosmos.ixo.world:1317/
-      - BLOCKCHAIN_URI_TENDERMINT=http://beta.cosmos.ixo.world:46657/broadcast_tx_sync?tx=0x
+      #- BLOCKCHAIN_URI_TENDERMINT=http://beta.cosmos.ixo.world:46657/broadcast_tx_sync?tx=0x
     ports:
       - "443:5000"
       

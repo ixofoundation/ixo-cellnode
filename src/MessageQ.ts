@@ -5,7 +5,7 @@ import { resolve } from "path";
 var amqplib = require('amqplib');
 
 
-const BLOCKCHAIN_URI_TENDERMINT = (process.env.BLOCKCHAIN_URI_TENDERMINT || '');
+//const BLOCKCHAIN_URI_TENDERMINT = (process.env.BLOCKCHAIN_URI_TENDERMINT || '');
 
 export class MessageQ {
 
@@ -75,35 +75,66 @@ export class MessageQ {
         }
     }
 
+    // public subscribeToDLQ(): Promise<any> {
+    //     var inst: any;
+    //     inst = this;
+    //     return new Promise(function (resolve: Function, reject: Function) {
+    //         try {
+    //             const channel = inst.connection.createChannel();
+    //             channel.assertExchange("pds.dlx", "fanout", { durable: true });
+    //             channel.assertQueue('pds.dlq', {
+    //                 durable: true
+    //             })
+    //                 .then(() => {
+    //                     channel.bindQueue('pds.dlq', 'pds.dlx');
+    //                 })
+    //                 .then(() => {
+    //                     channel.prefetch(1);
+
+    //                     channel.consume('pds.dlq', (messageData: any) => {
+    //                         console.log(new Date().getUTCMilliseconds() + " Received %s", messageData.content.toString());
+    //                         resolve(messageData.content);
+    //                     }, { noAck: true });
+    //                 }, (error: any) => {
+    //                     throw error;
+    //                 });
+
+    //         } catch (error) {
+    //             throw new Error(error.message);
+    //         }
+    //     });
+    // }
+
     public subscribe(): Promise<any> {
         var inst: any;
         inst = this;
         return new Promise(function (resolve: Function, reject: Function) {
             try {
-                const channel = inst.connection.createChannel();
-                channel.assertExchange("pds.dlx", "fanout", { durable: true });
-                channel.assertQueue('pds.dlq', {
-                    durable: true
-                })
-                    .then(() => {
-                        channel.bindQueue('pds.dlq', 'pds.dlx');
-                    })
-                    .then(() => {
-                        channel.prefetch(1);
+                inst.connection.createChannel()
+                    .then((channel: any) => {
+                        channel.assertQueue('pds.res', {
+                            durable: true
+                        })
+                            .then(() => {
+                                channel.bindQueue('pds.res', 'pds.ex');
+                            })
+                            .then(() => {
+                                channel.prefetch(1);
 
-                        channel.consume('pds.dlq', (messageData: any) => {
-                            console.log(new Date().getUTCMilliseconds() + " Received %s", messageData.content.toString());
-                            resolve(messageData.content);
-                        }, { noAck: true });
-                    }, (error: any) => {
-                        throw error;
-                    });
-
-            } catch (error) {
-                throw new Error(error.message);
-            }
-        });
+                                channel.consume('pds.res', (messageData: any) => {
+                                    console.log(new Date().getUTCMilliseconds() + " Received %s", messageData.content.toString());
+                                    resolve(messageData.content);
+                                });
+                            }, (error: any) => {
+                                throw error;
+                            });
+                        });
+                    } catch (error) {
+                        throw new Error(error.message);
+                    }
+            });
     }
+
 }
 
 export default new MessageQ('pds');
