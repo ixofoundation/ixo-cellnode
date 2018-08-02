@@ -3,7 +3,6 @@ services:
   app:
     environment:
       - BLOCKCHAIN_URI_REST=http://35.192.187.110:1317/
-      #- BLOCKCHAIN_URI_TENDERMINT=http://35.192.187.110:46657/broadcast_tx_sync?tx=0x
     build: .
     ports:
       - "5000:5000"
