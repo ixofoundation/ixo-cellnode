@@ -46,7 +46,7 @@ node {
         }
     }
 
-    stage('Prune Docker Images') {
-        sh 'docker image prune -a --force --filter "label!=trustlab/ixo-ci-jenkins"'
+    stage('Delete Docker Images') {
+        sh 'docker rmi $(docker images |grep "trustlab/ixo-elysian") -f'
     }
 }
