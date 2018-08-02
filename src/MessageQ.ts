@@ -70,36 +70,6 @@ export class MessageQ {
         }
     }
 
-    // public subscribeToDLQ(): Promise<any> {
-    //     var inst: any;
-    //     inst = this;
-    //     return new Promise(function (resolve: Function, reject: Function) {
-    //         try {
-    //             const channel = inst.connection.createChannel();
-    //             channel.assertExchange("pds.dlx", "fanout", { durable: true });
-    //             channel.assertQueue('pds.dlq', {
-    //                 durable: true
-    //             })
-    //                 .then(() => {
-    //                     channel.bindQueue('pds.dlq', 'pds.dlx');
-    //                 })
-    //                 .then(() => {
-    //                     channel.prefetch(1);
-
-    //                     channel.consume('pds.dlq', (messageData: any) => {
-    //                         console.log(new Date().getUTCMilliseconds() + " Received %s", messageData.content.toString());
-    //                         resolve(messageData.content);
-    //                     }, { noAck: true });
-    //                 }, (error: any) => {
-    //                     throw error;
-    //                 });
-
-    //         } catch (error) {
-    //             throw new Error(error.message);
-    //         }
-    //     });
-    // }
-
     public subscribe(): Promise<any> {
         var inst: any;
         inst = this;
