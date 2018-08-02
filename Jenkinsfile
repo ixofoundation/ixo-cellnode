@@ -46,7 +46,7 @@ node {
         }
     }
 
-    stage('Delete Docker Images') {
-        sh 'docker rmi $(docker images |grep "trustlab/ixo-elysian") -f'
+    stage('Removing Images') {
+        sh "docker rmi ${app.id}"
     }
 }
