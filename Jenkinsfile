@@ -45,4 +45,8 @@ node {
             app.push("latest")
         }
     }
+
+    stage('Prune Docker Images') {
+        sh 'docker image prune -a --force --filter "label!=trustlab/ixo-ci-jenkins"'
+    }
 }
