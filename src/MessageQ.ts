@@ -1,11 +1,6 @@
 import { TransactionError } from "./error/TransactionError";
-import { toASCII } from "punycode";
-import { resolve } from "path";
 
 var amqplib = require('amqplib');
-
-
-//const BLOCKCHAIN_URI_TENDERMINT = (process.env.BLOCKCHAIN_URI_TENDERMINT || '');
 
 export class MessageQ {
 
