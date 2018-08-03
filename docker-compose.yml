@@ -29,7 +29,8 @@ services:
     image: mongo
     restart: always
     volumes:
-      - ./data:/data/db
+      - ./data:/data
+      - ./backup:/backup
 
   cache:
     container_name: cache
