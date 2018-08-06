@@ -2,7 +2,7 @@ version: "2"
 services:
   app:
     environment:
-      - BLOCKCHAIN_URI_REST=http://35.192.187.110:1317/
+      - BLOCKCHAIN_URI_REST=http://beta.cosmos.ixo.world:8080/api/did/getByDid/
     build: .
     ports:
       - "5000:5000"
@@ -21,5 +21,4 @@ services:
 
   pol:
     environment:
-      - BLOCKCHAIN_URI_TENDERMINT=http://35.192.187.110:46657/broadcast_tx_sync?tx=0x
-
+      - BLOCKCHAIN_URI_TENDERMINT=http://beta.cosmos.ixo.world:46657/broadcast_tx_sync?tx=0x

@@ -78,7 +78,7 @@ export class Request {
             }
 
             try {
-              if (!cryptoUtils.validateSignature(JSON.stringify(this.data), this.signature.type, this.signature.signatureValue, didDoc.pubKey)) {
+              if (!cryptoUtils.validateSignature(JSON.stringify(this.data), this.signature.type, this.signature.signatureValue, didDoc.publicKey)) {
                 validator.addError("Signature did not validate '" + JSON.stringify(this.body));
                 validator.valid = false;
               }
@@ -91,13 +91,13 @@ export class Request {
           } else {
             //cache-miss
             console.log(new Date().getUTCMilliseconds() + ' retrieve pubkey from blockchain');
-            axios.get(BLOCKCHAIN_URI_REST + 'did/' + this.signature.creator)
+            axios.get(BLOCKCHAIN_URI_REST + this.signature.creator)
               .then((response) => {
-                if (response.status == 200) {
+                if (response.status == 200 && response.data.did != null) {
                   //valid response from blockchain
                   if (preVerifyDidSignature(response.data, this)) {
                     try {
-                      if (!cryptoUtils.validateSignature(JSON.stringify(this.data), this.signature.type, this.signature.signatureValue, response.data.pubKey)) {
+                      if (!cryptoUtils.validateSignature(JSON.stringify(this.data), this.signature.type, this.signature.signatureValue, response.data.publicKey)) {
                         validator.addError("Signature did not validate '" + JSON.stringify(this.data));
                         validator.valid = false;
                       } else {
@@ -131,13 +131,13 @@ export class Request {
           // could not connect to cache, read from blockchain
           console.log(new Date().getUTCMilliseconds() + ' cache unavailable ' + reason);
           console.log(new Date().getUTCMilliseconds() + ' retrieve pubkey from blockchain');
-          axios.get(BLOCKCHAIN_URI_REST + 'did/' + this.signature.creator)
+          axios.get(BLOCKCHAIN_URI_REST + this.signature.creator)
             .then((response) => {
               if (response.status == 200) {
                 //valid response from blockchain
                 if (preVerifyDidSignature(response.data, this)) {
                   try {
-                    if (!cryptoUtils.validateSignature(JSON.stringify(this.data), this.signature.type, this.signature.signatureValue, response.data.pubKey)) {
+                    if (!cryptoUtils.validateSignature(JSON.stringify(this.data), this.signature.type, this.signature.signatureValue, response.data.publicKey)) {
                       validator.addError("Signature did not validate '" + JSON.stringify(this.data));
                       validator.valid = false;
                     } 
@@ -166,81 +166,4 @@ export class Request {
         })
     })
   }
-
-  // verifySignature = (preVerifyDidSignature: Function): Promise<RequestValidator> => {
-  //   return new Promise((resolve: Function, reject: Function) => {
-  //     var validator = new RequestValidator();
-  //     if (!this.hasSignature) {
-  //       validator.addError("Signature is not present in request");
-  //       validator.valid = false;
-  //     }
-  //     Cache.get(this.signature.creator)
-  //       .then((didDoc: any) => {
-  //         if (!didDoc) {
-  //           validator = this.validateSignatureFromBlockchain(preVerifyDidSignature)
-  //           resolve(validator);
-  //         } else {
-  //           if (!preVerifyDidSignature(didDoc, this)) {
-  //             validator.addError("Signature failed pre verification " + this.signature.creator);
-  //             validator.valid = false;
-  //             resolve(validator);
-  //           }
-  //           console.log(new Date().getUTCMilliseconds() + ' got cache record for key ' + this.signature.creator);
-  //           validator = this.validateSignature(didDoc.pubKey);
-  //           console.log('CACHE ############# ' + validator);
-  //           resolve(validator);
-
-  //         }
-  //       })
-  //       .catch((reason) => {
-  //         // cache service is unavailable
-  //         validator = this.validateSignatureFromBlockchain(preVerifyDidSignature);
-  //         console.log('BLOCKCHAIN CATCH ############# ' + reason + ' ' + validator);
-  //         resolve(validator);
-  //       });
-  //   })
-  // }
-
-  // validateSignature = (publicKey: string): any => {
-  //   var validator = new RequestValidator();
-  //   try {
-  //     if (!cryptoUtils.validateSignature(JSON.stringify(this.data), this.signature.type, this.signature.signatureValue, publicKey)) {
-  //       validator.addError("Signature did not validate '" + JSON.stringify(this.body));
-  //       validator.valid = false;
-  //     }
-  //   } catch (error) {
-  //     validator.addError("Signature validation exception " + error);
-  //     validator.valid = false;
-  //     return validator;
-  //   }
-  //   return validator;
-  // }
-
-  // validateSignatureFromBlockchain = (preVerifyDidSignature: Function): any => {
-  //   var validator = new RequestValidator();
-  //   console.log(new Date().getUTCMilliseconds() + ' retrieve pubkey from blockchain');
-  //   axios.get(BLOCKCHAIN_URI_REST + 'did/' + this.signature.creator)
-  //     .then((response) => {
-  //       if (response.status == 200) {
-  //         if (!preVerifyDidSignature(response.data, this)) {
-  //           validator.addError("Signature failed pre verification " + this.signature.creator);
-  //           validator.valid = false;
-  //           return validator;
-  //         }
-  //         validator = this.validateSignature(response.data.pubKey);
-  //         if (validator.valid) Cache.set(this.signature.creator, response.data);
-  //       }
-  //       else {
-  //         validator.addError("DID not found for creator " + this.signature.creator);
-  //         validator.valid = false;
-  //       }
-  //       console.log('BLOCKCHAIN ############# ' + JSON.stringify(validator));
-  //       return validator;
-  //     })
-  //     .catch((reason) => {
-  //       validator.addError("Cannot validate signature " + reason);
-  //       validator.valid = false;
-  //       return validator;
-  //     });
-  // }
 }

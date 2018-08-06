@@ -29,7 +29,7 @@ services:
     image: mongo
     restart: always
     volumes:
-      - ./data:/data
+      - ./data:/data/db
       - ./backup:/backup
 
   cache:
