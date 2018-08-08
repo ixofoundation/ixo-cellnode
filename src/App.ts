@@ -9,6 +9,7 @@ import {RequestRouter} from './routes/RequestRouter';
 import {QueryRouter} from './routes/QueryRouter';
 import {PublicRouter} from './routes/PublicRouter';
 import { PublicHandler } from './handlers/PublicHandler';
+import { pseudoRandomBytes } from 'crypto';
 
 const compression = require('compression')
 
@@ -41,7 +42,9 @@ class App {
   // Configure API endpoints.
   private routes(): void {
     this.express.get('/', (req, res, next) => {
-      res.send('API is running');
+      var fileSystem = require('fs');
+      var data = fileSystem.readFileSync("/usr/src/app/pds.txt", 'utf8');
+      res.send('API is running with ID ' + data);
     });
     this.express.get('/public/:key', new PublicHandler().getPublic)
 

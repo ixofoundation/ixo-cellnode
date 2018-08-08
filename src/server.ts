@@ -5,6 +5,20 @@ import cache from './Cache';
 import mq from './MessageQ';
 import App from './App';
 
+var fs = require("fs");
+var fileContent = Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36);
+try {
+  fs.readFileSync("/usr/src/app/pds.txt", 'utf8');
+} catch (error) {
+  fs.writeFile("./pds.txt", fileContent, (err: any) => {
+    if (err) {
+      console.error(err);
+      return;
+    };
+    console.log("Elysian identifier " + fileContent);
+  });
+}
+
 const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
 console.log('Connecting to blockchain on: ' + BLOCKCHAIN_URI_REST);
 
