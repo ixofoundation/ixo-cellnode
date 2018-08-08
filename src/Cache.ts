@@ -28,18 +28,15 @@ export class Cache {
         });        
     }
 
-    set(key: string, value: any) {
-        cache.set(key, value, 0, function (err: any) {
+    set(key: string, value: any, ttl: number = 0) {
+
+        cache.set(key, value, ttl, function (err: any) {
             if (err) console.log(new Date().getUTCMilliseconds() + ' Memcache could not set value for key ' + key);
         });
     }
 
     close() {
         cache.end();
-    }
-
-    timeToLive(sec: number): number {
-        return sec * 1000;
     }
 }
 

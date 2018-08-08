@@ -65,7 +65,7 @@ dist
 
 # vscode
 .vscode
-data/
+db/
 
 .DS_Store
 src/.DS_Store

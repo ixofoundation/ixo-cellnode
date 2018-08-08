@@ -9,7 +9,8 @@ export var CapabilitiesSchema: Schema = new Schema({
     capabilities: [{
         capability: String,
         template: String,
-        allow: [String]
+        allow: [String],
+        validateKYC: Boolean
     }]
 
 }, { strict: false });

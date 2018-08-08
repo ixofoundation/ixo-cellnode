@@ -1,7 +1,7 @@
 import { Document, Schema, Model, model } from "mongoose";
 import { AbstractHandler } from './AbstractHandler';
 import { Request } from "../handlers/Request";
-import axios, { AxiosResponse } from 'axios';
+import axios from 'axios';
 import InitHandler from './InitHandler';
 
 const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
@@ -241,9 +241,30 @@ export class RequestHandler extends AbstractHandler {
     });
   }
 
-  // preVerifyDidSignature(didResponse: any, request: Request) {
-  //   return (!didResponse.kyc && (request.data.role === 'EA' || request.data.role === 'IA')) ? false : true;
-  // }
+  checkKycCredentials = (didDoc: any): boolean  => {
+    if (didDoc.credentials) {
+      didDoc.credentials.forEach((element: any) => {
+        if (element.credential.claim.KYCValidated === true) {
+          return true;
+        }
+      });
+    }
+    return false;
+  }
+
+  preVerifyDidSignature(didDoc: any, request: Request, capability: string) {
+    if (capability === 'CreateProject') {
+      return this.checkKycCredentials(didDoc);
+    }
+
+    if (capability === 'CreateAgent') {
+      if (request.data.role != 'SA') {
+        return this.checkKycCredentials(didDoc);
+      }
+    }
+
+    return true;
+  }
 
   /////////////////////////////////////////////////
   //  HANDLE CREATE PROJECT                      //

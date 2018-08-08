@@ -3,11 +3,13 @@
 		{
 			"capability": "CreateProject",
 			"template": "projects",
-			"allow":["did:sov:*"]
+			"allow":["did:sov:*"],
+			"validateKYC": true
 		},
 		{
 			"capability": "CreateAgent",
-			"template": "agents"
+			"template": "agents",
+			"validateKYC": true
 		},
 		{
 			"capability": "UpdateAgentStatus",
