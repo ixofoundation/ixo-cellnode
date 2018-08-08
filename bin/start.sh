@@ -15,10 +15,6 @@ then
   $ROOT_DIR/node_modules/typescript/bin/tsc 
   docker build -t trustlab/ixo-elysian $ROOT_DIR
   docker-compose -f $ROOT_DIR/docker-compose.yml -f $ROOT_DIR/docker-compose.dev.yml up --no-start
-elif [ "$1" = "beta" ]
-then
-  echo "Building Beta images"
-  docker-compose -f $ROOT_DIR/docker-compose.yml -f $ROOT_DIR/docker-compose.beta.yml up --no-start
 else
   echo "Building Production images"
   docker-compose -f $ROOT_DIR/docker-compose.yml -f $ROOT_DIR/docker-compose.prod.yml up --no-start

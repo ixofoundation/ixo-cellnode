@@ -4,9 +4,6 @@ services:
     environment:
       - BLOCKCHAIN_URI_REST=http://beta.cosmos.ixo.world:8080/api/did/getByDid/
     build: .
-    ports:
-      - "5000:5000"
-      
   db:
     ports:
       - "27017:27017"
