@@ -78,7 +78,8 @@ export abstract class AbstractHandler {
                                   reject(new TransactionError('Record out of date or already exists'));
                                 } else {
                                   console.log(new Date().getUTCMilliseconds() + ' write transaction to log')
-                                  transactionService.createTransaction(request.body, request.signature.type, request.signature.signatureValue, request.projectDid)
+                                  transactionService.createTransaction(request.body, request.signature.type,
+                                    request.signature.signatureValue, request.projectDid, capabilityMap.capability)
                                     .then((transaction: ITransactionModel) => {
                                       var obj = {
                                         ...request.data,
@@ -104,7 +105,8 @@ export abstract class AbstractHandler {
                               })
                           } else {
                             console.log(new Date().getUTCMilliseconds() + ' write transaction to log');
-                            transactionService.createTransaction(request.body, request.signature.type, request.signature.signatureValue, request.projectDid)
+                            transactionService.createTransaction(request.body, request.signature.type, request.signature.signatureValue,
+                              request.projectDid, capabilityMap.capability)
                               .then((transaction: ITransactionModel) => {
                                 var obj = {
                                   ...request.data,

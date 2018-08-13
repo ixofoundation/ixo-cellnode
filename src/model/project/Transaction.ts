@@ -1,5 +1,4 @@
 import { Document, Schema, Model, model } from "mongoose";
-import { TransactionError } from '../../error/TransactionError';
 import { ITransaction } from "./ITransaction";
 import transactionLog from '../../service/TransactionLogService'
 
@@ -23,7 +22,8 @@ export var TransactionSchema: Schema = new Schema({
   signatureType: String,
   signatureValue: String,
   publicKey: String,
-  timestamp: Date
+  timestamp: Date,
+  capability: String
 });
 
 export const Transaction: Model<ITransactionModel> = model<ITransactionModel>("Transaction", TransactionSchema);
