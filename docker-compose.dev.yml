@@ -2,7 +2,7 @@ version: "2"
 services:
   app:
     environment:
-      - BLOCKCHAIN_URI_REST=http://beta.cosmos.ixo.world:8080/api/did/getByDid/
+      - BLOCKCHAIN_URI_REST=http://beta.cosmos.ixo.world:80/api/did/getByDid/
     build: .
   db:
     ports:

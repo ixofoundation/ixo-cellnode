@@ -1,7 +1,5 @@
 import { EventEmitter } from 'events';
 import { ITransactionModel, Transaction } from '../model/project/Transaction';
-import { ITransaction } from '../model/project/ITransaction';
-import { DocumentQuery } from 'mongoose';
 
 declare var Promise: any;
 
@@ -34,9 +32,9 @@ export class TransactionLogService {
     });
   }
 
-  findLatestTransaction(projectDid: String): Promise<ITransactionModel> {
+  findPreviousTransaction(): Promise<ITransactionModel[]> {
     return new Promise(function (resolve: Function, reject: Function) {
-      resolve (Transaction.findOne({projectDid: projectDid}).sort({$natural:-1}));
+      resolve (Transaction.find().limit(1).sort({$natural:-1}));
     });
   }
 

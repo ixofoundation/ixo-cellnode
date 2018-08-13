@@ -5,7 +5,6 @@ echo "***********************************"
 echo "* ELYSIAN START                   *"
 echo "***********************************"
 echo ""
-echo "Build Elysian"
 CURRENT_DIR=`dirname $0`
 ROOT_DIR=$CURRENT_DIR/..
 
@@ -16,7 +15,7 @@ then
   docker build -t trustlab/ixo-elysian $ROOT_DIR
   docker-compose -f $ROOT_DIR/docker-compose.yml -f $ROOT_DIR/docker-compose.dev.yml up --no-start
 else
-  echo "Building Production images"
+  echo "Pulling Production images"
   docker-compose -f $ROOT_DIR/docker-compose.yml -f $ROOT_DIR/docker-compose.prod.yml up --no-start
 fi
 # docker-compose create
