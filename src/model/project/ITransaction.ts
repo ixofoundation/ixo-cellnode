@@ -7,4 +7,5 @@ export interface ITransaction {
     signatureValue: String;
     publicKey: String;
     timestamp: Date;
+    capability: String
   }

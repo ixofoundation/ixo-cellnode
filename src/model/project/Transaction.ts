@@ -22,7 +22,8 @@ export var TransactionSchema: Schema = new Schema({
   signatureType: String,
   signatureValue: String,
   publicKey: String,
-  timestamp: Date
+  timestamp: Date,
+  capability: String
 });
 
 export const Transaction: Model<ITransactionModel> = model<ITransactionModel>("Transaction", TransactionSchema);
