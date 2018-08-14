@@ -19,3 +19,7 @@ services:
   pol:
     environment:
       - BLOCKCHAIN_URI_TENDERMINT=http://beta.cosmos.ixo.world:46657/broadcast_tx_sync?tx=0x
+
+  cli:
+    environment:
+      - BLOCKCHAIN_URI_REST=http://beta.cosmos.ixo.world:80/api/did/getByDid/
