@@ -7,3 +7,6 @@ services:
     environment:
       - BLOCKCHAIN_URI_TENDERMINT=http://blockchain.ixo.world:46657/broadcast_tx_sync?tx=0x
 
+  cli:
+    environment:
+      - BLOCKCHAIN_URI_REST=https://explorer.ixo.world/api/did/getByDid/

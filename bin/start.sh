@@ -5,7 +5,6 @@ echo "***********************************"
 echo "* ELYSIAN START                   *"
 echo "***********************************"
 echo ""
-echo "Build Elysian"
 CURRENT_DIR=`dirname $0`
 ROOT_DIR=$CURRENT_DIR/..
 
@@ -27,8 +26,7 @@ elif [ "$1" = "uat" ]; then
 
   docker-compose -f $ROOT_DIR/docker-compose.yml -f $ROOT_DIR/docker-compose.uat.yml up --no-start
 else
-  echo "Building Production images"
-
+  echo "Pulling Production images"
   docker-compose -f $ROOT_DIR/docker-compose.yml -f $ROOT_DIR/docker-compose.prod.yml up --no-start
 fi
 

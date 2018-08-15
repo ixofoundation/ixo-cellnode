@@ -1,12 +1,13 @@
 import { Document, Schema, Model, model } from "mongoose";
 import { IWallet } from "./IWallet";
+import { createCipher, createDecipher } from 'crypto';
 
 export interface IWalletModel extends IWallet, Document { }
 
 var crypto = require('crypto');
 
 function encrypt(text: string) {
-    var cipher = crypto.createCipher('aes-256-cbc', "trustlab.tech");
+    var cipher = createCipher('aes-256-cbc', "trustlab.tech");
     var crypted = cipher.update(text, 'utf8', 'hex');
     crypted += cipher.final('hex');
     return crypted;
@@ -14,7 +15,7 @@ function encrypt(text: string) {
 
 function decrypt(text: string) {
     if (text === null || typeof text === 'undefined') { return text; };
-    var decipher = crypto.createDecipher('aes-256-cbc', "trustlab.tech");
+    var decipher = createDecipher('aes-256-cbc', "trustlab.tech");
     var dec = decipher.update(text, 'hex', 'utf8');
     dec += decipher.final('utf8');
     return dec;

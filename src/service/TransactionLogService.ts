@@ -1,7 +1,5 @@
 import { EventEmitter } from 'events';
 import { ITransactionModel, Transaction } from '../model/project/Transaction';
-import { ITransaction } from '../model/project/ITransaction';
-import { DocumentQuery } from 'mongoose';
 
 declare var Promise: any;
 
@@ -14,14 +12,15 @@ export class TransactionLogService {
   }
 
 
-  createTransaction(data: String, signatureType: String, signature: String, projectDid: String, emit = true): Promise<ITransactionModel> {
+  createTransaction(data: String, signatureType: String, signature: String, projectDid: String, capability: string, emit = true): Promise<ITransactionModel> {
     return new Promise(function (resolve: Function, reject: Function) {
       Transaction.create(
         {
           "data": data,
           "signatureType": signatureType,
           "signatureValue": signature,
-          "projectDid": projectDid
+          "projectDid": projectDid,
+          "capability": capability
                             
         }, function (error: Error, newTransaction: ITransactionModel) {
           if (error) {
@@ -34,9 +33,9 @@ export class TransactionLogService {
     });
   }
 
-  findLatestTransaction(projectDid: String): Promise<ITransactionModel> {
+  findPreviousTransaction(): Promise<ITransactionModel[]> {
     return new Promise(function (resolve: Function, reject: Function) {
-      resolve (Transaction.findOne({projectDid: projectDid}).sort({$natural:-1}));
+      resolve (Transaction.find().limit(1).sort({$natural:-1}));
     });
   }
 

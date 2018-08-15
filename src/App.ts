@@ -1,15 +1,12 @@
-import * as path from 'path';
 import express from 'express';
 import cors from 'cors';
 import * as bodyParser from 'body-parser';
-import { Request, Response } from 'express';
 import * as logger from './logger/Logger';
 
 import {RequestRouter} from './routes/RequestRouter';
 import {QueryRouter} from './routes/QueryRouter';
 import {PublicRouter} from './routes/PublicRouter';
 import { PublicHandler } from './handlers/PublicHandler';
-import { pseudoRandomBytes } from 'crypto';
 
 const compression = require('compression')
 

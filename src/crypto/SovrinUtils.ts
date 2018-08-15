@@ -1,4 +1,4 @@
-import * as crypto from 'crypto';
+import { createHash} from 'crypto';
 
 var dateFormat = require('dateformat');
 var merge = require('merge');
@@ -15,7 +15,7 @@ export class SovrinUtils {
 
     generateSdidFromMnemonic(mnemonic: any) {
         // Create sha256 hash from Menmonic
-        const seed = crypto.createHash('sha256').update(mnemonic).digest("hex");
+        const seed = createHash('sha256').update(mnemonic).digest("hex");
 
         // Convert SHA256 hash to Uint8Array
         var didSeed = new Uint8Array(32);

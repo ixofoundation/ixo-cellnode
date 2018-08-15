@@ -4,12 +4,12 @@
 			"capability": "CreateProject",
 			"template": "projects",
 			"allow":["did:sov:*"],
-			"validateKYC": true
+			"validateKYC": false
 		},
 		{
 			"capability": "CreateAgent",
 			"template": "agents",
-			"validateKYC": true
+			"validateKYC": false
 		},
 		{
 			"capability": "UpdateAgentStatus",
