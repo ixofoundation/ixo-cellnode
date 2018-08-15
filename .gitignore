@@ -72,3 +72,5 @@ data/
 src/.DS_Store
 
 scratch.json
+
+docker-compose.dev.yml
