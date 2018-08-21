@@ -235,7 +235,7 @@ export abstract class AbstractHandler {
       walletService.createWallet(did, sovrinWallet.secret.signKey, sovrinWallet.verifyKey)
         .then((resp: IWalletModel) => {
           wallet = resp;
-          Cache.set(wallet.did, { pubKey: wallet.verifyKey });
+          Cache.set(wallet.did, { publicKey: wallet.verifyKey });
           console.log(new Date().getUTCMilliseconds() + ' project wallet created');
           resolve(wallet.did);
         });
@@ -272,7 +272,7 @@ export abstract class AbstractHandler {
     return new Promise((resolve: Function, reject: Function) => {
       walletService.getWallet(projectDid)
         .then((wallet: IWalletModel) => {
-          Cache.set(wallet.did, { pubKey: wallet.verifyKey });
+          Cache.set(wallet.did, { publicKey: wallet.verifyKey });
           var sovrinUtils = new SovrinUtils();
           resolve(sovrinUtils.signDocumentNoEncoding(wallet.signKey, wallet.verifyKey, wallet.did, msgToSign));
         });
