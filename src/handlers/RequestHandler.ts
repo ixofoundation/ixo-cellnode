@@ -7,6 +7,20 @@ import InitHandler from './InitHandler';
 const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
 
 /////////////////////////////////////////////////
+//  PROJECT  STATUS MODEL                      //
+/////////////////////////////////////////////////
+
+export interface IProjectStatusModel extends Document { }
+
+var ProjectStatusSchema: Schema = new Schema({ }, { strict: false });
+
+ProjectStatusSchema.pre("save", function (next) {
+  next();
+});
+
+export const ProjectStatus: Model<IProjectStatusModel> = model<IProjectStatusModel>("ProjectStatus", ProjectStatusSchema);
+
+/////////////////////////////////////////////////
 //  PROJECT MODEL                              //
 /////////////////////////////////////////////////
 
@@ -140,6 +154,7 @@ export class RequestHandler extends AbstractHandler {
         this.addCapabilities(request.projectDid, request.projectDid, 'UpdateAgentStatus');
         this.addCapabilities(request.projectDid, request.signature.creator, 'ListAgents');
         this.addCapabilities(request.projectDid, request.signature.creator, 'ListClaims');
+        this.addCapabilities(request.projectDid, request.signature.creator, 'UpdateProjectStatus');
         break;
       }
       default: {
@@ -232,6 +247,20 @@ export class RequestHandler extends AbstractHandler {
 
           break;
         }
+        case 'UpdateProjectStatus': {
+          blockChainPayload = {
+            payload: [21, {
+              data: {
+                status: obj.status
+              },
+              txHash: txHash,
+              senderDid: request.signature.creator,
+              projectDid: request.projectDid
+            }]
+          }
+
+          break;
+        }
         default: {
           reject('Capability does not exist')
           break;
@@ -267,7 +296,7 @@ export class RequestHandler extends AbstractHandler {
   }
 
   /////////////////////////////////////////////////
-  //  HANDLE CREATE PROJECT                      //
+  //  HANDLE PROJECT REQUESTS                    //
   /////////////////////////////////////////////////
 
   createProject = (args: any) => {
@@ -279,6 +308,11 @@ export class RequestHandler extends AbstractHandler {
             return this.createTransaction(args, 'CreateProject', Project, undefined, did);
           });
       });
+  }
+
+  updateProjectStatus = (args: any) => {
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
+    return this.createTransaction(args, 'UpdateProjectStatus', ProjectStatus);
   }
 
   /////////////////////////////////////////////////
