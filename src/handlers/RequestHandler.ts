@@ -413,35 +413,36 @@ export class RequestHandler extends AbstractHandler {
   checkForFunds(projectDid: string): Promise<boolean> {
     return new Promise((resolve: Function, reject: Function) => {
       console.log(new Date().getUTCMilliseconds() + ' confirm funds exists');
-      axios.get(BLOCKCHAIN_URI_REST + 'projectAccounts/' + projectDid)
-        .then((response) => {
-          if (response.status == 200) {
-            response.data.forEach((element: any) => {
-              if (element.did == projectDid) {
-                Project.findOne({
-                  projectDid: projectDid
-                })
-                  .then((project) => {
-                    if (project) {
-                      resolve(element.balance - project.evaluatorPayPerClaim >= 0);
-                    }
-                    console.log(new Date().getUTCMilliseconds() + ' check for funds no project found for projectDid ' + projectDid);
-                    resolve(false);
-                  })
-                  .catch((err) => {
-                    console.log(new Date().getUTCMilliseconds() + ' error processing check for funds ' + err)
-                    resolve(false);
-                  });
-              }
-            })
-          }
-          console.log(new Date().getUTCMilliseconds() + ' no valid response check for funds from blockchain ' + response.statusText);
-          resolve(false);
-        })
-        .catch((reason) => {
-          console.log(new Date().getUTCMilliseconds() + ' check for funds could not connect to blockchain ' + reason);
-          resolve(false);
-        });
+      resolve(true);
+      // axios.get(BLOCKCHAIN_URI_REST + 'projectAccounts/' + projectDid)
+      //   .then((response) => {
+      //     if (response.status == 200) {
+      //       response.data.forEach((element: any) => {
+      //         if (element.did == projectDid) {
+      //           Project.findOne({
+      //             projectDid: projectDid
+      //           })
+      //             .then((project) => {
+      //               if (project) {
+      //                 resolve(element.balance - project.evaluatorPayPerClaim >= 0);
+      //               }
+      //               console.log(new Date().getUTCMilliseconds() + ' check for funds no project found for projectDid ' + projectDid);
+      //               resolve(false);
+      //             })
+      //             .catch((err) => {
+      //               console.log(new Date().getUTCMilliseconds() + ' error processing check for funds ' + err)
+      //               resolve(false);
+      //             });
+      //         }
+      //       })
+      //     }
+      //     console.log(new Date().getUTCMilliseconds() + ' no valid response check for funds from blockchain ' + response.statusText);
+      //     resolve(false);
+      //   })
+      //   .catch((reason) => {
+      //     console.log(new Date().getUTCMilliseconds() + ' check for funds could not connect to blockchain ' + reason);
+      //     resolve(false);
+      //   });
     });
   };
 
