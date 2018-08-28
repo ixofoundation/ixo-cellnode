@@ -2,7 +2,6 @@ version: "2"
 services:
   app:
     container_name: app
-    image: trustlab/ixo-elysian:latest
     environment:
       - PORT=5000
       - MONGODB_URI=mongodb://db:27017/elysian
