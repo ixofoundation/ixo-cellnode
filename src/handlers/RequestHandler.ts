@@ -12,7 +12,7 @@ const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
 
 export interface IProjectStatusModel extends Document { }
 
-var ProjectStatusSchema: Schema = new Schema({ }, { strict: false });
+var ProjectStatusSchema: Schema = new Schema({}, { strict: false });
 
 ProjectStatusSchema.pre("save", function (next) {
   next();
@@ -270,7 +270,7 @@ export class RequestHandler extends AbstractHandler {
     });
   }
 
-  checkKycCredentials = (didDoc: any): boolean  => {
+  checkKycCredentials = (didDoc: any): boolean => {
     if (didDoc.credentials) {
       didDoc.credentials.forEach((element: any) => {
         if (element.credential.claim.KYCValidated === true) {
@@ -447,9 +447,9 @@ export class RequestHandler extends AbstractHandler {
   checkForFunds(projectDid: string): Promise<boolean> {
     return new Promise((resolve: Function, reject: Function) => {
       console.log(new Date().getUTCMilliseconds() + ' confirm funds exists');
-      axios.get(BLOCKCHAIN_URI_REST + 'projectAccounts/' + projectDid)
+      axios.get(BLOCKCHAIN_URI_REST + 'project/getProjectAccounts/' + projectDid)
         .then((response) => {
-          if (response.status == 200) {
+          if (response.status == 200 && (response.data instanceof Array)) {
             response.data.forEach((element: any) => {
               if (element.did == projectDid) {
                 Project.findOne({
@@ -458,9 +458,10 @@ export class RequestHandler extends AbstractHandler {
                   .then((project) => {
                     if (project) {
                       resolve(element.balance - project.evaluatorPayPerClaim >= 0);
+                    } else {
+                      console.log(new Date().getUTCMilliseconds() + ' check for funds no project found for projectDid ' + projectDid);
+                      resolve(false);
                     }
-                    console.log(new Date().getUTCMilliseconds() + ' check for funds no project found for projectDid ' + projectDid);
-                    resolve(false);
                   })
                   .catch((err) => {
                     console.log(new Date().getUTCMilliseconds() + ' error processing check for funds ' + err)
@@ -469,8 +470,10 @@ export class RequestHandler extends AbstractHandler {
               }
             })
           }
-          console.log(new Date().getUTCMilliseconds() + ' no valid response check for funds from blockchain ' + response.statusText);
-          resolve(false);
+          else {
+            console.log(new Date().getUTCMilliseconds() + ' no valid response check for funds from blockchain ' + response.statusText);
+            resolve(false);
+          }
         })
         .catch((reason) => {
           console.log(new Date().getUTCMilliseconds() + ' check for funds could not connect to blockchain ' + reason);

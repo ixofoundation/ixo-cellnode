@@ -2,7 +2,7 @@ version: "2"
 services:
   app:
     environment:
-      - BLOCKCHAIN_URI_REST=https://explorer_uat.ixo.world/api/did/getByDid/
+      - BLOCKCHAIN_URI_REST=https://explorer_uat.ixo.world/api/
   db:
     ports:
       - "27017:27017"
