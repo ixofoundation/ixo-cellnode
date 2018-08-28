@@ -1,9 +1,9 @@
 version: "2"
 services:
   app:
-    image: trustlab/ixo-elysian:master
+    image: trustlab/ixo-elysian:dev
     environment:
-      - BLOCKCHAIN_URI_REST=https://explorer_uat.ixo.world/api/
+      - BLOCKCHAIN_URI_REST=https://explorer_uat.ixo.world/api/did/getByDid/
   db:
     ports:
       - "27017:27017"
