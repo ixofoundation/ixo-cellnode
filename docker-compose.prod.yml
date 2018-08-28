@@ -1,7 +1,6 @@
 version: "2"
 services:
   app:
-    image: trustlab/ixo-elysian:master
     environment:
       - BLOCKCHAIN_URI_REST=https://explorer.ixo.world/api/
   pol:
