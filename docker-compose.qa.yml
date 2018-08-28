@@ -1,8 +1,9 @@
 version: "2"
 services:
   app:
+    image: trustlab/ixo-elysian:dev
     environment:
-      - BLOCKCHAIN_URI_REST=https://explorer_qa.ixo.world/api/did/getByDid/
+      - BLOCKCHAIN_URI_REST=https://explorer_uat.ixo.world/api/did/getByDid/
   db:
     ports:
       - "27017:27017"
@@ -17,8 +18,8 @@ services:
 
   pol:
     environment:
-      - BLOCKCHAIN_URI_TENDERMINT=http://blockchain_qa.ixo.world:46657/broadcast_tx_sync?tx=0x
+      - BLOCKCHAIN_URI_TENDERMINT=http://blockchain_uat.ixo.world:46657/broadcast_tx_sync?tx=0x
 
   cli:
     environment:
-      - BLOCKCHAIN_URI_REST=https://explorer_qa.ixo.world/api/did/getByDid/
+      - BLOCKCHAIN_URI_REST=https://explorer_uat.ixo.world/api/did/getByDid/
