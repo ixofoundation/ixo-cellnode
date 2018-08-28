@@ -30,6 +30,10 @@
 		{
 			"capability": "ListAgents",
 			"template": "agents" 
+		},
+		{
+			"capability": "UpdateProjectStatus",
+			"template": "projects" 
 		}
 	]
 }

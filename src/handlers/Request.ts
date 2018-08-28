@@ -92,7 +92,7 @@ export class Request {
           } else {
             //cache-miss
             console.log(new Date().getUTCMilliseconds() + ' retrieve pubkey from blockchain');
-            axios.get(BLOCKCHAIN_URI_REST + this.signature.creator)
+            axios.get(BLOCKCHAIN_URI_REST + 'did/getByDid/' + this.signature.creator)
               .then((response) => {
                 if (response.status == 200 && response.data.did != null) {
                   //valid response from blockchain
@@ -134,7 +134,7 @@ export class Request {
           // could not connect to cache, read from blockchain
           console.log(new Date().getUTCMilliseconds() + ' cache unavailable ' + reason);
           console.log(new Date().getUTCMilliseconds() + ' retrieve pubkey from blockchain');
-          axios.get(BLOCKCHAIN_URI_REST + this.signature.creator)
+          axios.get(BLOCKCHAIN_URI_REST + 'did/getByDid/' + this.signature.creator)
             .then((response) => {
               if (response.status == 200) {
                 //valid response from blockchain
