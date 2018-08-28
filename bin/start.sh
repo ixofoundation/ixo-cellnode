@@ -25,6 +25,10 @@ elif [ "$1" = "uat" ]; then
   echo "Running with UAT config"
 
   docker-compose -f $ROOT_DIR/docker-compose.yml -f $ROOT_DIR/docker-compose.uat.yml up --no-start
+elif [ "$1" = "qa" ]; then
+  echo "Running with QA config"
+
+  docker-compose -f $ROOT_DIR/docker-compose.yml -f $ROOT_DIR/docker-compose.qa.yml up --no-start
 else
   echo "Pulling Production images"
   docker-compose -f $ROOT_DIR/docker-compose.yml -f $ROOT_DIR/docker-compose.prod.yml up --no-start
