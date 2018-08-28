@@ -8,7 +8,19 @@ echo ""
 CURRENT_DIR=`dirname $0`
 ROOT_DIR=$CURRENT_DIR/..
 
-if [ "$1" = "dev" ]
+# if the environment cannot provide the type try to get it from the script argument
+if [ -z "$TARGET_ENVIRONMENT" ];
+then
+  TARGET_ENVIRONMENT=$1
+fi
+
+if [ -z "$TARGET_ENVIRONMENT" ];
+then
+    echo 'UNKNOWN TARGET ENVIRONMENT (dev, qa, uat or prod)'
+    exit
+fi
+
+if [ "$TARGET_ENVIRONMENT" = "dev" ]
 then
   echo "Building Developer images"
 
@@ -21,10 +33,14 @@ then
 
   docker build -t trustlab/ixo-elysian $ROOT_DIR
   docker-compose -f $ROOT_DIR/docker-compose.yml -f $ROOT_DIR/docker-compose.dev.yml up --no-start
-elif [ "$1" = "uat" ]; then
+elif [ "$TARGET_ENVIRONMENT" = "uat" ]; then
   echo "Running with UAT config"
 
   docker-compose -f $ROOT_DIR/docker-compose.yml -f $ROOT_DIR/docker-compose.uat.yml up --no-start
+elif [ "$TARGET_ENVIRONMENT" = "qa" ]; then
+  echo "Running with QA config"
+
+  docker-compose -f $ROOT_DIR/docker-compose.yml -f $ROOT_DIR/docker-compose.qa.yml up --no-start
 else
   echo "Pulling Production images"
   docker-compose -f $ROOT_DIR/docker-compose.yml -f $ROOT_DIR/docker-compose.prod.yml up --no-start
