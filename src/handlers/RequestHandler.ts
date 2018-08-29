@@ -1,10 +1,24 @@
 import { Document, Schema, Model, model } from "mongoose";
 import { AbstractHandler } from './AbstractHandler';
 import { Request } from "../handlers/Request";
-import axios, { AxiosResponse } from 'axios';
+import axios from 'axios';
 import InitHandler from './InitHandler';
 
 const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
+
+/////////////////////////////////////////////////
+//  PROJECT  STATUS MODEL                      //
+/////////////////////////////////////////////////
+
+export interface IProjectStatusModel extends Document { }
+
+var ProjectStatusSchema: Schema = new Schema({}, { strict: false });
+
+ProjectStatusSchema.pre("save", function (next) {
+  next();
+});
+
+export const ProjectStatus: Model<IProjectStatusModel> = model<IProjectStatusModel>("ProjectStatus", ProjectStatusSchema);
 
 /////////////////////////////////////////////////
 //  PROJECT MODEL                              //
@@ -140,6 +154,7 @@ export class RequestHandler extends AbstractHandler {
         this.addCapabilities(request.projectDid, request.projectDid, 'UpdateAgentStatus');
         this.addCapabilities(request.projectDid, request.signature.creator, 'ListAgents');
         this.addCapabilities(request.projectDid, request.signature.creator, 'ListClaims');
+        this.addCapabilities(request.projectDid, request.signature.creator, 'UpdateProjectStatus');
         break;
       }
       default: {
@@ -232,6 +247,20 @@ export class RequestHandler extends AbstractHandler {
 
           break;
         }
+        case 'UpdateProjectStatus': {
+          blockChainPayload = {
+            payload: [21, {
+              data: {
+                status: obj.status
+              },
+              txHash: txHash,
+              senderDid: request.signature.creator,
+              projectDid: request.projectDid
+            }]
+          }
+
+          break;
+        }
         default: {
           reject('Capability does not exist')
           break;
@@ -241,12 +270,33 @@ export class RequestHandler extends AbstractHandler {
     });
   }
 
-  // preVerifyDidSignature(didResponse: any, request: Request) {
-  //   return (!didResponse.kyc && (request.data.role === 'EA' || request.data.role === 'IA')) ? false : true;
-  // }
+  checkKycCredentials = (didDoc: any): boolean => {
+    if (didDoc.credentials) {
+      didDoc.credentials.forEach((element: any) => {
+        if (element.credential.claim.KYCValidated === true) {
+          return true;
+        }
+      });
+    }
+    return false;
+  }
+
+  preVerifyDidSignature(didDoc: any, request: Request, capability: string) {
+    if (capability === 'CreateProject') {
+      return this.checkKycCredentials(didDoc);
+    }
+
+    if (capability === 'CreateAgent') {
+      if (request.data.role != 'SA') {
+        return this.checkKycCredentials(didDoc);
+      }
+    }
+
+    return true;
+  }
 
   /////////////////////////////////////////////////
-  //  HANDLE CREATE PROJECT                      //
+  //  HANDLE PROJECT REQUESTS                    //
   /////////////////////////////////////////////////
 
   createProject = (args: any) => {
@@ -258,6 +308,11 @@ export class RequestHandler extends AbstractHandler {
             return this.createTransaction(args, 'CreateProject', Project, undefined, did);
           });
       });
+  }
+
+  updateProjectStatus = (args: any) => {
+    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
+    return this.createTransaction(args, 'UpdateProjectStatus', ProjectStatus);
   }
 
   /////////////////////////////////////////////////
@@ -392,9 +447,9 @@ export class RequestHandler extends AbstractHandler {
   checkForFunds(projectDid: string): Promise<boolean> {
     return new Promise((resolve: Function, reject: Function) => {
       console.log(new Date().getUTCMilliseconds() + ' confirm funds exists');
-      axios.get(BLOCKCHAIN_URI_REST + 'projectAccounts/' + projectDid)
+      axios.get(BLOCKCHAIN_URI_REST + 'project/getProjectAccounts/' + projectDid)
         .then((response) => {
-          if (response.status == 200) {
+          if (response.status == 200 && (response.data instanceof Array)) {
             response.data.forEach((element: any) => {
               if (element.did == projectDid) {
                 Project.findOne({
@@ -403,9 +458,10 @@ export class RequestHandler extends AbstractHandler {
                   .then((project) => {
                     if (project) {
                       resolve(element.balance - project.evaluatorPayPerClaim >= 0);
+                    } else {
+                      console.log(new Date().getUTCMilliseconds() + ' check for funds no project found for projectDid ' + projectDid);
+                      resolve(false);
                     }
-                    console.log(new Date().getUTCMilliseconds() + ' check for funds no project found for projectDid ' + projectDid);
-                    resolve(false);
                   })
                   .catch((err) => {
                     console.log(new Date().getUTCMilliseconds() + ' error processing check for funds ' + err)
@@ -414,8 +470,10 @@ export class RequestHandler extends AbstractHandler {
               }
             })
           }
-          console.log(new Date().getUTCMilliseconds() + ' no valid response check for funds from blockchain ' + response.statusText);
-          resolve(false);
+          else {
+            console.log(new Date().getUTCMilliseconds() + ' no valid response check for funds from blockchain ' + response.statusText);
+            resolve(false);
+          }
         })
         .catch((reason) => {
           console.log(new Date().getUTCMilliseconds() + ' check for funds could not connect to blockchain ' + reason);

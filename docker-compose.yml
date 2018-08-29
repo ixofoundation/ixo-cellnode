@@ -2,7 +2,7 @@ version: "2"
 services:
   app:
     container_name: app
-    image: trustlab/ixo-elysian:latest
+    image: trustlab/ixo-elysian:master
     environment:
       - PORT=5000
       - MONGODB_URI=mongodb://db:27017/elysian
@@ -11,6 +11,8 @@ services:
       - BLOCKCHAIN_URI_REST=
       - CONFIG=/usr/src/app/config.json
       - TEMPLATE_REPO=https://api.github.com/repos/ixofoundation/schema/contents/
+    ports:
+      - "5000:5000"      
     restart: always
     links:
       - db
@@ -23,14 +25,16 @@ services:
       options:
         max-size: "1m"
         max-file: "1"
+    volumes:
+      - ./config.json:/usr/src/app/config.json
       
   db:
     container_name: db
     image: mongo
     restart: always
     volumes:
-      - ./data:/data/db
-      - $HOME/backup:/backup
+      - ./db:/data/db
+      - ./backup:/backup
 
   cache:
     container_name: cache
@@ -58,6 +62,10 @@ services:
 
   cli:
     container_name: cli
-    image: trustlab/ixo-cli
+    image: trustlab/ixo-cli:master
+    environment:
+      - MONGODB_URI=mongodb://db:27017/elysian
+      - MEMCACHE_URI=cache:11211
+      - BLOCKCHAIN_URI_REST=
 
 

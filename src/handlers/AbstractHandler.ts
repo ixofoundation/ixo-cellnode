@@ -25,10 +25,11 @@ var wallet: IWalletModel;
 
 export abstract class AbstractHandler {
 
-  public createTransaction(args: any, capability: string, model: Model<any>, checkIfExist?: Function, projectDid?: string) {
+  public createTransaction(args: any, method: string, model: Model<any>, checkIfExist?: Function, projectDid?: string) {
 
     var inst = this;
     var request = new Request(args);
+
     return new Promise((resolve: Function, reject: Function) => {
       if (connection.readyState != 1) {
         throw new TransactionError('Elysian not available');
@@ -38,11 +39,12 @@ export abstract class AbstractHandler {
         .then((result: ICapabilitiesModel) => {
           var capabilityMap: any;
           result.capabilities.forEach(element => {
-            if (element.capability == capability) {
+            if (element.capability == method) {
               capabilityMap = {
                 capability: element.capability,
                 template: element.template,
-                allow: element.allow
+                allow: element.allow,
+                validateKYC: element.validateKYC
               }
             }
           })
@@ -64,7 +66,7 @@ export abstract class AbstractHandler {
                 capValid = request.verifyCapability(capabilityMap.allow);
                 if (capValid.valid) {
                   console.log(new Date().getUTCMilliseconds() + ' verify the signature');
-                  request.verifySignature(this.preVerifyDidSignature)
+                  request.verifySignature(this.preVerifyDidSignature.bind(this), capabilityMap.validateKYC, capabilityMap.capability)
                     .then((sigValid: RequestValidator) => {
                       if (sigValid.valid) {
                         console.log(new Date().getUTCMilliseconds() + ' signature verified');
@@ -76,7 +78,8 @@ export abstract class AbstractHandler {
                                   reject(new TransactionError('Record out of date or already exists'));
                                 } else {
                                   console.log(new Date().getUTCMilliseconds() + ' write transaction to log')
-                                  transactionService.createTransaction(request.body, request.signature.type, request.signature.signatureValue, request.projectDid)
+                                  transactionService.createTransaction(request.body, request.signature.type,
+                                    request.signature.signatureValue, request.projectDid, capabilityMap.capability)
                                     .then((transaction: ITransactionModel) => {
                                       var obj = {
                                         ...request.data,
@@ -112,7 +115,8 @@ export abstract class AbstractHandler {
                               })
                           } else {
                             console.log(new Date().getUTCMilliseconds() + ' write transaction to log');
-                            transactionService.createTransaction(request.body, request.signature.type, request.signature.signatureValue, request.projectDid)
+                            transactionService.createTransaction(request.body, request.signature.type, request.signature.signatureValue,
+                              request.projectDid, capabilityMap.capability)
                               .then((transaction: ITransactionModel) => {
                                 var obj = {
                                   ...request.data,
@@ -168,7 +172,7 @@ export abstract class AbstractHandler {
     });
   }
 
-  public queryTransaction(args: any, capability: string, query: Function) {
+  public queryTransaction(args: any, method: string, query: Function) {
     var inst = this;
     var request = new Request(args);
     return new Promise((resolve: Function, reject: Function) => {
@@ -176,7 +180,7 @@ export abstract class AbstractHandler {
         .then((result: ICapabilitiesModel) => {
           var capabilityMap: any;
           result.capabilities.forEach(element => {
-            if (element.capability == capability) {
+            if (element.capability == method) {
               capabilityMap = {
                 capability: element.capability,
                 template: element.template,
@@ -202,7 +206,7 @@ export abstract class AbstractHandler {
                 capValid = request.verifyCapability(capabilityMap.allow);
                 if (capValid.valid) {
                   console.log(new Date().getUTCMilliseconds() + ' verify the signature');
-                  request.verifySignature(this.preVerifyDidSignature)
+                  request.verifySignature(this.preVerifyDidSignature.bind(this), capabilityMap.validateKYC, capabilityMap.capability)
                     .then((sigValid: RequestValidator) => {
                       if (sigValid.valid) {
                         console.log(new Date().getUTCMilliseconds() + ' query Elysian');
@@ -228,7 +232,7 @@ export abstract class AbstractHandler {
   }
 
 
-  preVerifyDidSignature(didResponse: AxiosResponse, data: Request): boolean {
+  preVerifyDidSignature(didResponse: AxiosResponse, data: Request, capability: string): boolean {
     return true;
   }
 
@@ -252,7 +256,7 @@ export abstract class AbstractHandler {
       walletService.createWallet(did, sovrinWallet.secret.signKey, sovrinWallet.verifyKey)
         .then((resp: IWalletModel) => {
           wallet = resp;
-          Cache.set(wallet.did, { pubKey: wallet.verifyKey });
+          Cache.set(wallet.did, { publicKey: wallet.verifyKey });
           console.log(new Date().getUTCMilliseconds() + ' project wallet created');
           resolve(wallet.did);
         });
@@ -289,7 +293,7 @@ export abstract class AbstractHandler {
     return new Promise((resolve: Function, reject: Function) => {
       walletService.getWallet(projectDid)
         .then((wallet: IWalletModel) => {
-          Cache.set(wallet.did, { pubKey: wallet.verifyKey });
+          Cache.set(wallet.did, { publicKey: wallet.verifyKey });
           var sovrinUtils = new SovrinUtils();
           resolve(sovrinUtils.signDocumentNoEncoding(wallet.signKey, wallet.verifyKey, wallet.did, msgToSign));
         });

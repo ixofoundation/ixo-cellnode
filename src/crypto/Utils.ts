@@ -1,4 +1,4 @@
-import * as crypto from 'crypto';
+import { createHash, randomBytes} from 'crypto';
 import * as logger from '../logger/Logger';
 import * as nacl from 'tweetnacl';
 import * as bs58 from 'bs58';
@@ -10,7 +10,7 @@ var ethereumWallet = require('ethereumjs-wallet');
 export class CryptoUtils { 
   
   createNonce(size = 64){
-    return crypto.randomBytes(Math.floor(size / 2)).toString('hex');
+    return randomBytes(Math.floor(size / 2)).toString('hex');
   }
 
   validateSignature(data: String, type: String, signature: String, publicKey: String): Boolean{
@@ -55,7 +55,7 @@ export class CryptoUtils {
 
   hash(input: any): String {
     let anyString = typeof (input) == 'object' ? JSON.stringify(input) : input.toString();
-    let hash = crypto.createHash('sha256').update(anyString).digest('hex');
+    let hash = createHash('sha256').update(anyString).digest('hex');
     return hash;
   }
 

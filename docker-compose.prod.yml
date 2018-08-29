@@ -2,11 +2,11 @@ version: "2"
 services:
   app:
     environment:
-      - BLOCKCHAIN_URI_REST=http://beta.cosmos.ixo.world:1317/
-    ports:
-      - "443:5000"
-      
+      - BLOCKCHAIN_URI_REST=https://explorer.ixo.world/api/
   pol:
     environment:
-      - BLOCKCHAIN_URI_TENDERMINT=http://beta.cosmos.ixo.world:46657/broadcast_tx_sync?tx=0x
+      - BLOCKCHAIN_URI_TENDERMINT=http://blockchain.ixo.world:46657/broadcast_tx_sync?tx=0x
 
+  cli:
+    environment:
+      - BLOCKCHAIN_URI_REST=https://explorer.ixo.world/api/did/getByDid/

@@ -1,5 +1,4 @@
 import { Document, Schema, Model, model } from "mongoose";
-import { TransactionError } from '../../error/TransactionError';
 import { ITransaction } from "./ITransaction";
 import transactionLog from '../../service/TransactionLogService'
 
@@ -23,7 +22,8 @@ export var TransactionSchema: Schema = new Schema({
   signatureType: String,
   signatureValue: String,
   publicKey: String,
-  timestamp: Date
+  timestamp: Date,
+  capability: String
 });
 
 export const Transaction: Model<ITransactionModel> = model<ITransactionModel>("Transaction", TransactionSchema);
@@ -31,9 +31,9 @@ export const Transaction: Model<ITransactionModel> = model<ITransactionModel>("T
 TransactionSchema.pre('save', function (next) {
   var inst : any;
   inst = this;
-  transactionLog.findLatestTransaction(inst.projectDid)
-    .then((prevTxn: ITransactionModel) => {
-      let prevHash = (prevTxn ? prevTxn.hash : '');
+  transactionLog.findPreviousTransaction()
+    .then((prevTxn: ITransactionModel[]) => {
+      let prevHash = (prevTxn[0] ? prevTxn[0].hash : '');
       inst.nonce = cryptoUtils.createNonce();
       inst.hash = cryptoUtils.hash(prevHash + inst.nonce.toString() + inst.data);
       inst.timestamp = new Date();

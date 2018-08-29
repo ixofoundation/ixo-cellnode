@@ -65,9 +65,13 @@ dist
 
 # vscode
 .vscode
+db/
 data/
+backup/
 
 .DS_Store
 src/.DS_Store
 
 scratch.json
+
+docker-compose.dev.yml

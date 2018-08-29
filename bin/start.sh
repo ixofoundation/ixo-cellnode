@@ -5,24 +5,24 @@ echo "***********************************"
 echo "* ELYSIAN START                   *"
 echo "***********************************"
 echo ""
-echo "Build Elysian"
 CURRENT_DIR=`dirname $0`
 ROOT_DIR=$CURRENT_DIR/..
 
-if [ "$1" = "dev" ]
+# if the environment cannot provide the type try to get it from the script argument
+if [ -z "$TARGET_ENVIRONMENT" ];
 then
-  echo "Building Developer images"
-  $ROOT_DIR/node_modules/typescript/bin/tsc 
-  docker build -t trustlab/ixo-elysian $ROOT_DIR
-  docker-compose -f $ROOT_DIR/docker-compose.yml -f $ROOT_DIR/docker-compose.dev.yml up --no-start
-elif [ "$1" = "beta" ]
-then
-  echo "Building Beta images"
-  docker-compose -f $ROOT_DIR/docker-compose.yml -f $ROOT_DIR/docker-compose.beta.yml up --no-start
-else
-  echo "Building Production images"
-  docker-compose -f $ROOT_DIR/docker-compose.yml -f $ROOT_DIR/docker-compose.prod.yml up --no-start
+  TARGET_ENVIRONMENT=$1
 fi
+
+if [ -z "$TARGET_ENVIRONMENT" ];
+then
+    echo 'UNKNOWN TARGET ENVIRONMENT (dev, qa, uat or prod)'
+    exit
+fi
+
+echo "Pulling $TARGET_ENVIRONMENT images"
+docker-compose -f "$ROOT_DIR/docker-compose.yml" -f "$ROOT_DIR/docker-compose.$TARGET_ENVIRONMENT.yml" up --no-start
+
 # docker-compose create
 docker-compose start db
 docker-compose start mq
@@ -35,7 +35,6 @@ $ROOT_DIR/bin/wait-for-service.sh mq 'Server startup complete;' 10
 docker-compose start pol
 docker-compose start app
 
-
 echo -n "Starting Elysian ..."
 sleep 5
 echo ${green} "done"
@@ -45,3 +44,4 @@ echo "***********************************"
 echo "* ELYSIAN START COMPLETE          *"
 echo "***********************************"
 docker-compose ps
+# branch: dev
