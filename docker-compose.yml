@@ -62,7 +62,7 @@ services:
 
   cli:
     container_name: cli
-    image: trustlab/ixo-cli
+    image: trustlab/ixo-cli:master
     environment:
       - MONGODB_URI=mongodb://db:27017/elysian
       - MEMCACHE_URI=cache:11211
