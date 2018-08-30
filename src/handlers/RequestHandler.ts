@@ -5,6 +5,13 @@ import axios from 'axios';
 import InitHandler from './InitHandler';
 
 const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
+const ETHEREUM_API = (process.env.ETHEREUM_API || '');
+
+enum Status {
+  created = "CREATED",
+  pending = "PENDING",
+  funded = "FUNDED"
+}
 
 /////////////////////////////////////////////////
 //  PROJECT  STATUS MODEL                      //
@@ -19,6 +26,51 @@ ProjectStatusSchema.pre("save", function (next) {
 });
 
 export const ProjectStatus: Model<IProjectStatusModel> = model<IProjectStatusModel>("ProjectStatus", ProjectStatusSchema);
+
+ProjectStatus.on("postCommit", function (obj) {
+  if (obj.status === Status.pending) {
+    let requestHandler = new RequestHandler();
+    let message = {
+      msgType: "eth",
+      data: obj.txnHash
+    }
+    requestHandler.publishMessageToQueue(message);
+    
+    axios.get(ETHEREUM_API  + obj.txnHash)
+    .then((response) => {
+      if (response.status == 200) {
+        let requestHandler = new RequestHandler();
+        var data: any = {
+          projectDid: obj.projectDid,
+          status: Status.funded
+        }
+        requestHandler.selfSignMessage(data, obj.projectDid)
+          .then((signature: any) => {
+            var projectStatusRequest: any = {
+              payload: {
+                template: {
+                  name: "project_status"
+                },
+                data: data
+              },
+              signature: {
+                type: "ed25519-sha-256",
+                created: new Date().toISOString(),
+                creator: obj.projectDid,
+                signatureValue: signature
+              }
+            }
+            requestHandler.updateProjectStatus(projectStatusRequest);
+          });
+      }
+      else {
+
+      }
+    })
+  }
+
+
+});
 
 /////////////////////////////////////////////////
 //  PROJECT MODEL                              //
@@ -40,6 +92,31 @@ ProjectSchema.pre("save", function (next) {
 
 export const Project: Model<IProjectModel> = model<IProjectModel>("Project", ProjectSchema);
 
+Project.on("postCommit", function (obj) {
+  let requestHandler = new RequestHandler();
+  var data: any = {
+    projectDid: obj.projectDid,
+    status: Status.created
+  }
+  requestHandler.selfSignMessage(data, obj.projectDid)
+    .then((signature: any) => {
+      var projectStatusRequest: any = {
+        payload: {
+          template: {
+            name: "project_status"
+          },
+          data: data
+        },
+        signature: {
+          type: "ed25519-sha-256",
+          created: new Date().toISOString(),
+          creator: obj.projectDid,
+          signatureValue: signature
+        }
+      }
+      requestHandler.updateProjectStatus(projectStatusRequest);
+    });
+});
 
 /////////////////////////////////////////////////
 //   AGENT MODEL                               //

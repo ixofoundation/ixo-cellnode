@@ -278,4 +278,10 @@ export abstract class AbstractHandler {
         });
     });
   }
+
+  publishMessageToQueue(message: any) {
+    return new Promise((resolve: Function, reject: Function) => {
+      mq.publish(message);
+    });
+  }
 }
