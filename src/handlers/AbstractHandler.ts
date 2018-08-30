@@ -96,7 +96,23 @@ export abstract class AbstractHandler {
                                       this.msgToPublish(obj, request, capabilityMap.capability)
                                         .then((msg: any) => {
                                           console.log(new Date().getUTCMilliseconds() + ' message to be published ' + msg);
-                                          mq.publish(msg);
+                                          mq.publish(msg)
+                                          // .then(() => {
+                                          //   mq.subscribe()
+                                          //     .then((bcresp) => {
+                                          //       if (bcresp.code === 0) {
+                                          //         console.log(new Date().getUTCMilliseconds() + ' commit to Elysian');
+                                          //         resolve(model.create({ ...obj, projectDid: request.projectDid }));
+                                          //         model.emit('postCommit', obj);
+                                          //         console.log(new Date().getUTCMilliseconds() + ' updating the capabilities');
+                                          //         inst.updateCapabilities(request, capabilityMap.capability);
+                                          //         console.log(new Date().getUTCMilliseconds() + ' transaction completed successfully');
+                                          //       } else {
+                                          //         console.log(new Date().getUTCMilliseconds() + ' transaction completed unsuccessfully');
+                                          //         reject(new TransactionError('blockchain validation failed'));
+                                          //       }
+                                          //     });
+                                          // });
                                         });
                                       model.emit('postCommit', obj);
                                       console.log(new Date().getUTCMilliseconds() + ' transaction completed successfully');
@@ -122,7 +138,23 @@ export abstract class AbstractHandler {
                                 this.msgToPublish(obj, request, capabilityMap.capability)
                                   .then((msg: any) => {
                                     console.log(new Date().getUTCMilliseconds() + ' message to be published ' + msg);
-                                    mq.publish(msg);
+                                    mq.publish(msg)
+                                    // .then(() => {
+                                    //   mq.subscribe()
+                                    //     .then((bcresp) => {
+                                    //       if (bcresp.code === 0) {
+                                    //         console.log(new Date().getUTCMilliseconds() + ' commit to Elysian');
+                                    //         resolve(model.create({ ...obj, projectDid: request.projectDid }));
+                                    //         model.emit('postCommit', obj);
+                                    //         console.log(new Date().getUTCMilliseconds() + ' updating the capabilities');
+                                    //         inst.updateCapabilities(request, capabilityMap.capability);
+                                    //         console.log(new Date().getUTCMilliseconds() + ' transaction completed successfully');
+                                    //       } else {
+                                    //         console.log(new Date().getUTCMilliseconds() + ' transaction completed unsuccessfully');
+                                    //         reject(new TransactionError('blockchain validation failed'));
+                                    //       }
+                                    //     });
+                                    // });
                                   });
                                 model.emit('postCommit', obj);
                                 console.log(new Date().getUTCMilliseconds() + ' transaction completed successfully');
