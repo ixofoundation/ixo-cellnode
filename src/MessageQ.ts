@@ -34,7 +34,7 @@ export class MessageQ {
                     console.log('RabbitMQ connected');
                     resolve(conn);
                 }, () => {
-                    setTimeout(function () {
+                    setTimeout(() => {
                         console.error("RabbitMQ reconnecting");
                         inst.connect()
                     }, 5000);
@@ -54,7 +54,6 @@ export class MessageQ {
             })
                 .then(() => {
                     channel.bindQueue(this.queue, 'pds.ex');
-                    //channel.bindQueue(this.queue, 'pds.dlx');
                 })
                 .then(() => {
                     let jsonContent = JSON.stringify(content);
@@ -70,6 +69,37 @@ export class MessageQ {
             throw new TransactionError(error.message);
         }
     }
+
+    public subscribe(): Promise<any> {
+        var inst: any;
+        inst = this;
+        return new Promise(function (resolve: Function, reject: Function) {
+            try {
+                inst.connection.createChannel()
+                    .then((channel: any) => {
+                        channel.assertQueue('pds.res', {
+                            durable: true
+                        })
+                            .then(() => {
+                                channel.bindQueue('pds.res', 'pds.ex');
+                            })
+                            .then(() => {
+                                channel.prefetch(1);
+
+                                channel.consume('pds.res', (messageData: any) => {
+                                    console.log(new Date().getUTCMilliseconds() + " Received %s", messageData.content.toString());
+                                    resolve(messageData.content);
+                                });
+                            }, (error: any) => {
+                                throw error;
+                            });
+                        });
+                    } catch (error) {
+                        throw new Error(error.message);
+                    }
+            });
+    }
+
 }
 
 export default new MessageQ('pds');
