@@ -95,26 +95,10 @@ export abstract class AbstractHandler {
                                       console.log(new Date().getUTCMilliseconds() + ' publish to blockchain');
                                       this.msgToPublish(obj, request, capabilityMap.capability)
                                         .then((msg: any) => {
-                                          console.log(new Date().getUTCMilliseconds() + ' message to be published ' + msg);
-                                          mq.publish(msg)
-                                          // .then(() => {
-                                          //   mq.subscribe()
-                                          //     .then((bcresp) => {
-                                          //       if (bcresp.code === 0) {
-                                          //         console.log(new Date().getUTCMilliseconds() + ' commit to Elysian');
-                                          //         resolve(model.create({ ...obj, projectDid: request.projectDid }));
-                                          //         model.emit('postCommit', obj);
-                                          //         console.log(new Date().getUTCMilliseconds() + ' updating the capabilities');
-                                          //         inst.updateCapabilities(request, capabilityMap.capability);
-                                          //         console.log(new Date().getUTCMilliseconds() + ' transaction completed successfully');
-                                          //       } else {
-                                          //         console.log(new Date().getUTCMilliseconds() + ' transaction completed unsuccessfully');
-                                          //         reject(new TransactionError('blockchain validation failed'));
-                                          //       }
-                                          //     });
-                                          // });
+                                          console.log(new Date().getUTCMilliseconds() + ' message to be published ' + JSON.stringify(msg));
+                                          mq.publish(msg);
                                         });
-                                      model.emit('postCommit', obj);
+                                      model.emit('postCommit', obj, request.projectDid);
                                       console.log(new Date().getUTCMilliseconds() + ' transaction completed successfully');
                                     });
                                 }
@@ -137,31 +121,15 @@ export abstract class AbstractHandler {
                                 console.log(new Date().getUTCMilliseconds() + ' publish to blockchain');
                                 this.msgToPublish(obj, request, capabilityMap.capability)
                                   .then((msg: any) => {
-                                    console.log(new Date().getUTCMilliseconds() + ' message to be published ' + msg);
-                                    mq.publish(msg)
-                                    // .then(() => {
-                                    //   mq.subscribe()
-                                    //     .then((bcresp) => {
-                                    //       if (bcresp.code === 0) {
-                                    //         console.log(new Date().getUTCMilliseconds() + ' commit to Elysian');
-                                    //         resolve(model.create({ ...obj, projectDid: request.projectDid }));
-                                    //         model.emit('postCommit', obj);
-                                    //         console.log(new Date().getUTCMilliseconds() + ' updating the capabilities');
-                                    //         inst.updateCapabilities(request, capabilityMap.capability);
-                                    //         console.log(new Date().getUTCMilliseconds() + ' transaction completed successfully');
-                                    //       } else {
-                                    //         console.log(new Date().getUTCMilliseconds() + ' transaction completed unsuccessfully');
-                                    //         reject(new TransactionError('blockchain validation failed'));
-                                    //       }
-                                    //     });
-                                    // });
+                                    console.log(new Date().getUTCMilliseconds() + ' message to be published ' + JSON.stringify(msg));
+                                    mq.publish(msg);
                                   });
-                                model.emit('postCommit', obj);
+                                model.emit('postCommit', obj, request.projectDid);
                                 console.log(new Date().getUTCMilliseconds() + ' transaction completed successfully');
                               });
                           }
                         } else {
-                          console.log(new Date().getUTCMilliseconds() + 'mq currently unavailable');
+                          console.log(new Date().getUTCMilliseconds() + ' mq currently unavailable');
                           reject(new TransactionError('mq currently unavailable'));
                         }
                       } else {
@@ -294,8 +262,12 @@ export abstract class AbstractHandler {
               created: new Date()
             }
           }
-
-          resolve(new Buffer(JSON.stringify(signedMsg)).toString('hex'));
+          let message = {
+            msgType: 'blockchain',
+            projectDid: wallet.did,
+            data: new Buffer(JSON.stringify(signedMsg)).toString('hex')
+          }
+          resolve(message);
         });
     });
   }
@@ -311,9 +283,17 @@ export abstract class AbstractHandler {
     });
   }
 
-  publishMessageToQueue(message: any) {
+  async publishMessageToQueue(message: any) {
     return new Promise((resolve: Function, reject: Function) => {
-      mq.publish(message);
+      console.log(new Date().getUTCMilliseconds() + ' message to be published ' + JSON.stringify(message));
+      
+      resolve(mq.publish(message));
+    });
+  }
+
+  subscribeToMessageQueue() {
+    return new Promise((resolve: Function, reject: Function) => {
+      resolve(mq.subscribe());
     });
   }
 }

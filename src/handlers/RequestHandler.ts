@@ -5,7 +5,7 @@ import axios from 'axios';
 import InitHandler from './InitHandler';
 
 const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
-const ETHEREUM_API = (process.env.ETHEREUM_API || '');
+
 
 enum Status {
   created = "CREATED",
@@ -32,44 +32,11 @@ ProjectStatus.on("postCommit", function (obj) {
     let requestHandler = new RequestHandler();
     let message = {
       msgType: "eth",
-      data: obj.txnHash
+      data: obj.txnHash,
+      projectDid: obj.projectDid
     }
     requestHandler.publishMessageToQueue(message);
-    
-    axios.get(ETHEREUM_API  + obj.txnHash)
-    .then((response) => {
-      if (response.status == 200) {
-        let requestHandler = new RequestHandler();
-        var data: any = {
-          projectDid: obj.projectDid,
-          status: Status.funded
-        }
-        requestHandler.selfSignMessage(data, obj.projectDid)
-          .then((signature: any) => {
-            var projectStatusRequest: any = {
-              payload: {
-                template: {
-                  name: "project_status"
-                },
-                data: data
-              },
-              signature: {
-                type: "ed25519-sha-256",
-                created: new Date().toISOString(),
-                creator: obj.projectDid,
-                signatureValue: signature
-              }
-            }
-            requestHandler.updateProjectStatus(projectStatusRequest);
-          });
-      }
-      else {
-
-      }
-    })
   }
-
-
 });
 
 /////////////////////////////////////////////////
@@ -92,13 +59,13 @@ ProjectSchema.pre("save", function (next) {
 
 export const Project: Model<IProjectModel> = model<IProjectModel>("Project", ProjectSchema);
 
-Project.on("postCommit", function (obj) {
+Project.on("postCommit", function (obj, projectDid) {
   let requestHandler = new RequestHandler();
   var data: any = {
-    projectDid: obj.projectDid,
+    projectDid: projectDid,
     status: Status.created
   }
-  requestHandler.selfSignMessage(data, obj.projectDid)
+  requestHandler.selfSignMessage(data, projectDid)
     .then((signature: any) => {
       var projectStatusRequest: any = {
         payload: {
@@ -110,7 +77,7 @@ Project.on("postCommit", function (obj) {
         signature: {
           type: "ed25519-sha-256",
           created: new Date().toISOString(),
-          creator: obj.projectDid,
+          creator: projectDid,
           signatureValue: signature
         }
       }
@@ -208,10 +175,51 @@ EvaluateClaimSchema.pre("save", function (next) {
 
 export const EvaluateClaim: Model<IEvaluateClaimModel> = model<IEvaluateClaimModel>("EvaluateClaim", EvaluateClaimSchema);
 
+
+//////////////////////////////////////////////////
+//   REQUEST HANDLER CLASS                      //
+//////////////////////////////////////////////////
+
 export class RequestHandler extends AbstractHandler {
 
   constructor() {
     super();
+    setInterval(() => {
+      console.log('Polling mq')
+      this.subscribeToMessageQueue()
+        .then((response) => {
+          this.handleResponseFromMessageQueue(response);
+        });
+    }, 2000)
+  }
+
+  handleResponseFromMessageQueue(message: any) {
+    let jsonMsg = JSON.parse(message);    
+    if (jsonMsg.msgType === 'eth') {
+      var data: any = {
+        projectDid: jsonMsg.projectDid,
+        status: Status.funded
+      }
+      this.selfSignMessage(data, jsonMsg.projectDid)
+        .then((signature: any) => {
+          var projectStatusRequest: any = {
+            payload: {
+              template: {
+                name: "project_status"
+              },
+              data: data
+            },
+            signature: {
+              type: "ed25519-sha-256",
+              created: new Date().toISOString(),
+              creator: jsonMsg.projectDid,
+              signatureValue: signature
+            }
+          }
+          this.updateProjectStatus(projectStatusRequest);
+        });
+    }
+
   }
 
   updateCapabilities(request: Request, methodCall: string) {

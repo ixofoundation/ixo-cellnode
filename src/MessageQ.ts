@@ -85,19 +85,18 @@ export class MessageQ {
                             })
                             .then(() => {
                                 channel.prefetch(1);
-
                                 channel.consume('pds.res', (messageData: any) => {
-                                    console.log(new Date().getUTCMilliseconds() + " Received %s", messageData.content.toString());
+                                    console.log(new Date().getUTCMilliseconds() + " Received response %s", messageData.content.toString());
                                     resolve(messageData.content);
                                 });
                             }, (error: any) => {
                                 throw error;
                             });
-                        });
-                    } catch (error) {
-                        throw new Error(error.message);
-                    }
-            });
+                    });
+            } catch (error) {
+                throw new Error(error.message);
+            }
+        });
     }
 
 }
