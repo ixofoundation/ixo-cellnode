@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "node dist/server.js",
-    "build":"tsc",
+    "build": "tsc",
     "test": "we are live"
   },
   "author": "brennon.hampton@gmail.com",
