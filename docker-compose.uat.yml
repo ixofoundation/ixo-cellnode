@@ -3,6 +3,7 @@ services:
   app:
     environment:
       - BLOCKCHAIN_URI_REST=https://explorer_uat.ixo.world/api/
+      - ETHEREUM_API=https://mainnet.infura.io/
   db:
     ports:
       - "27017:27017"

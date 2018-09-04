@@ -33,12 +33,6 @@ export class WalletService {
     });
   }
 
-  getLatestWallet(): Promise<IWalletModel> {
-    return new Promise(function (resolve: Function, reject: Function) {
-      resolve (Wallet.findOne().sort({$natural:-1}));
-    });
-  }
-
   getWallet(projectDid: string): Promise<IWalletModel> {
     return new Promise(function (resolve: Function, reject: Function) {
       resolve (Wallet.findOne({

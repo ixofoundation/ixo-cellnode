@@ -285,8 +285,7 @@ export abstract class AbstractHandler {
 
   async publishMessageToQueue(message: any) {
     return new Promise((resolve: Function, reject: Function) => {
-      console.log(new Date().getUTCMilliseconds() + ' message to be published ' + JSON.stringify(message));
-      
+      console.log(new Date().getUTCMilliseconds() + ' message to be published ' + JSON.stringify(message));      
       resolve(mq.publish(message));
     });
   }

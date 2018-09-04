@@ -3,6 +3,7 @@ services:
   app:
     environment:
       - BLOCKCHAIN_URI_REST=https://explorer.ixo.world/api/
+      - ETHEREUM_API=https://mainnet.infura.io/
   pol:
     environment:
       - BLOCKCHAIN_URI_TENDERMINT=http://blockchain.ixo.world:46657/broadcast_tx_sync?tx=0x

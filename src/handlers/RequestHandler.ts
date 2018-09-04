@@ -5,21 +5,32 @@ import axios from 'axios';
 import InitHandler from './InitHandler';
 
 const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
+const ETHEREUM_API = (process.env.ETHEREUM_API || '');
 
 
 enum Status {
   created = "CREATED",
   pending = "PENDING",
-  funded = "FUNDED"
+  funded = "FUNDED",
+  started = "STARTED",
+  stopped = "STOPPED",
+  payout = "PAIDOUT"
 }
+
+const workflow = ["CREATED", "PENDING", "FUNDED", "STARTED", "STOPPED", "PAIDOUT"];
+const blockheight = 6;
 
 /////////////////////////////////////////////////
 //  PROJECT  STATUS MODEL                      //
 /////////////////////////////////////////////////
 
-export interface IProjectStatusModel extends Document { }
+export interface IProjectStatusModel extends Document {
+  status: string
+}
 
-var ProjectStatusSchema: Schema = new Schema({}, { strict: false });
+var ProjectStatusSchema: Schema = new Schema({
+  status: String
+}, { strict: false });
 
 ProjectStatusSchema.pre("save", function (next) {
   next();
@@ -32,7 +43,7 @@ ProjectStatus.on("postCommit", function (obj) {
     let requestHandler = new RequestHandler();
     let message = {
       msgType: "eth",
-      data: obj.txnHash,
+      data: obj.txnID, // "0xbb3a336e3f823ec18197f1e13ee875700f08f03e2cab75f0d0b118dabb44cba0",
       projectDid: obj.projectDid
     }
     requestHandler.publishMessageToQueue(message);
@@ -185,7 +196,6 @@ export class RequestHandler extends AbstractHandler {
   constructor() {
     super();
     setInterval(() => {
-      console.log('Polling mq')
       this.subscribeToMessageQueue()
         .then((response) => {
           this.handleResponseFromMessageQueue(response);
@@ -194,32 +204,50 @@ export class RequestHandler extends AbstractHandler {
   }
 
   handleResponseFromMessageQueue(message: any) {
-    let jsonMsg = JSON.parse(message);    
+    let jsonMsg = JSON.parse(message);
     if (jsonMsg.msgType === 'eth') {
-      var data: any = {
-        projectDid: jsonMsg.projectDid,
-        status: Status.funded
-      }
-      this.selfSignMessage(data, jsonMsg.projectDid)
-        .then((signature: any) => {
-          var projectStatusRequest: any = {
-            payload: {
-              template: {
-                name: "project_status"
-              },
-              data: data
-            },
-            signature: {
-              type: "ed25519-sha-256",
-              created: new Date().toISOString(),
-              creator: jsonMsg.projectDid,
-              signatureValue: signature
+      axios({
+        method: 'post',
+        url: ETHEREUM_API,
+        data: { jsonrpc: "2.0", method: "eth_blockNumber", params: [], id: 1 }
+      })
+        .then((response) => {
+          if (parseInt(response.data.result, 16) - parseInt(jsonMsg.data.blockNumber, 16) > blockheight) {
+            var data: any = {
+              projectDid: jsonMsg.projectDid,
+              status: Status.funded
             }
+            this.selfSignMessage(data, jsonMsg.projectDid)
+              .then((signature: any) => {
+                var projectStatusRequest: any = {
+                  payload: {
+                    template: {
+                      name: "project_status"
+                    },
+                    data: data
+                  },
+                  signature: {
+                    type: "ed25519-sha-256",
+                    created: new Date().toISOString(),
+                    creator: jsonMsg.projectDid,
+                    signatureValue: signature
+                  }
+                }
+                this.updateProjectStatus(projectStatusRequest);
+              });
+          } else {            
+            let message = {
+              msgType: "eth",
+              data: jsonMsg.txnID, //"0xbb3a336e3f823ec18197f1e13ee875700f08f03e2cab75f0d0b118dabb44cba0",
+              projectDid: jsonMsg.projectDid
+            }
+            setTimeout(() => {
+              this.publishMessageToQueue(message);
+            }, 30000)
+            
           }
-          this.updateProjectStatus(projectStatusRequest);
-        });
+        })
     }
-
   }
 
   updateCapabilities(request: Request, methodCall: string) {
@@ -240,6 +268,7 @@ export class RequestHandler extends AbstractHandler {
         this.addCapabilities(request.projectDid, request.signature.creator, 'ListAgents');
         this.addCapabilities(request.projectDid, request.signature.creator, 'ListClaims');
         this.addCapabilities(request.projectDid, request.signature.creator, 'UpdateProjectStatus');
+        this.addCapabilities(request.projectDid, request.projectDid, 'UpdateProjectStatus');
         break;
       }
       default: {
@@ -336,7 +365,8 @@ export class RequestHandler extends AbstractHandler {
           blockChainPayload = {
             payload: [21, {
               data: {
-                status: obj.status
+                status: obj.status,
+                txnID: obj.txnID
               },
               txHash: txHash,
               senderDid: request.signature.creator,
@@ -380,6 +410,7 @@ export class RequestHandler extends AbstractHandler {
     return true;
   }
 
+
   /////////////////////////////////////////////////
   //  HANDLE PROJECT REQUESTS                    //
   /////////////////////////////////////////////////
@@ -395,9 +426,27 @@ export class RequestHandler extends AbstractHandler {
       });
   }
 
+  getLatestProjectStatus = (projectDid: string): Promise<IProjectStatusModel> => {
+    return new Promise(function (resolve: Function) {
+      resolve(ProjectStatus.find({ projectDid: projectDid }).limit(1).sort({ $natural: -1 }))
+    })
+  }
+
   updateProjectStatus = (args: any) => {
     console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
-    return this.createTransaction(args, 'UpdateProjectStatus', ProjectStatus);
+    let request = new Request(args);
+    if (workflow.indexOf(request.data.status) === 0) {
+      return this.createTransaction(args, 'UpdateProjectStatus', ProjectStatus);
+    } else {
+      return this.getLatestProjectStatus(request.projectDid)
+        .then((current: IProjectStatusModel) => {
+          if (workflow[workflow.indexOf(request.data.status) - 1] === current.status) {
+            return this.createTransaction(args, 'UpdateProjectStatus', ProjectStatus);
+          }
+          console.log(new Date().getUTCMilliseconds() + ' Invalid status request ' + request.data.status);
+          return "Invalid status request";
+        })
+    }
   }
 
   /////////////////////////////////////////////////
