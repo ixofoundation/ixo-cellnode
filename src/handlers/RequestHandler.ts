@@ -288,90 +288,97 @@ export class RequestHandler extends AbstractHandler {
       switch (methodCall) {
         case 'CreateProject': {
           delete obj.autoApprove;
+          let data = {
+          data: {
+            ...obj,
+            createdOn: request.signature.created,
+            createdBy: request.signature.creator
+          },
+          txHash: txHash,
+          senderDid: request.signature.creator,
+          projectDid: request.projectDid,
+          pubKey: this.getWallet().verifyKey
+        }
           blockChainPayload = {
-            payload: [16, {
-              data: {
-                ...obj,
-                createdOn: request.signature.created,
-                createdBy: request.signature.creator
-              },
-              txHash: txHash,
-              senderDid: request.signature.creator,
-              projectDid: request.projectDid,
-              pubKey: this.getWallet().verifyKey
-            }]
+            payload: [16, new Buffer(JSON.stringify(data)).toString('hex').toUpperCase()]
           }
           break;
         }
         case 'CreateAgent': {
+          let data = {
+            data: {
+              did: obj.agentDid,
+              role: obj.role,
+            },
+            txHash: txHash,
+            senderDid: request.signature.creator,
+            projectDid: request.projectDid
+          }
           blockChainPayload = {
-            payload: [17, {
-              data: {
-                did: obj.agentDid,
-                role: obj.role,
-              },
-              txHash: txHash,
-              senderDid: request.signature.creator,
-              projectDid: request.projectDid
-            }]
+            payload: [17, new Buffer(JSON.stringify(data)).toString('hex').toUpperCase()]
           }
           break;
         }
         case 'UpdateAgentStatus': {
+          let data = {
+            data: {
+              did: obj.agentDid,
+              status: obj.status,
+              role: obj.role
+            },
+            txHash: txHash,
+            senderDid: request.signature.creator,
+            projectDid: request.projectDid
+          }
           blockChainPayload = {
-            payload: [18, {
-              data: {
-                did: obj.agentDid,
-                status: obj.status,
-                role: obj.role
-              },
-              txHash: txHash,
-              senderDid: request.signature.creator,
-              projectDid: request.projectDid
-            }]
+            payload: [18, new Buffer(JSON.stringify(data)).toString('hex').toUpperCase()]
           }
 
           break;
         }
         case 'SubmitClaim': {
+          let data = {
+            data: {
+              claimID: txHash
+            },
+            txHash: txHash,
+            senderDid: request.signature.creator,
+            projectDid: request.projectDid
+          }
           blockChainPayload = {
-            payload: [19, {
-              data: {
-                claimID: txHash
-              },
-              txHash: txHash,
-              senderDid: request.signature.creator,
-              projectDid: request.projectDid
-            }]
+            payload: [19, new Buffer(JSON.stringify(data)).toString('hex').toUpperCase()]
           }
           break;
         }
         case 'EvaluateClaim': {
+          let data = {
+            data: {
+              claimID: obj.claimId,
+              status: obj.status
+            },
+            txHash: txHash,
+            senderDid: request.signature.creator,
+            projectDid: request.projectDid
+          }
           blockChainPayload = {
-            payload: [20, {
-              data: {
-                claimID: obj.claimId,
-                status: obj.status
-              },
-              txHash: txHash,
-              senderDid: request.signature.creator,
-              projectDid: request.projectDid
-            }]
+            payload: [20, new Buffer(JSON.stringify(data)).toString('hex').toUpperCase()]
           }
 
           break;
         }
         case 'UpdateProjectStatus': {
+          let data = {
+            data: {
+              status: obj.status,
+              txnID: obj.txnID
+            },
+            txHash: txHash,
+            senderDid: request.signature.creator,
+            projectDid: request.projectDid
+          }
+
           blockChainPayload = {
-            payload: [21, {
-              data: {
-                status: obj.status,
-                txnID: obj.txnID
-              },
-              txHash: txHash,
-              senderDid: request.signature.creator,
-              projectDid: request.projectDid
-            }]
+            payload: [21, new Buffer(JSON.stringify(data)).toString('hex').toUpperCase()]
           }
 
           break;
