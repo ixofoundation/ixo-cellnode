@@ -18,6 +18,7 @@ enum Status {
 }
 
 const workflow = ["CREATED", "PENDING", "FUNDED", "STARTED", "STOPPED", "PAIDOUT"];
+
 const blockheight = 6;
 
 /////////////////////////////////////////////////
@@ -235,7 +236,7 @@ export class RequestHandler extends AbstractHandler {
                 }
                 this.updateProjectStatus(projectStatusRequest);
               });
-          } else {            
+          } else {
             let message = {
               msgType: "eth",
               data: jsonMsg.txnID, //"0xbb3a336e3f823ec18197f1e13ee875700f08f03e2cab75f0d0b118dabb44cba0",
@@ -244,9 +245,11 @@ export class RequestHandler extends AbstractHandler {
             setTimeout(() => {
               this.publishMessageToQueue(message);
             }, 30000)
-            
+
           }
         })
+    } else {
+      console.log(this.dateTimeLogger() + ' message processed ' + JSON.stringify(jsonMsg.data));
     }
   }
 
@@ -289,16 +292,16 @@ export class RequestHandler extends AbstractHandler {
         case 'CreateProject': {
           delete obj.autoApprove;
           let data = {
-          data: {
-            ...obj,
-            createdOn: request.signature.created,
-            createdBy: request.signature.creator
-          },
-          txHash: txHash,
-          senderDid: request.signature.creator,
-          projectDid: request.projectDid,
-          pubKey: this.getWallet().verifyKey
-        }
+            data: {
+              ...obj,
+              createdOn: request.signature.created,
+              createdBy: request.signature.creator
+            },
+            txHash: txHash,
+            senderDid: request.signature.creator,
+            projectDid: request.projectDid,
+            pubKey: this.getWallet().verifyKey
+          }
           blockChainPayload = {
             payload: [16, new Buffer(JSON.stringify(data)).toString('hex').toUpperCase()]
           }
@@ -422,8 +425,14 @@ export class RequestHandler extends AbstractHandler {
   //  HANDLE PROJECT REQUESTS                    //
   /////////////////////////////////////////////////
 
+  getLatestProjectStatus = (projectDid: string): Promise<IProjectStatusModel[]> => {
+    return new Promise(function (resolve: Function) {
+      resolve(ProjectStatus.find({ projectDid: projectDid }).limit(1).sort({ $natural: -1 }))
+    })
+  }
+
   createProject = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
+    console.log(this.dateTimeLogger() + ' start new transaction ' + JSON.stringify(args));
     return this.generateProjectWallet()
       .then((did: any) => {
         return InitHandler.initialise(did)
@@ -433,24 +442,19 @@ export class RequestHandler extends AbstractHandler {
       });
   }
 
-  getLatestProjectStatus = (projectDid: string): Promise<IProjectStatusModel> => {
-    return new Promise(function (resolve: Function) {
-      resolve(ProjectStatus.find({ projectDid: projectDid }).limit(1).sort({ $natural: -1 }))
-    })
-  }
 
   updateProjectStatus = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
+    console.log(this.dateTimeLogger() + ' start new transaction ' + JSON.stringify(args));
     let request = new Request(args);
     if (workflow.indexOf(request.data.status) === 0) {
       return this.createTransaction(args, 'UpdateProjectStatus', ProjectStatus);
     } else {
       return this.getLatestProjectStatus(request.projectDid)
-        .then((current: IProjectStatusModel) => {
-          if (workflow[workflow.indexOf(request.data.status) - 1] === current.status) {
+        .then((current: IProjectStatusModel[]) => {
+          if (workflow[workflow.indexOf(request.data.status) - 1] === current[0].status) {
             return this.createTransaction(args, 'UpdateProjectStatus', ProjectStatus);
           }
-          console.log(new Date().getUTCMilliseconds() + ' Invalid status request ' + request.data.status);
+          console.log(this.dateTimeLogger() + ' Invalid status request ' + request.data.status);
           return "Invalid status request";
         })
     }
@@ -461,7 +465,7 @@ export class RequestHandler extends AbstractHandler {
   /////////////////////////////////////////////////
 
   createAgent = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
+    console.log(this.dateTimeLogger() + ' start new transaction ' + JSON.stringify(args));
     return this.createTransaction(args, 'CreateAgent', Agent, function (request: any): Promise<boolean> {
       return new Promise(function (resolve: Function, reject: Function) {
         Agent.find(
@@ -478,16 +482,32 @@ export class RequestHandler extends AbstractHandler {
                 if (element.role === 'EA' && request.data.role === 'SA') resolve(true);
                 if (element.role === 'SA' && request.data.role === 'EA') resolve(true);
               });
-              resolve(false);
             }
           });
+
+        const validStatus = ["CREATED", "PENDING", "FUNDED", "STARTED"];
+        ProjectStatus.find(
+          {
+            projectDid: request.data.projectDid
+          },
+          (error: Error, results: IProjectStatusModel[]) => {
+            if (error) {
+              reject(error);
+            } else {
+              if (results.length > 0 && validStatus.some(elem => elem === results[0].status)) {
+                resolve(false);
+              }
+              resolve(true);
+            }
+          }).limit(1).sort({ $natural: -1 })
+
       });
     });
   }
 
 
   updateAgentStatus = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
+    console.log(this.dateTimeLogger() + ' start new transaction ' + JSON.stringify(args));
     return this.createTransaction(args, 'UpdateAgentStatus', AgentStatus, function (request: any): Promise<boolean> {
       let newVersion = request.version + 1;
       return new Promise(function (resolve: Function, reject: Function) {
@@ -504,15 +524,31 @@ export class RequestHandler extends AbstractHandler {
               if (result) {
                 resolve(true);
               }
-              resolve(false);
             }
           }).limit(1);
+
+
+        const validStatus = ["CREATED", "PENDING", "FUNDED", "STARTED", "STOPPED"];
+        ProjectStatus.find(
+          {
+            projectDid: request.data.projectDid
+          },
+          (error: Error, results: IProjectStatusModel[]) => {
+            if (error) {
+              reject(error);
+            } else {
+              if (results.length > 0 && validStatus.some(elem => elem === results[0].status)) {
+                resolve(false);
+              }
+              resolve(true);
+            }
+          }).limit(1).sort({ $natural: -1 })
       });
     })
   }
 
   listAgents = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
+    console.log(this.dateTimeLogger() + ' start new transaction ' + JSON.stringify(args));
     return this.queryTransaction(args, 'ListAgents', function (filter: any): Promise<any[]> {
       return new Promise(function (resolve: Function, reject: Function) {
         Agent.aggregate([
@@ -581,13 +617,31 @@ export class RequestHandler extends AbstractHandler {
   /////////////////////////////////////////////////
 
   submitClaim = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
-    return this.createTransaction(args, 'SubmitClaim', Claim);
+    console.log(this.dateTimeLogger() + ' start new transaction ' + JSON.stringify(args));
+    return this.createTransaction(args, 'SubmitClaim', Claim, function (request: any): Promise<boolean> {
+      return new Promise(function (resolve: Function, reject: Function) {
+        const validStatus = ["STARTED"];
+        ProjectStatus.find(
+          {
+            projectDid: request.data.projectDid
+          },
+          (error: Error, results: IProjectStatusModel[]) => {
+            if (error) {
+              reject(error);
+            } else {
+              if (results.length > 0 && validStatus.some(elem => elem === results[0].status)) {
+                resolve(false);
+              }
+              resolve(true);
+            }
+          }).limit(1).sort({ $natural: -1 })
+      });
+    });
   }
 
   checkForFunds(projectDid: string): Promise<boolean> {
     return new Promise((resolve: Function, reject: Function) => {
-      console.log(new Date().getUTCMilliseconds() + ' confirm funds exists');
+      console.log(this.dateTimeLogger() + ' confirm funds exists');
       axios.get(BLOCKCHAIN_URI_REST + 'project/getProjectAccounts/' + projectDid)
         .then((response) => {
           if (response.status == 200 && (response.data instanceof Array)) {
@@ -600,31 +654,31 @@ export class RequestHandler extends AbstractHandler {
                     if (project) {
                       resolve(element.balance - project.evaluatorPayPerClaim >= 0);
                     } else {
-                      console.log(new Date().getUTCMilliseconds() + ' check for funds no project found for projectDid ' + projectDid);
+                      console.log(this.dateTimeLogger() + ' check for funds no project found for projectDid ' + projectDid);
                       resolve(false);
                     }
                   })
                   .catch((err) => {
-                    console.log(new Date().getUTCMilliseconds() + ' error processing check for funds ' + err)
+                    console.log(this.dateTimeLogger() + ' error processing check for funds ' + err)
                     resolve(false);
                   });
               }
             })
           }
           else {
-            console.log(new Date().getUTCMilliseconds() + ' no valid response check for funds from blockchain ' + response.statusText);
+            console.log(this.dateTimeLogger() + ' no valid response check for funds from blockchain ' + response.statusText);
             resolve(false);
           }
         })
         .catch((reason) => {
-          console.log(new Date().getUTCMilliseconds() + ' check for funds could not connect to blockchain ' + reason);
+          console.log(this.dateTimeLogger() + ' check for funds could not connect to blockchain ' + reason);
           resolve(false);
         });
     });
   };
 
   evaluateClaim = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
+    console.log(this.dateTimeLogger() + ' start new transaction ' + JSON.stringify(args));
     return this.checkForFunds(new Request(args).projectDid)
       .then((resp: boolean) => {
         if (resp) {
@@ -644,19 +698,34 @@ export class RequestHandler extends AbstractHandler {
                     if (result) {
                       resolve(true);
                     }
-                    resolve(false);
                   }
                 }).limit(1);
+
+              const validStatus = ["STARTED"];
+              ProjectStatus.find(
+                {
+                  projectDid: request.data.projectDid
+                },
+                (error: Error, results: IProjectStatusModel[]) => {
+                  if (error) {
+                    reject(error);
+                  } else {
+                    if (results.length > 0 && validStatus.some(elem => elem === results[0].status)) {
+                      resolve(false);
+                    }
+                    resolve(true);
+                  }
+                }).limit(1).sort({ $natural: -1 })
             });
           });
         }
-        console.log(new Date().getUTCMilliseconds() + ' insufficient funds available');
+        console.log(this.dateTimeLogger() + ' insufficient funds available');
         return 'Insufficient funds available';
       });
   }
 
   listClaims = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
+    console.log(this.dateTimeLogger() + ' start new transaction ' + JSON.stringify(args));
     return this.queryTransaction(args, 'ListClaims', function (filter: any): Promise<any[]> {
       return new Promise(function (resolve: Function, reject: Function) {
         Claim.aggregate([

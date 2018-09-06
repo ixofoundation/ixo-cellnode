@@ -1,5 +1,5 @@
 var Memcached = require('memcached');
-
+var dateFormat = require('dateformat');
 var cache: any;
 
 export class Cache {
@@ -8,6 +8,10 @@ export class Cache {
     constructor() {
         this.host = (process.env.MEMCACHE_URI || '');
         cache = new Memcached(this.host, {reconnect: 5000, timeout: 1000, retry: 5000, retries: 1});
+    }
+
+    dateTimeLogger(): string {
+        return dateFormat(new Date(), "yyyy-mm-dd hh:mm:ss:l");
     }
 
     connect(): any {
@@ -29,9 +33,10 @@ export class Cache {
     }
 
     set(key: string, value: any, ttl: number = 0) {
-
+        var inst: any;
+        inst = this;
         cache.set(key, value, ttl, function (err: any) {
-            if (err) console.log(new Date().getUTCMilliseconds() + ' Memcache could not set value for key ' + key);
+            if (err) console.log(inst.dateTimeLogger() + ' Memcache could not set value for key ' + key);
         });
     }
 

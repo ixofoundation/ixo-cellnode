@@ -1,10 +1,12 @@
 import { TransactionError } from "./error/TransactionError";
 
 var amqplib = require('amqplib');
+var dateFormat = require('dateformat');
 
 export class MessageQ {
 
     connection: any;
+    channel: any;
 
     private queue: string;
     host: string;
@@ -12,6 +14,10 @@ export class MessageQ {
     constructor(queue: string) {
         this.queue = queue;
         this.host = (process.env.RABITMQ_URI || '');
+    }
+
+    dateTimeLogger(): string {
+        return dateFormat(new Date(), "yyyy-mm-dd hh:mm:ss:l");
     }
 
     connect(): Promise<any> {
@@ -32,6 +38,7 @@ export class MessageQ {
                         inst.connect();
                     });
                     console.log('RabbitMQ connected');
+                    conn.createChannel().then((ch: any) =>{ inst.channel = ch});
                     resolve(conn);
                 }, () => {
                     setTimeout(() => {
@@ -44,22 +51,22 @@ export class MessageQ {
 
     async publish(content: any) {
         try {
-            const channel = await this.connection.createChannel();
-            channel.assertExchange("pds.ex", "direct", { durable: true });
-            channel.assertExchange("pds.dlx", "fanout", { durable: true });
-            channel.assertQueue(this.queue, {
-                durable: true,
-                deadLetterExchange: "pds.dlx",
-                deadLetterRoutingKey: "dlx.rk"
+            //const channel = await this.connection.createChannel();
+            this.channel.assertExchange("pds.ex", "direct", { durable: true });
+            //channel.assertExchange("pds.dlx", "fanout", { durable: true });
+            this.channel.assertQueue(this.queue, {
+                durable: true //,
+                // deadLetterExchange: "pds.dlx",
+                // deadLetterRoutingKey: "dlx.rk"
             })
                 .then(() => {
-                    channel.bindQueue(this.queue, 'pds.ex');
+                    this.channel.bindQueue(this.queue, 'pds.ex');
                 })
                 .then(() => {
                     let jsonContent = JSON.stringify(content);
-                    console.log(new Date().getUTCMilliseconds() + ' send to queue');
-                    channel.sendToQueue(this.queue, Buffer.from(jsonContent), {
-                        persistent: true,
+                    console.log(this.dateTimeLogger() + ' send to queue');
+                    this.channel.sendToQueue(this.queue, Buffer.from(jsonContent), {
+                        persistent: false,
                         contentType: 'application/json'
                     });
                     return true;
@@ -86,9 +93,13 @@ export class MessageQ {
                             .then(() => {
                                 channel.prefetch(1);
                                 channel.consume('pds.res', (messageData: any) => {
-                                    console.log(new Date().getUTCMilliseconds() + " Received response %s", messageData.content.toString());
+                                    if (messageData === null) {
+                                        return;
+                                    }
+                                    console.log(inst.dateTimeLogger() + " Received response %s", messageData.content.toString());
                                     resolve(messageData.content);
                                 });
+
                             }, (error: any) => {
                                 throw error;
                             });
@@ -98,7 +109,6 @@ export class MessageQ {
             }
         });
     }
-
 }
 
 export default new MessageQ('pds');

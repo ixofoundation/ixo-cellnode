@@ -2,6 +2,8 @@ import { GitUtils } from './GitUtils';
 import { Validator } from 'jsonschema';
 import Cache from '../Cache';
 
+var dateFormat = require('dateformat');
+
 export class TemplateUtils {
 
   gitUtils: GitUtils
@@ -10,30 +12,34 @@ export class TemplateUtils {
     this.gitUtils = new GitUtils();
   }
 
+  dateTimeLogger(): string {
+    return dateFormat(new Date(), "yyyy-mm-dd hh:mm:ss:l");
+  }
+
   getTemplateFromCache(templateType: string, name: string): Promise<string> {
     return new Promise((resolve: Function, reject: Function) => {
       var key = this.getCacheKey(templateType, name);
       Cache.get(key)
-      .then ((template: string) =>{
-        if (template) {
-          // cache-hit
-          console.log(new Date().getUTCMilliseconds() + ' got cache record for key ' + key);
-          resolve(template);
-        } else {
+        .then((template: string) => {
+          if (template) {
+            // cache-hit
+            console.log(this.dateTimeLogger() + ' got cache record for key ' + key);
+            resolve(template);
+          } else {
+            resolve(this.getTemplateFromRegistry(templateType, name));
+          }
+        })
+        .catch((reason) => {
+          // cannot connect to cache; cache-miss
+          console.log(this.dateTimeLogger() + ' template registry failed ' + reason);
           resolve(this.getTemplateFromRegistry(templateType, name));
-        }
-      })
-      .catch((reason) => {
-        // cannot connect to cache; cache-miss
-        console.log(new Date().getUTCMilliseconds() + ' template registry failed ' + reason);
-        resolve(this.getTemplateFromRegistry(templateType, name));
-      });
+        });
     });
   }
 
   getTemplateFromRegistry(templateType: string, name: string): any {
     var template = this.constructTemplate(templateType, name);
-    console.log(new Date().getUTCMilliseconds() + ' load template contents from file');
+    console.log(this.dateTimeLogger() + ' load template contents from file');
     return this.gitUtils.loadFileContents(template)
       .then((templateContents: any) => {
         var res = JSON.parse(templateContents);

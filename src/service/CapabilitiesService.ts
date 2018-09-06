@@ -1,9 +1,8 @@
 import { EventEmitter } from 'events';
 import { ICapabilitiesModel, Capabilities, CapabilitiesSchema } from '../model/project/Capabilities';
-import { ICapabilities } from '../model/project/ICapabilities';
-import { DocumentQuery } from 'mongoose';
 
 declare var Promise: any;
+var dateFormat = require('dateformat');
 
 /*
 Complete Stub of a blockchain simply here to create a transaction id
@@ -15,6 +14,10 @@ export class CapabilitiesService {
 
   constructor() {
     this.emitter = new EventEmitter();
+  }
+
+  dateTimeLogger(): string {
+    return dateFormat(new Date(), "yyyy-mm-dd hh:mm:ss:l");
   }
 
 
@@ -47,7 +50,7 @@ export class CapabilitiesService {
           }
         });
     });
-  }  
+  }
 
   findCapabilitiesForProject(projectDid: string): Promise<ICapabilitiesModel> {
     return new Promise(function (resolve: Function, reject: Function) {
@@ -67,7 +70,7 @@ export class CapabilitiesService {
   }
 
   addCapabilities(projectDid: string, did: string, requestType: string): Promise<ICapabilitiesModel> {
-    console.log(new Date().getUTCMilliseconds() + ' add capabilities for ' + did + ' for request type ' + requestType);
+    console.log(this.dateTimeLogger() + ' add capabilities for ' + did + ' for request type ' + requestType);
     return new Promise(function (resolve: Function, reject: Function) {
       Capabilities.updateOne(
         {
@@ -87,7 +90,7 @@ export class CapabilitiesService {
   }
 
   removeCapabilities(projectDid: string, did: string, requestType: string): Promise<ICapabilitiesModel> {
-    console.log(new Date().getUTCMilliseconds() + ' remove capabilities for ' + did + ' for request type ' + requestType);
+    console.log(this.dateTimeLogger() + ' remove capabilities for ' + did + ' for request type ' + requestType);
     return new Promise(function (resolve: Function, reject: Function) {
       Capabilities.updateOne(
         {
