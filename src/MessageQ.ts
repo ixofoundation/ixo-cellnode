@@ -38,7 +38,7 @@ export class MessageQ {
                         inst.connect();
                     });
                     console.log('RabbitMQ connected');
-                    conn.createChannel().then((ch: any) =>{ inst.channel = ch});
+                    conn.createChannel().then((ch: any) => { inst.channel = ch });
                     resolve(conn);
                 }, () => {
                     setTimeout(() => {
@@ -51,13 +51,9 @@ export class MessageQ {
 
     async publish(content: any) {
         try {
-            //const channel = await this.connection.createChannel();
             this.channel.assertExchange("pds.ex", "direct", { durable: true });
-            //channel.assertExchange("pds.dlx", "fanout", { durable: true });
             this.channel.assertQueue(this.queue, {
-                durable: true //,
-                // deadLetterExchange: "pds.dlx",
-                // deadLetterRoutingKey: "dlx.rk"
+                durable: true
             })
                 .then(() => {
                     this.channel.bindQueue(this.queue, 'pds.ex');
@@ -82,28 +78,26 @@ export class MessageQ {
         inst = this;
         return new Promise(function (resolve: Function, reject: Function) {
             try {
-                inst.connection.createChannel()
-                    .then((channel: any) => {
-                        channel.assertQueue('pds.res', {
-                            durable: true
-                        })
-                            .then(() => {
-                                channel.bindQueue('pds.res', 'pds.ex');
-                            })
-                            .then(() => {
-                                channel.prefetch(1);
-                                channel.consume('pds.res', (messageData: any) => {
-                                    if (messageData === null) {
-                                        return;
-                                    }
-                                    console.log(inst.dateTimeLogger() + " Received response %s", messageData.content.toString());
-                                    resolve(messageData.content);
-                                });
+                inst.channel.assertQueue('pds.res', {
+                    durable: true
+                })
+                    .then(() => {
+                        inst.channel.bindQueue('pds.res', 'pds.ex');
+                    })
+                    .then(() => {
+                        inst.channel.prefetch(1);
+                        inst.channel.consume('pds.res', (messageData: any) => {
+                            if (messageData === null) {
+                                return;
+                            }
+                            console.log(inst.dateTimeLogger() + " Received response %s", messageData.content.toString());
+                            resolve(messageData.content);
+                        });
 
-                            }, (error: any) => {
-                                throw error;
-                            });
+                    }, (error: any) => {
+                        throw error;
                     });
+
             } catch (error) {
                 throw new Error(error.message);
             }
