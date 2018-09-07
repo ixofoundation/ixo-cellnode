@@ -468,6 +468,7 @@ export class RequestHandler extends AbstractHandler {
     console.log(this.dateTimeLogger() + ' start new transaction ' + JSON.stringify(args));
     return this.createTransaction(args, 'CreateAgent', Agent, function (request: any): Promise<boolean> {
       return new Promise(function (resolve: Function, reject: Function) {
+        // check that and Agent cannot be EA and SA on same project
         Agent.find(
           {
             projectDid: request.data.projectDid,
@@ -477,14 +478,14 @@ export class RequestHandler extends AbstractHandler {
             if (error) {
               reject(error);
             } else {
-              results.forEach(element => {
-                if (element.role === request.data.role) resolve(true);
-                if (element.role === 'EA' && request.data.role === 'SA') resolve(true);
-                if (element.role === 'SA' && request.data.role === 'EA') resolve(true);
-              });
+              if (results.some(elem => (elem.role === request.data.role) ||
+                (elem.role === 'EA' && request.data.role === 'SA') ||
+                (elem.role === 'SA' && request.data.role === 'EA')))
+                reject("Agent already exissts on this project in another role");
             }
           });
 
+        // check to see that the project status is in a state that allows us to Create Agents  
         const validStatus = ["CREATED", "PENDING", "FUNDED", "STARTED"];
         ProjectStatus.find(
           {
@@ -495,9 +496,9 @@ export class RequestHandler extends AbstractHandler {
               reject(error);
             } else {
               if (results.length > 0 && validStatus.some(elem => elem === results[0].status)) {
-                resolve(false);
+                resolve(results[0]);
               }
-              resolve(true);
+              reject("Invalid Project Status. Valid statuses are " + validStatus.toString());
             }
           }).limit(1).sort({ $natural: -1 })
 
@@ -511,6 +512,7 @@ export class RequestHandler extends AbstractHandler {
     return this.createTransaction(args, 'UpdateAgentStatus', AgentStatus, function (request: any): Promise<boolean> {
       let newVersion = request.version + 1;
       return new Promise(function (resolve: Function, reject: Function) {
+        // check that we are not updating an old record
         AgentStatus.findOne(
           {
             projectDid: request.data.projectDid,
@@ -522,12 +524,12 @@ export class RequestHandler extends AbstractHandler {
               reject(error);
             } else {
               if (result) {
-                resolve(true);
+                reject("`invalid record or record already exists`");
               }
             }
           }).limit(1);
 
-
+        // check to see that the project status is in a state that allows us to Update Agents Status 
         const validStatus = ["CREATED", "PENDING", "FUNDED", "STARTED", "STOPPED"];
         ProjectStatus.find(
           {
@@ -538,9 +540,9 @@ export class RequestHandler extends AbstractHandler {
               reject(error);
             } else {
               if (results.length > 0 && validStatus.some(elem => elem === results[0].status)) {
-                resolve(false);
+                resolve(results[0]);
               }
-              resolve(true);
+              reject("Invalid Project Status. Valid statuses are " + validStatus.toString());
             }
           }).limit(1).sort({ $natural: -1 })
       });
@@ -620,6 +622,7 @@ export class RequestHandler extends AbstractHandler {
     console.log(this.dateTimeLogger() + ' start new transaction ' + JSON.stringify(args));
     return this.createTransaction(args, 'SubmitClaim', Claim, function (request: any): Promise<boolean> {
       return new Promise(function (resolve: Function, reject: Function) {
+        // check to see that the project status is in a state that allows us to Submit Claims 
         const validStatus = ["STARTED"];
         ProjectStatus.find(
           {
@@ -630,15 +633,16 @@ export class RequestHandler extends AbstractHandler {
               reject(error);
             } else {
               if (results.length > 0 && validStatus.some(elem => elem === results[0].status)) {
-                resolve(false);
+                resolve(results[0]);
               }
-              resolve(true);
+              reject("Invalid Project Status. Valid statuses are " + validStatus.toString());
             }
           }).limit(1).sort({ $natural: -1 })
       });
     });
   }
 
+  // check the Project Balance to verify that funds are available to pay evaluator
   checkForFunds(projectDid: string): Promise<boolean> {
     return new Promise((resolve: Function, reject: Function) => {
       console.log(this.dateTimeLogger() + ' confirm funds exists');
@@ -685,6 +689,7 @@ export class RequestHandler extends AbstractHandler {
           return this.createTransaction(args, 'EvaluateClaim', EvaluateClaim, function (request: any): Promise<boolean> {
             let newVersion = request.version + 1;
             return new Promise(function (resolve: Function, reject: Function) {
+              // check that we are not updating an old record
               EvaluateClaim.findOne(
                 {
                   projectDid: request.data.projectDid,
@@ -711,9 +716,9 @@ export class RequestHandler extends AbstractHandler {
                     reject(error);
                   } else {
                     if (results.length > 0 && validStatus.some(elem => elem === results[0].status)) {
-                      resolve(false);
+                      resolve(results[0]);
                     }
-                    resolve(true);
+                    reject("Invalid Project Status. Valid statuses are " + validStatus.toString());
                   }
                 }).limit(1).sort({ $natural: -1 })
             });

@@ -27,11 +27,11 @@ var wallet: IWalletModel;
 
 export abstract class AbstractHandler {
 
-  public dateTimeLogger() :string {
+  public dateTimeLogger(): string {
     return dateFormat(new Date(), "yyyy-mm-dd hh:mm:ss:l");
   }
 
-  public createTransaction(args: any, method: string, model: Model<any>, checkIfExist?: Function, projectDid?: string) {
+  public createTransaction(args: any, method: string, model: Model<any>, verifyData?: Function, projectDid?: string) {
 
     var inst = this;
     var request = new Request(args);
@@ -77,37 +77,36 @@ export abstract class AbstractHandler {
                       if (sigValid.valid) {
                         console.log(this.dateTimeLogger() + ' signature verified');
                         if (mq.connection != null) {
-                          if (checkIfExist) {
-                            checkIfExist(request)
-                              .then((found: boolean) => {
-                                if (found) {
-                                  reject(new TransactionError('Record out of date/already exists or state exception'));
-                                } else {
-                                  console.log(this.dateTimeLogger() + ' write transaction to log')
-                                  transactionService.createTransaction(request.body, request.signature.type,
-                                    request.signature.signatureValue, request.projectDid, capabilityMap.capability)
-                                    .then((transaction: ITransactionModel) => {
-                                      var obj = {
-                                        ...request.data,
-                                        txHash: transaction.hash,
-                                        _creator: request.signature.creator,
-                                        _created: request.signature.created,
-                                        version: request.version + 1
-                                      };
-                                      console.log(this.dateTimeLogger() + ' updating the capabilities');
-                                      this.updateCapabilities(request, capabilityMap.capability);
-                                      console.log(this.dateTimeLogger() + ' commit to Elysian');
-                                      resolve(model.create({ ...obj, projectDid: request.projectDid }));
-                                      console.log(this.dateTimeLogger() + ' publish to blockchain');
-                                      this.msgToPublish(obj, request, capabilityMap.capability)
-                                        .then((msg: any) => {
-                                          console.log(this.dateTimeLogger() + ' message to be published ' + msg.msgType);
-                                          mq.publish(msg);
-                                        });
-                                      model.emit('postCommit', obj, request.projectDid);
-                                      console.log(this.dateTimeLogger() + ' transaction completed successfully');
-                                    });
-                                }
+                          if (verifyData) {
+                            verifyData(request)
+                              .then(() => {
+                                console.log(this.dateTimeLogger() + ' write transaction to log')
+                                transactionService.createTransaction(request.body, request.signature.type,
+                                  request.signature.signatureValue, request.projectDid, capabilityMap.capability)
+                                  .then((transaction: ITransactionModel) => {
+                                    var obj = {
+                                      ...request.data,
+                                      txHash: transaction.hash,
+                                      _creator: request.signature.creator,
+                                      _created: request.signature.created,
+                                      version: request.version + 1
+                                    };
+                                    console.log(this.dateTimeLogger() + ' updating the capabilities');
+                                    this.updateCapabilities(request, capabilityMap.capability);
+                                    console.log(this.dateTimeLogger() + ' commit to Elysian');
+                                    resolve(model.create({ ...obj, projectDid: request.projectDid }));
+                                    console.log(this.dateTimeLogger() + ' publish to blockchain');
+                                    this.msgToPublish(obj, request, capabilityMap.capability)
+                                      .then((msg: any) => {
+                                        console.log(this.dateTimeLogger() + ' message to be published ' + msg.msgType);
+                                        mq.publish(msg);
+                                      });
+                                    model.emit('postCommit', obj, request.projectDid);
+                                    console.log(this.dateTimeLogger() + ' transaction completed successfully');
+                                  });
+                              })
+                              .catch((error: string) => {
+                                reject(new TransactionError(error));
                               })
                           } else {
                             console.log(this.dateTimeLogger() + ' write transaction to log');
@@ -291,7 +290,7 @@ export abstract class AbstractHandler {
 
   async publishMessageToQueue(message: any) {
     return new Promise((resolve: Function, reject: Function) => {
-      console.log(this.dateTimeLogger() + ' message to be published ' + message.msgType);      
+      console.log(this.dateTimeLogger() + ' message to be published ' + message.msgType);
       resolve(mq.publish(message));
     });
   }
