@@ -92,6 +92,7 @@ export class MessageQ {
                             }
                             console.log(inst.dateTimeLogger() + " Received response %s", messageData.content.toString());
                             resolve(messageData.content);
+                            inst.channel.ack(messageData);
                         });
 
                     }, (error: any) => {
