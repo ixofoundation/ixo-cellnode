@@ -3,7 +3,7 @@ import { ProjectStatus, IProjectStatusModel } from '../model/ProjectStatusModel'
 import { Request } from "../../handlers/Request";
 import axios from 'axios';
 import { Status } from '../common/shared';
-import { dateTimeLogger } from '../common/shared';
+import { dateTimeLogger } from '../../logger/Logger';
 
 const workflow = ["CREATED", "PENDING", "FUNDED", "STARTED", "STOPPED", "PAIDOUT"];
 const ETHEREUM_API = (process.env.ETHEREUM_API || '');

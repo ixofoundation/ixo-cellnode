@@ -1,7 +1,7 @@
 import { AbstractHandler } from '../../handlers/AbstractHandler';
 import { Agent } from '../model/AgentModel';
 import { Request } from "../../handlers/Request";
-import { dateTimeLogger } from '../common/shared';
+import { dateTimeLogger } from '../../logger/Logger';
 
 export class ListAgentsProcessor extends AbstractHandler {
 

@@ -1,5 +1,5 @@
 var Memcached = require('memcached');
-import { dateTimeLogger } from './ixo/common/shared';
+import { dateTimeLogger } from './logger/Logger';
 var cache: any;
 
 export class Cache {

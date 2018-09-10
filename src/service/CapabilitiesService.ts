@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import { ICapabilitiesModel, Capabilities } from '../model/project/Capabilities';
-import { dateTimeLogger } from '../ixo/common/shared';
+import { dateTimeLogger } from '../logger/Logger';
 
 declare var Promise: any;
 

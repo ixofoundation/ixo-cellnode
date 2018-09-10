@@ -2,6 +2,11 @@ import * as express from 'express';
 import * as expressWinston from 'express-winston';
 import * as winston from 'winston';
 
+var dateFormat = require('dateformat');
+export function dateTimeLogger(): string {
+    return dateFormat(new Date(), "yyyy-mm-dd hh:mm:ss:l");
+}
+
 var consoleTransport = new winston.transports.Console({
   timestamp: true,
   json: false,
@@ -23,6 +28,3 @@ export let before = expressWinston.logger({
 export let after = expressWinston.errorLogger({
   winstonInstance: winston
 });
-
-
-

@@ -2,7 +2,7 @@ import InitHandler from '../../handlers/InitHandler';
 import { AbstractHandler } from '../../handlers/AbstractHandler';
 import { Project } from '../model/ProjectModel';
 import { Request } from "../../handlers/Request";
-import { dateTimeLogger } from '../common/shared';
+import { dateTimeLogger } from '../../logger/Logger';
 
 export class CreateProjectProcessor extends AbstractHandler {
 

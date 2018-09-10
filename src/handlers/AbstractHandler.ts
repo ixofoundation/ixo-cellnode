@@ -20,7 +20,7 @@ import { IWalletModel } from "../model/project/Wallet";
 import { AxiosResponse } from "axios";
 import Cache from '../Cache';
 
-import { dateTimeLogger } from '../ixo/common/shared';
+import { dateTimeLogger } from '../logger/Logger';
 
 var wallet: IWalletModel;
 

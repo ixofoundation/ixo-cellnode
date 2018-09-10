@@ -4,7 +4,7 @@ import { ProjectStatus, IProjectStatusModel } from '../model/ProjectStatusModel'
 import { Project } from '../model/ProjectModel';
 import { Request } from "../../handlers/Request";
 import axios from 'axios';
-import { dateTimeLogger } from '../common/shared';
+import { dateTimeLogger } from '../../logger/Logger';
 
 const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
 

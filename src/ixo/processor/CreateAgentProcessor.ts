@@ -2,7 +2,7 @@ import { AbstractHandler } from '../../handlers/AbstractHandler';
 import { Agent, IAgentModel } from '../model/AgentModel';
 import { ProjectStatus, IProjectStatusModel } from '../model/ProjectStatusModel';
 import { Request } from "../../handlers/Request";
-import { dateTimeLogger } from '../common/shared';
+import { dateTimeLogger } from '../../logger/Logger';
 
 export class CreateAgentProcessor extends AbstractHandler {
 

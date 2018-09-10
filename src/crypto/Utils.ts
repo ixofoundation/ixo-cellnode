@@ -2,6 +2,7 @@ import { createHash, randomBytes } from 'crypto';
 import * as logger from '../logger/Logger';
 import * as nacl from 'tweetnacl';
 import * as bs58 from 'bs58';
+import { dateTimeLogger } from '../logger/Logger';
 
 var ethUtil = require('ethereumjs-util');
 var ethereumWallet = require('ethereumjs-wallet');
@@ -9,10 +10,6 @@ var dateFormat = require('dateformat');
 
 
 export class CryptoUtils {
-
-  dateTimeLogger(): string {
-    return dateFormat(new Date(), "yyyy-mm-dd hh:mm:ss:l");
-  }
 
   createNonce(size = 64) {
     return randomBytes(Math.floor(size / 2)).toString('hex');
@@ -32,7 +29,7 @@ export class CryptoUtils {
   }
 
   validateEd25519Signature(data: String, signature: String, publicKey: String): Boolean {
-    console.log(this.dateTimeLogger() + ' validate ed25519 signature with  ' + publicKey);
+    console.log(dateTimeLogger() + ' validate ed25519 signature with  ' + publicKey);
     var decodedKey = new Uint8Array(bs58.decode(this.remove0x(publicKey).toString()));
     var signatureBuffer = new Uint8Array(new Buffer(this.remove0x(signature).toString(), 'hex'))
     return nacl.sign.detached.verify(new Uint8Array(new Buffer(data.toString())), signatureBuffer, decodedKey)

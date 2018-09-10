@@ -1,5 +1,5 @@
 import { TransactionError } from "./error/TransactionError";
-import { dateTimeLogger } from './ixo/common/shared';
+import { dateTimeLogger } from './logger/Logger';
 
 var amqplib = require('amqplib');
 

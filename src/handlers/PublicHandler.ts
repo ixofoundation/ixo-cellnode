@@ -1,5 +1,6 @@
 import publicService from '../service/PublicService';
 import { IPublicModel } from '../model/project/Public';
+import { dateTimeLogger } from '../logger/Logger';
 
 var dateFormat = require('dateformat');
 
@@ -8,10 +9,6 @@ declare var Promise: any;
 const MAX_AGE = 60 * 60 * 24 * 7; // 1 week
 
 export class PublicHandler {
-
-    dateTimeLogger(): string {
-        return dateFormat(new Date(), "yyyy-mm-dd hh:mm:ss:l");
-    }
 
     createPublic = (args: any) => {
         return new Promise((resolve: Function, reject: Function) => {
@@ -30,7 +27,7 @@ export class PublicHandler {
                     resolve(obj);
                 })
                 .catch((err) => {
-                    console.log(this.dateTimeLogger() + ' image fetch error ' + err);
+                    console.log(dateTimeLogger() + ' image fetch error ' + err);
                     reject(err);
                 });
         });
@@ -48,7 +45,7 @@ export class PublicHandler {
                 'Content-Type': obj.contentType,
                 'Content-Length': img.length
             });
-            console.log(this.dateTimeLogger() + ' image found with length ' + img.length);
+            console.log(dateTimeLogger() + ' image found with length ' + img.length);
             res.end(img);
         }).catch((err: any) => {
             res.status(404).send('Sorry, we cannot find that!');
