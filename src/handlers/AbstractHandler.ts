@@ -1,6 +1,6 @@
 import { Model, connection } from "mongoose";
-import { ITransactionModel } from '../model/project/Transaction';
-import { ICapabilitiesModel } from '../model/project/Capabilities';
+import { ITransactionModel } from '../model/Transaction';
+import { ICapabilitiesModel } from '../model/Capabilities';
 
 import transactionService from '../service/TransactionLogService';
 import capabilitiesService from '../service/CapabilitiesService';
@@ -16,7 +16,7 @@ import { Request } from "../handlers/Request";
 import TemplateUtils from '../templates/TemplateUtils';
 import { SovrinUtils } from '../crypto/SovrinUtils';
 import mq from '../MessageQ';
-import { IWalletModel } from "../model/project/Wallet";
+import { IWalletModel } from "../model/Wallet";
 import { AxiosResponse } from "axios";
 import Cache from '../Cache';
 

@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { IPublicModel, Public } from '../model/project/Public';
+import { IPublicModel, Public } from '../model/Public';
 
 declare var Promise: any;
 

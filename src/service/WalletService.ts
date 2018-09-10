@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { IWalletModel, Wallet } from '../model/project/Wallet';
+import { IWalletModel, Wallet } from '../model/Wallet';
 
 declare var Promise: any;
 

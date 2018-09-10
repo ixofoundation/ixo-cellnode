@@ -1,7 +1,6 @@
 import { createHash} from 'crypto';
 
 var dateFormat = require('dateformat');
-var merge = require('merge');
 var base58 = require('bs58');
 var cc = require('five-bells-condition');
 var sovrin = require("sovrin-did");

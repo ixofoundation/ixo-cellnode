@@ -5,7 +5,6 @@ import axios from 'axios';
 import { dateTimeLogger } from '../logger/Logger';
 
 var cryptoUtils = new CryptoUtils();
-var dateFormat = require('dateformat');
 
 const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
 

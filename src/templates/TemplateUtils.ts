@@ -3,8 +3,6 @@ import { Validator } from 'jsonschema';
 import Cache from '../Cache';
 import { dateTimeLogger } from '../logger/Logger';
 
-var dateFormat = require('dateformat');
-
 export class TemplateUtils {
 
   gitUtils: GitUtils

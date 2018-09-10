@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { ICapabilitiesModel, Capabilities } from '../model/project/Capabilities';
+import { ICapabilitiesModel, Capabilities } from '../model/Capabilities';
 import { dateTimeLogger } from '../logger/Logger';
 
 declare var Promise: any;

@@ -1,8 +1,6 @@
 import publicService from '../service/PublicService';
-import { IPublicModel } from '../model/project/Public';
+import { IPublicModel } from '../model/Public';
 import { dateTimeLogger } from '../logger/Logger';
-
-var dateFormat = require('dateformat');
 
 declare var Promise: any;
 

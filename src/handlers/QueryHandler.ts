@@ -1,7 +1,5 @@
 import transactionLog from '../service/TransactionLogService';
 import capabilities from '../service/CapabilitiesService';
-import { Request } from "../handlers/Request";
-import { ITransactionModel, Transaction } from '../model/project/Transaction';
 
 declare var Promise: any;
 

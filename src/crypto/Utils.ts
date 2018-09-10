@@ -6,8 +6,6 @@ import { dateTimeLogger } from '../logger/Logger';
 
 var ethUtil = require('ethereumjs-util');
 var ethereumWallet = require('ethereumjs-wallet');
-var dateFormat = require('dateformat');
-
 
 export class CryptoUtils {
 
