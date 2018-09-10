@@ -1,7 +1,5 @@
 import { EventEmitter } from 'events';
 import { IWalletModel, Wallet } from '../model/project/Wallet';
-import { IWallet } from '../model/project/IWallet';
-import { DocumentQuery } from 'mongoose';
 
 declare var Promise: any;
 

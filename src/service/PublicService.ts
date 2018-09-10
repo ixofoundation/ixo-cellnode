@@ -1,7 +1,5 @@
 import { EventEmitter } from 'events';
 import { IPublicModel, Public } from '../model/project/Public';
-import { IPublic } from '../model/project/IPublic';
-import { DocumentQuery } from 'mongoose';
 
 declare var Promise: any;
 

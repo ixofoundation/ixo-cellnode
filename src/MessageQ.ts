@@ -1,7 +1,7 @@
 import { TransactionError } from "./error/TransactionError";
+import { dateTimeLogger } from './ixo/common/shared';
 
 var amqplib = require('amqplib');
-var dateFormat = require('dateformat');
 
 export class MessageQ {
 
@@ -14,10 +14,6 @@ export class MessageQ {
     constructor(queue: string) {
         this.queue = queue;
         this.host = (process.env.RABITMQ_URI || '');
-    }
-
-    dateTimeLogger(): string {
-        return dateFormat(new Date(), "yyyy-mm-dd hh:mm:ss:l");
     }
 
     connect(): Promise<any> {
@@ -60,7 +56,7 @@ export class MessageQ {
                 })
                 .then(() => {
                     let jsonContent = JSON.stringify(content);
-                    console.log(this.dateTimeLogger() + ' send to queue');
+                    console.log(dateTimeLogger() + ' send to queue');
                     this.channel.sendToQueue(this.queue, Buffer.from(jsonContent), {
                         persistent: false,
                         contentType: 'application/json'
@@ -90,7 +86,7 @@ export class MessageQ {
                             if (messageData === null) {
                                 return;
                             }
-                            console.log(inst.dateTimeLogger() + " Received response %s", messageData.content.toString());
+                            console.log(dateTimeLogger() + " Received response %s", messageData.content.toString());
                             resolve(messageData.content);
                             inst.channel.ack(messageData);
                         });

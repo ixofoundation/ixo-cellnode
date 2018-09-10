@@ -1,8 +1,6 @@
 import { Router, Response, NextFunction } from 'express';
 import * as logger from '../logger/Logger';
 import { Promise } from 'mongoose';
-import {Request} from "../handlers/Request";
-
 
 const jayson = require('jayson/promise');
 

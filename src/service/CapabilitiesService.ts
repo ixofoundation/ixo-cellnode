@@ -1,8 +1,9 @@
 import { EventEmitter } from 'events';
-import { ICapabilitiesModel, Capabilities, CapabilitiesSchema } from '../model/project/Capabilities';
+import { ICapabilitiesModel, Capabilities } from '../model/project/Capabilities';
+import { dateTimeLogger } from '../ixo/common/shared';
 
 declare var Promise: any;
-var dateFormat = require('dateformat');
+
 
 /*
 Complete Stub of a blockchain simply here to create a transaction id
@@ -15,11 +16,6 @@ export class CapabilitiesService {
   constructor() {
     this.emitter = new EventEmitter();
   }
-
-  dateTimeLogger(): string {
-    return dateFormat(new Date(), "yyyy-mm-dd hh:mm:ss:l");
-  }
-
 
   createCapability(project: string, capability: any, emit = true): Promise<ICapabilitiesModel> {
     return new Promise(function (resolve: Function, reject: Function) {
@@ -70,7 +66,7 @@ export class CapabilitiesService {
   }
 
   addCapabilities(projectDid: string, did: string, requestType: string): Promise<ICapabilitiesModel> {
-    console.log(this.dateTimeLogger() + ' add capabilities for ' + did + ' for request type ' + requestType);
+    console.log(dateTimeLogger() + ' add capabilities for ' + did + ' for request type ' + requestType);
     return new Promise(function (resolve: Function, reject: Function) {
       Capabilities.updateOne(
         {
@@ -90,7 +86,7 @@ export class CapabilitiesService {
   }
 
   removeCapabilities(projectDid: string, did: string, requestType: string): Promise<ICapabilitiesModel> {
-    console.log(this.dateTimeLogger() + ' remove capabilities for ' + did + ' for request type ' + requestType);
+    console.log(dateTimeLogger() + ' remove capabilities for ' + did + ' for request type ' + requestType);
     return new Promise(function (resolve: Function, reject: Function) {
       Capabilities.updateOne(
         {

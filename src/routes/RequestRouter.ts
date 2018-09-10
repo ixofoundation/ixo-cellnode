@@ -1,10 +1,5 @@
-import {Router} from 'express';
 import {AbstractRouter} from './AbstractRouter';
 import {RequestHandler} from '../handlers/RequestHandler';
-
-declare var Promise: any;
-
-
 
 export class RequestRouter extends AbstractRouter {
 
