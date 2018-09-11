@@ -116,6 +116,20 @@ Removing db    ... done
 
 ```
 
+To secure the Mongo DB:
+docker exec -ti db /bin/bash
+mongod
+use admin
+db.createUser({user: "<admin username>", pwd: "<admin password>", roles: [ { role: "userAdminAnyDatabase", db: "admin" } ]})
+
+use admin
+db.auth("<admin username>", "<admin password>" )
+
+mongo --port 27017 -u "<admin username>" -p "<admin password>" --authenticationDatabase "admin"
+
+use elysian
+db.createUser({user: "<username>", pwd: "<password>", roles: [{role: "readWrite", db: "elysian"}]})
+
 API documents can be found at https://github.com/ixofoundation/mkdocs/blob/master/docs/api.md
 
 ## License
