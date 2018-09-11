@@ -12,8 +12,8 @@ services:
       - CONFIG=/usr/src/app/config.json
       - TEMPLATE_REPO=https://api.github.com/repos/ixofoundation/schema/contents/
       - ETHEREUM_API=
-      - ASYM_CYPHER=
-      - ASYM_KEY=
+      - ASYM_CYPHER=aes-256-cbc
+      - ASYM_KEY=trustlab.tech
     ports:
       - "5000:5000"      
     restart: always

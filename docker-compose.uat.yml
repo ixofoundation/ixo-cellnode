@@ -2,11 +2,17 @@ version: "2"
 services:
   app:
     environment:
+      - MONGODB_URI=mongodb://${USER}:${PASSWORD}@db:27017/elysian
       - BLOCKCHAIN_URI_REST=https://explorer_uat.ixo.world/api/
       - ETHEREUM_API=https://mainnet.infura.io/
+      - ASYM_CYPHER=${ASYMCYPHER}
+      - ASYM_KEY=${ASYMKEY}
   db:
     ports:
       - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${ROOT}
+      - MONGO_INITDB_ROOT_PASSWORD=${ROOTPASS}
 
   cache:
     ports:
