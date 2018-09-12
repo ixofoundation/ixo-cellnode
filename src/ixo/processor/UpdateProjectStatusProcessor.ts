@@ -32,7 +32,7 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
             }
 
             blockChainPayload = {
-                payload: [21, new Buffer(JSON.stringify(data)).toString('hex').toUpperCase()]
+                payload: [25, new Buffer(JSON.stringify(data)).toString('hex').toUpperCase()]
             }
             resolve(this.signMessageForBlockchain(blockChainPayload, request.projectDid));
         });
