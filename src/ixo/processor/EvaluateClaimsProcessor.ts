@@ -80,9 +80,9 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
     return this.checkForFunds(new Request(args).projectDid)
       .then((resp: boolean) => {
         if (resp) {
-          return this.createTransaction(args, 'EvaluateClaim', EvaluateClaim, function (request: any): Promise<boolean> {
+          return this.createTransaction(args, 'EvaluateClaim', EvaluateClaim, (request: any): Promise<boolean> => {
             let newVersion = request.version + 1;
-            return new Promise(function (resolve: Function, reject: Function) {
+            return new Promise((resolve: Function, reject: Function) => {
               // check that we are not updating an old record
               EvaluateClaim.findOne(
                 {

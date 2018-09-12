@@ -8,7 +8,6 @@ import submitClaimProcessor from '../ixo/processor/SubmitClaimProcessor';
 import updateAgentStatusProcessor from '../ixo/processor/UpdateAgentStatusProcessor';
 
 import mq from '../MessageQ';
-import { dateTimeLogger } from '../logger/Logger';
 
 export class RequestHandler {
 

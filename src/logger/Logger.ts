@@ -4,7 +4,7 @@ import * as winston from 'winston';
 
 var dateFormat = require('dateformat');
 export function dateTimeLogger(): string {
-    return dateFormat(new Date(), "yyyy-mm-dd hh:mm:ss:l");
+    return dateFormat(new Date(), "yyyy-mm-dd hh:MM:ss:l");
 }
 
 var consoleTransport = new winston.transports.Console({

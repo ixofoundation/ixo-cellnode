@@ -50,7 +50,7 @@ export abstract class AbstractHandler {
             }
           })
           return capabilityMap;
-        }).catch((reason) => {
+        }).catch(() => {
           console.log(dateTimeLogger() + ' capabilities not found for project' + request.projectDid);
           reject(new TransactionError('Capabilities not found for project'));
         })
@@ -168,7 +168,7 @@ export abstract class AbstractHandler {
             }
           })
           return capabilityMap;
-        }).catch((reason) => {
+        }).catch(() => {
           console.log(dateTimeLogger() + 'capabilities not found for project' + request.projectDid);
           reject(new TransactionError('Capabilities not found for project'));
         })

@@ -85,7 +85,7 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
 
 
     getLatestProjectStatus = (projectDid: string): Promise<IProjectStatusModel[]> => {
-        return new Promise(function (resolve: Function) {
+        return new Promise((resolve: Function) => {
             resolve(ProjectStatus.find({ projectDid: projectDid }).limit(1).sort({ $natural: -1 }))
         })
     }

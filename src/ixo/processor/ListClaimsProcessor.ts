@@ -11,8 +11,8 @@ export class ListClaimProcessor extends AbstractHandler {
 
     process = (args: any) => {
         console.log(dateTimeLogger() + ' start new transaction ' + JSON.stringify(args));
-        return this.queryTransaction(args, 'ListClaims', function (filter: any): Promise<any[]> {
-            return new Promise(function (resolve: Function, reject: Function) {
+        return this.queryTransaction(args, 'ListClaims', (filter: any): Promise<any[]> => {
+            return new Promise((resolve: Function, reject: Function) => {
                 Claim.aggregate([
                     {
                         $match: filter
@@ -27,7 +27,7 @@ export class ListClaimProcessor extends AbstractHandler {
                     },
                     { $sort: { "evaluations.version": -1 } }
                 ],
-                    function (error: Error, result: any[]) {
+                    (error: Error, result: any[]) => {
                         if (error) {
                             reject(error);
                         } else {

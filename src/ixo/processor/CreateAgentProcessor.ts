@@ -62,15 +62,15 @@ export class CreateAgentProcessor extends AbstractHandler {
 
     process = (args: any) => {
         console.log(dateTimeLogger() + ' start new transaction ' + JSON.stringify(args));
-        return this.createTransaction(args, 'CreateAgent', Agent, function (request: any): Promise<boolean> {
-            return new Promise(function (resolve: Function, reject: Function) {
+        return this.createTransaction(args, 'CreateAgent', Agent, (request: any): Promise<boolean> => {
+            return new Promise((resolve: Function, reject: Function) => {
                 // check that and Agent cannot be EA and SA on same project
                 Agent.find(
                     {
                         projectDid: request.data.projectDid,
                         agentDid: request.data.agentDid
                     },
-                    function (error: Error, results: IAgentModel[]) {
+                    (error: Error, results: IAgentModel[]) => {
                         if (error) {
                             reject(error);
                         } else {

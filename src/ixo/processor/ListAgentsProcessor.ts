@@ -11,8 +11,8 @@ export class ListAgentsProcessor extends AbstractHandler {
 
     process = (args: any) => {
         console.log(dateTimeLogger() + ' start new transaction ' + JSON.stringify(args));
-        return this.queryTransaction(args, 'ListAgents', function (filter: any): Promise<any[]> {
-            return new Promise(function (resolve: Function, reject: Function) {
+        return this.queryTransaction(args, 'ListAgents', (filter: any): Promise<any[]> => {
+            return new Promise((resolve: Function, reject: Function) => {
                 Agent.aggregate([
                     {
                         $match: filter
@@ -63,7 +63,7 @@ export class ListAgentsProcessor extends AbstractHandler {
                         }
                     }
                 ],
-                    function (error: Error, result: any[]) {
+                    (error: Error, result: any[]) => {
                         if (error) {
                             reject(error);
                         } else {

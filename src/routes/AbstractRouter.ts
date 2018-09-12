@@ -1,4 +1,4 @@
-import { Router, Response, NextFunction } from 'express';
+import { Router } from 'express';
 import * as logger from '../logger/Logger';
 import { Promise } from 'mongoose';
 
