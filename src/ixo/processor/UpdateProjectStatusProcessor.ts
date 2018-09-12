@@ -75,6 +75,7 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
                         projectDid: jsonMsg.projectDid
                     }
                     setTimeout(() => {
+                        console.log(dateTimeLogger() + ' resubmit fund check to Ethereum for TxnID ' + jsonMsg.txnID);
                         this.publishMessageToQueue(message);
                     }, 30000)
 
@@ -100,8 +101,8 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
                     if (workflow[workflow.indexOf(request.data.status) - 1] === current[0].status) {
                         return this.createTransaction(args, 'UpdateProjectStatus', ProjectStatus);
                     }
-                    console.log(dateTimeLogger() + ' Invalid status request ' + request.data.status);
-                    return "Invalid status request";
+                    console.log(dateTimeLogger() + ' Invalid status workflow ' + request.data.status);
+                    return "Invalid status workflow";
                 })
         }
     }

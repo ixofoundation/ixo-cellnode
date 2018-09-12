@@ -25,8 +25,6 @@ export class RequestHandler {
     let jsonMsg = JSON.parse(message);
     if (jsonMsg.msgType === 'eth') {
       updateProjectStatusProcessor.handleAsyncResponse(jsonMsg);
-    } else {
-      console.log(dateTimeLogger() + ' message processed ' + JSON.stringify(jsonMsg.data));
     }
   }
 
