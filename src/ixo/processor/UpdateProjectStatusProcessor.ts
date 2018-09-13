@@ -24,7 +24,7 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
             let data = {
                 data: {
                     status: obj.status,
-                    txnID: obj.txnID
+                    ethFundingTxnID: obj.txnID
                 },
                 txHash: txHash,
                 senderDid: request.signature.creator,
