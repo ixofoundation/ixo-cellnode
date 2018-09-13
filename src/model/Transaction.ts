@@ -1,8 +1,8 @@
 import { Document, Schema, Model, model } from "mongoose";
 import { ITransaction } from "./ITransaction";
-import transactionLog from '../../service/TransactionLogService'
+import transactionLog from '../service/TransactionLogService'
 
-import CryptoUtils from '../../crypto/Utils'
+import CryptoUtils from '../crypto/Utils'
 
 var cryptoUtils = new CryptoUtils();
 

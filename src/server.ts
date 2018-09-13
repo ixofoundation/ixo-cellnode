@@ -1,6 +1,5 @@
 require('dotenv').config();
 import * as http from 'http';
-import * as logger from './logger/Logger';
 import cache from './Cache';
 import mq from './MessageQ';
 import App from './App';

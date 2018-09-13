@@ -2,6 +2,7 @@ import { CryptoUtils } from '../crypto/Utils';
 import { RequestValidator } from '../templates/RequestValidator';
 import Cache from '../Cache';
 import axios from 'axios';
+import { dateTimeLogger } from '../logger/Logger';
 
 var cryptoUtils = new CryptoUtils();
 
@@ -70,7 +71,7 @@ export class Request {
 
           if (didDoc) {
             //cache-hit
-            console.log(new Date().getUTCMilliseconds() + ' got cache record for key ' + this.signature.creator);
+            console.log(dateTimeLogger() + ' got cache record for key ' + this.signature.creator);
             if (validateKyc) {
               if (!preVerifyDidSignature(didDoc, this, capability)) {
                 validator.addError("Signature failed pre verification " + this.signature.creator);
@@ -91,7 +92,7 @@ export class Request {
             resolve(validator);
           } else {
             //cache-miss
-            console.log(new Date().getUTCMilliseconds() + ' retrieve pubkey from blockchain');
+            console.log(dateTimeLogger() + ' retrieve pubkey from blockchain');
             axios.get(BLOCKCHAIN_URI_REST + 'did/getByDid/' + this.signature.creator)
               .then((response) => {
                 if (response.status == 200 && response.data.did != null) {
@@ -132,8 +133,8 @@ export class Request {
         })
         .catch((reason) => {
           // could not connect to cache, read from blockchain
-          console.log(new Date().getUTCMilliseconds() + ' cache unavailable ' + reason);
-          console.log(new Date().getUTCMilliseconds() + ' retrieve pubkey from blockchain');
+          console.log(dateTimeLogger() + ' cache unavailable ' + reason);
+          console.log(dateTimeLogger() + ' retrieve pubkey from blockchain');
           axios.get(BLOCKCHAIN_URI_REST + 'did/getByDid/' + this.signature.creator)
             .then((response) => {
               if (response.status == 200) {

@@ -2,10 +2,18 @@ version: "2"
 services:
   app:
     environment:
+      - MONGODB_URI=mongodb://${DB_USER}:${DB_PASSWORD}@db:27017/elysian
+      - RABITMQ_URI=amqp://${MQ_USER}:${MQ_PASSWORD}@mq:5672?heartbeat=2
       - BLOCKCHAIN_URI_REST=https://explorer_uat.ixo.world/api/
+      - ETHEREUM_API=https://mainnet.infura.io/
+      - ASYM_CYPHER=${ASYMCYPHER}
+      - ASYM_KEY=${ASYMKEY}
   db:
     ports:
       - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${ROOT}
+      - MONGO_INITDB_ROOT_PASSWORD=${ROOTPASS}
 
   cache:
     ports:
@@ -14,11 +22,16 @@ services:
   mq:
     ports:
       - "5672:5672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=${MQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${MQ_PASSWORD}
 
   pol:
     environment:
+      - RABITMQ_URI=amqp://${MQ_USER}:${MQ_PASSWORD}@mq:5672?heartbeat=2
       - BLOCKCHAIN_URI_TENDERMINT=http://blockchain_uat.ixo.world:46657/broadcast_tx_sync?tx=0x
 
   cli:
     environment:
+      - MONGODB_URI=mongodb://${DB_USER}:${DB_PASSWORD}@db:27017/elysian
       - BLOCKCHAIN_URI_REST=https://explorer_uat.ixo.world/api/did/getByDid/

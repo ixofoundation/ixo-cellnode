@@ -1,10 +1,12 @@
 import { TransactionError } from "./error/TransactionError";
+import { dateTimeLogger } from './logger/Logger';
 
 var amqplib = require('amqplib');
 
 export class MessageQ {
 
     connection: any;
+    channel: any;
 
     private queue: string;
     host: string;
@@ -32,9 +34,10 @@ export class MessageQ {
                         inst.connect();
                     });
                     console.log('RabbitMQ connected');
+                    conn.createChannel().then((ch: any) => { inst.channel = ch });
                     resolve(conn);
                 }, () => {
-                    setTimeout(function () {
+                    setTimeout(() => {
                         console.error("RabbitMQ reconnecting");
                         inst.connect()
                     }, 5000);
@@ -44,23 +47,18 @@ export class MessageQ {
 
     async publish(content: any) {
         try {
-            const channel = await this.connection.createChannel();
-            channel.assertExchange("pds.ex", "direct", { durable: true });
-            channel.assertExchange("pds.dlx", "fanout", { durable: true });
-            channel.assertQueue(this.queue, {
-                durable: true,
-                deadLetterExchange: "pds.dlx",
-                deadLetterRoutingKey: "dlx.rk"
+            this.channel.assertExchange("pds.ex", "direct", { durable: true });
+            this.channel.assertQueue(this.queue, {
+                durable: true
             })
                 .then(() => {
-                    channel.bindQueue(this.queue, 'pds.ex');
-                    //channel.bindQueue(this.queue, 'pds.dlx');
+                    this.channel.bindQueue(this.queue, 'pds.ex');
                 })
                 .then(() => {
                     let jsonContent = JSON.stringify(content);
-                    console.log(new Date().getUTCMilliseconds() + ' send to queue');
-                    channel.sendToQueue(this.queue, Buffer.from(jsonContent), {
-                        persistent: true,
+                    console.log(dateTimeLogger() + ' send to queue');
+                    this.channel.sendToQueue(this.queue, Buffer.from(jsonContent), {
+                        persistent: false,
                         contentType: 'application/json'
                     });
                     return true;
@@ -69,6 +67,38 @@ export class MessageQ {
         } catch (error) {
             throw new TransactionError(error.message);
         }
+    }
+
+    public subscribe(): Promise<any> {
+        var inst: any;
+        inst = this;
+        return new Promise(function (resolve: Function, reject: Function) {
+            try {
+                inst.channel.assertQueue('pds.res', {
+                    durable: true
+                })
+                    .then(() => {
+                        inst.channel.bindQueue('pds.res', 'pds.ex');
+                    })
+                    .then(() => {
+                        inst.channel.prefetch(1);
+                        inst.channel.consume('pds.res', (messageData: any) => {
+                            if (messageData === null) {
+                                return;
+                            }
+                            console.log(dateTimeLogger() + " Received response %s", messageData.content.toString());
+                            resolve(messageData.content);
+                            inst.channel.ack(messageData);
+                        });
+
+                    }, (error: any) => {
+                        throw error;
+                    });
+
+            } catch (error) {
+                throw new Error(error.message);
+            }
+        });
     }
 }
 

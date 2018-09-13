@@ -1,10 +1,5 @@
-import {Router} from 'express';
 import {AbstractRouter} from './AbstractRouter';
 import {RequestHandler} from '../handlers/RequestHandler';
-
-declare var Promise: any;
-
-
 
 export class RequestRouter extends AbstractRouter {
 
@@ -20,7 +15,7 @@ export class RequestRouter extends AbstractRouter {
         var data = JSON.parse(fileSystem.readFileSync(process.env.CONFIG, 'utf8'));
         var inst: any = this;
         const handler = new RequestHandler();
-        data.configuration.forEach(function(obj: any) { 
+        data.configuration.forEach((obj: any) => { 
             var capabilityMethod = obj.capability.charAt(0).toLowerCase() + obj.capability.slice(1);
             console.log('register handler.' + capabilityMethod);
             inst.register(config, capabilityMethod, eval('handler.' + capabilityMethod));
