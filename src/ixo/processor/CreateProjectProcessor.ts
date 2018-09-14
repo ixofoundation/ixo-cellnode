@@ -3,6 +3,7 @@ import { AbstractHandler } from '../../handlers/AbstractHandler';
 import { Project } from '../model/ProjectModel';
 import { Request } from "../../handlers/Request";
 import { dateTimeLogger } from '../../logger/Logger';
+import walletService from '../../service/WalletService';
 
 export class CreateProjectProcessor extends AbstractHandler {
 
@@ -26,21 +27,24 @@ export class CreateProjectProcessor extends AbstractHandler {
             delete obj._created;
 
             delete obj.autoApprove;
-            let data = {
-                data: {
-                    ...obj,
-                    createdOn: request.signature.created,
-                    createdBy: request.signature.creator
-                },
-                txHash: txHash,
-                senderDid: request.signature.creator,
-                projectDid: request.projectDid,
-                pubKey: this.getWallet().verifyKey
-            }
-            blockChainPayload = {
-                payload: [16, new Buffer(JSON.stringify(data)).toString('hex').toUpperCase()]
-            }
-            resolve(this.signMessageForBlockchain(blockChainPayload, request.projectDid));
+            walletService.getWallet(request.projectDid)
+                .then((wallet) => {
+                    let data = {
+                        data: {
+                            ...obj,
+                            createdOn: request.signature.created,
+                            createdBy: request.signature.creator
+                        },
+                        txHash: txHash,
+                        senderDid: request.signature.creator,
+                        projectDid: request.projectDid,
+                        pubKey: wallet.verifyKey
+                    }
+                    blockChainPayload = {
+                        payload: [16, new Buffer(JSON.stringify(data)).toString('hex').toUpperCase()]
+                    }
+                    resolve(this.signMessageForBlockchain(blockChainPayload, request.projectDid));
+                })
         });
     }
 
