@@ -22,8 +22,6 @@ import Cache from '../Cache';
 
 import { dateTimeLogger } from '../logger/Logger';
 
-var wallet: IWalletModel;
-
 export abstract class AbstractHandler {
 
   public createTransaction(args: any, method: string, model: Model<any>, verifyData?: Function, projectDid?: string) {
@@ -233,8 +231,8 @@ export abstract class AbstractHandler {
       var sovrinWallet = sovrinUtils.generateSdidFromMnemonic(mnemonic);
       var did = String("did:ixo:" + sovrinWallet.did);
       walletService.createWallet(did, sovrinWallet.secret.signKey, sovrinWallet.verifyKey)
-        .then((resp: IWalletModel) => {
-          wallet = resp;
+        .then((wallet: IWalletModel) => {
+          //wallet = resp;
           Cache.set(wallet.did, { publicKey: wallet.verifyKey });
           console.log(dateTimeLogger() + ' project wallet created');
           resolve(wallet.did);
@@ -246,9 +244,9 @@ export abstract class AbstractHandler {
 
   abstract msgToPublish = (obj: any, request: Request): any => {};
 
-  getWallet(): IWalletModel {
-    return wallet;
-  }
+  // getWallet(): IWalletModel {
+  //   return wallet;
+  // }
 
   signMessageForBlockchain(msgToSign: any, projectDid: string) {
     return new Promise((resolve: Function, reject: Function) => {
