@@ -81,7 +81,7 @@ export class MessageQ {
                         inst.channel.bindQueue('pds.res', 'pds.ex');
                     })
                     .then(() => {
-                        inst.channel.prefetch(1);
+                        inst.channel.prefetch(50);
                         inst.channel.consume('pds.res', (messageData: any) => {
                             if (messageData === null) {
                                 return;
