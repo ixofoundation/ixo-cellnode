@@ -1,0 +1,24 @@
+version: "2"
+services:
+  app:
+    environment:
+      - BLOCKCHAIN_URI_REST=https://explorer_sdgfuturesuat.ixo.world/api/did/getByDid/
+  db:
+    ports:
+      - "27017:27017"
+
+  cache:
+    ports:
+      - "11211:11211"
+
+  mq:
+    ports:
+      - "5672:5672"
+
+  pol:
+    environment:
+      - BLOCKCHAIN_URI_TENDERMINT=http://blockchain_sdgfuturesuat.ixo.world:46657/broadcast_tx_sync?tx=0x
+
+  cli:
+    environment:
+      - BLOCKCHAIN_URI_REST=https://explorer_sdgfuturesuat.ixo.world/api/did/getByDid/
