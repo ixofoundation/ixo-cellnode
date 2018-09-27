@@ -109,7 +109,7 @@ export class Request {
                       validator.addError("Signature did not validate '" + JSON.stringify(this.data));
                       validator.valid = false;
                     } else {
-                      Cache.set(this.signature.creator, response.data, 60);
+                      Cache.set(this.signature.creator, response.data, 60 * 60);
                     }
                   } catch (error) {
                     validator.addError("Error processing signature " + error);

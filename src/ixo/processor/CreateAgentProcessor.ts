@@ -43,17 +43,18 @@ export class CreateAgentProcessor extends AbstractHandler {
     }
 
     checkKycCredentials = (didDoc: any): boolean => {
+        let isKYCValidated : boolean = false;
         if (didDoc.credentials) {
             didDoc.credentials.forEach((element: any) => {
-                if (element.credential.claim.KYCValidated === true) {
-                    return true;
+                if (element.claim.KYCValidated) {
+                    isKYCValidated = true;
                 }
             });
         }
-        return false;
+        return isKYCValidated;
     }
 
-    preVerifyDidSignature = (didDoc: any, request: Request, capability: string) => {
+    preVerifyDidSignature = (didDoc: any, request: Request, capability: string): boolean => {
         if (request.data.role != 'SA') {
             return this.checkKycCredentials(didDoc);
         }
