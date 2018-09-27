@@ -240,13 +240,9 @@ export abstract class AbstractHandler {
     });
   }
 
-  abstract updateCapabilities = (request: Request): void => {};
+  abstract updateCapabilities = (request: Request): void => { };
 
-  abstract msgToPublish = (obj: any, request: Request): any => {};
-
-  // getWallet(): IWalletModel {
-  //   return wallet;
-  // }
+  abstract msgToPublish = (obj: any, request: Request): any => { };
 
   signMessageForBlockchain(msgToSign: any, projectDid: string) {
     return new Promise((resolve: Function, reject: Function) => {
