@@ -242,6 +242,7 @@ export class RequestHandler extends AbstractHandler {
   }
 
   checkKycCredentials = (didDoc: any): boolean  => {
+    console.log(new Date().getUTCMilliseconds() + ' validate kyc credentials ' + JSON.stringify(didDoc));
     let isKYCValidated: boolean = false;
     if (didDoc.credentials) {
       didDoc.credentials.forEach((element: any) => {
