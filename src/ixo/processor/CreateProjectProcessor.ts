@@ -41,7 +41,8 @@ export class CreateProjectProcessor extends AbstractHandler {
                         pubKey: wallet.verifyKey
                     }
                     blockChainPayload = {
-                        payload: [16, new Buffer(JSON.stringify(data)).toString('hex').toUpperCase()]
+                        //payload: [16, new Buffer(JSON.stringify(data)).toString('hex').toUpperCase()]
+                        payload: [{type: "project/CreateProject", value: data}]
                     }
                     resolve(this.signMessageForBlockchain(blockChainPayload, request.projectDid));
                 })

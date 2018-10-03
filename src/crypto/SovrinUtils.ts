@@ -32,16 +32,6 @@ export class SovrinUtils {
     }
 
     //Signs a document using signKey from generated SDID and returns the signature
-    signDocument(signKey: string, verifyKey: string, did: string, input: any) {
-        var signature = base58.encode(sovrin.signMessage(new Buffer(JSON.stringify(input)), signKey, verifyKey));
-        if (this.verifyDocumentSignature(signature, verifyKey)) {
-            return this.generateDocumentSignature(did, signature);
-        } else {
-            throw new Error('fulfillment validation failed');
-        }
-    }
-
-    //Signs a document using signKey from generated SDID and returns the signature
     signDocumentNoEncoding(signKey: string, verifyKey: string, did: string, input: any) {
         var toSign = input;
         // Stringify the input if it is an object
@@ -49,18 +39,7 @@ export class SovrinUtils {
             toSign = JSON.stringify(input)
         }
         var signedMsg = sovrin.signMessage(toSign, signKey, verifyKey);
-        return new Buffer(signedMsg.slice(0,64)).toString('hex').toUpperCase();
-    }
-
-    //Generates signature json from generated doc signature
-    generateDocumentSignature(did: any, signature: any) {
-        var signatureJson = {
-            "type": cc.Ed25519Sha256.TYPE_NAME,
-            "created": dateFormat(new Date(), "isoDateTime"),
-            "creator": did,
-            "signatureValue": signature
-        };
-        return signatureJson;
+        return new Buffer(signedMsg.slice(0,64)).toString('base64');
     }
 }
 

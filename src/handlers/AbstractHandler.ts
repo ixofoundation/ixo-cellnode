@@ -251,10 +251,10 @@ export abstract class AbstractHandler {
           var sovrinUtils = new SovrinUtils();
           var signedMsg = {
             ...msgToSign,
-            signature: {
-              signatureValue: [1, sovrinUtils.signDocumentNoEncoding(wallet.signKey, wallet.verifyKey, wallet.did, msgToSign.payload[1])],
+            signatures: [{
+              signatureValue: sovrinUtils.signDocumentNoEncoding(wallet.signKey, wallet.verifyKey, wallet.did, msgToSign.payload[0].value),
               created: new Date()
-            }
+            }]
           }
           let message = {
             msgType: 'blockchain',

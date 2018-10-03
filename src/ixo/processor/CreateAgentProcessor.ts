@@ -36,7 +36,8 @@ export class CreateAgentProcessor extends AbstractHandler {
                 projectDid: request.projectDid
             }
             blockChainPayload = {
-                payload: [17, new Buffer(JSON.stringify(data)).toString('hex').toUpperCase()]
+                //payload: [17, new Buffer(JSON.stringify(data)).toString('hex').toUpperCase()]
+                payload: [{type: "project/CreateAgent", value: data}]
             }
             resolve(this.signMessageForBlockchain(blockChainPayload, request.projectDid));
         });
