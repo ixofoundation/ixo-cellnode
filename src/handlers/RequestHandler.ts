@@ -1,10 +1,8 @@
 import { Document, Schema, Model, model } from "mongoose";
 import { AbstractHandler } from './AbstractHandler';
 import { Request } from "../handlers/Request";
-import axios from 'axios';
 import InitHandler from './InitHandler';
 
-const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
 
 /////////////////////////////////////////////////
 //  PROJECT MODEL                              //
@@ -244,12 +242,16 @@ export class RequestHandler extends AbstractHandler {
   checkKycCredentials = (didDoc: any): boolean  => {
     console.log(new Date().getUTCMilliseconds() + ' validate kyc credentials ' + JSON.stringify(didDoc));
     let isKYCValidated: boolean = false;
-    if (didDoc.credentials) {
-      didDoc.credentials.forEach((element: any) => {
-        if (element.claim.KYCValidated) {
-          isKYCValidated = true;
-        }
-      });
+
+    if (process.env.VALIDISSUERS != undefined) {
+      let validIssuers: string[] = (process.env.VALIDISSUERS.split(' '));
+      if (didDoc.credentials) {
+        didDoc.credentials.forEach((element: any) => {
+          if (element.claim.KYCValidated && validIssuers.some(issuer => issuer === element.issuer)){
+            isKYCValidated = true;
+          }
+        });
+      }
     }
     return isKYCValidated;
   }
@@ -264,7 +266,6 @@ export class RequestHandler extends AbstractHandler {
         return this.checkKycCredentials(didDoc);
       }
     }
-
     return true;
   }
 

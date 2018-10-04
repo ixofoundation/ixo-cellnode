@@ -11,6 +11,7 @@ services:
       - BLOCKCHAIN_URI_REST=
       - CONFIG=/usr/src/app/config.json
       - TEMPLATE_REPO=https://api.github.com/repos/ixofoundation/schema/contents/
+      - VALIDISSUERS=did:sov:123456789
     ports:
       - "5000:5000"      
     restart: always
