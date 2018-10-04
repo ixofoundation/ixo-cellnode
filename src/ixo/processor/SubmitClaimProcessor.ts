@@ -25,7 +25,6 @@ export class SubmitClaimProcessor extends AbstractHandler {
         projectDid: request.projectDid
       }
       blockChainPayload = {
-        //payload: [19, new Buffer(JSON.stringify(data)).toString('hex').toUpperCase()]
         payload: [{type: "project/CreateClaim", value: data}]
       }
       resolve(this.signMessageForBlockchain(blockChainPayload, request.projectDid));

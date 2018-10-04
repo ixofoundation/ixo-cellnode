@@ -36,21 +36,23 @@ export class CreateAgentProcessor extends AbstractHandler {
                 projectDid: request.projectDid
             }
             blockChainPayload = {
-                //payload: [17, new Buffer(JSON.stringify(data)).toString('hex').toUpperCase()]
-                payload: [{type: "project/CreateAgent", value: data}]
+                payload: [{ type: "project/CreateAgent", value: data }]
             }
             resolve(this.signMessageForBlockchain(blockChainPayload, request.projectDid));
         });
     }
 
     checkKycCredentials = (didDoc: any): boolean => {
-        let isKYCValidated : boolean = false;
-        if (didDoc.credentials) {
-            didDoc.credentials.forEach((element: any) => {
-                if (element.claim.KYCValidated) {
-                    isKYCValidated = true;
-                }
-            });
+        let isKYCValidated: boolean = false;
+        if (process.env.VALIDISSUERS != undefined) {
+            let validIssuers: string[] = (process.env.VALIDISSUERS.split(' '));
+            if (didDoc.credentials) {
+                didDoc.credentials.forEach((element: any) => {
+                    if (element.claim.KYCValidated && validIssuers.some(issuers => issuers === element.issuer)) {
+                        isKYCValidated = true;
+                    }
+                });
+            }
         }
         return isKYCValidated;
     }

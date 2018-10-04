@@ -30,7 +30,6 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
         projectDid: request.projectDid
       }
       blockChainPayload = {
-        //payload: [20, new Buffer(JSON.stringify(data)).toString('hex').toUpperCase()]
         payload: [{type: "project/CreateEvaluation", value: data}]
       }
       resolve(this.signMessageForBlockchain(blockChainPayload, request.projectDid));

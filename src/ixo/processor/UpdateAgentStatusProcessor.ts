@@ -35,7 +35,6 @@ export class UpdateAgentStatusProcessor extends AbstractHandler {
                 projectDid: request.projectDid
             }
             blockChainPayload = {
-                //payload: [18, new Buffer(JSON.stringify(data)).toString('hex').toUpperCase()]
                 payload: [{type: "project/UpdateAgent", value: data}]
             }
             resolve(this.signMessageForBlockchain(blockChainPayload, request.projectDid));
