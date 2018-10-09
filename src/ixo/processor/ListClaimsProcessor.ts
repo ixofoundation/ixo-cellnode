@@ -10,7 +10,7 @@ export class ListClaimProcessor extends AbstractHandler {
     msgToPublish = (obj: any, request: Request) => { };
 
     process = (args: any) => {
-        console.log(dateTimeLogger() + ' start new transaction ' + JSON.stringify(args));
+        console.log(dateTimeLogger() + ' start new List Claims transaction ');
         return this.queryTransaction(args, 'ListClaims', (filter: any): Promise<any[]> => {
             return new Promise((resolve: Function, reject: Function) => {
                 Claim.aggregate([

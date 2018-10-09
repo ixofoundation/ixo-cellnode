@@ -35,14 +35,14 @@ export class UpdateAgentStatusProcessor extends AbstractHandler {
                 projectDid: request.projectDid
             }
             blockChainPayload = {
-                payload: [18, new Buffer(JSON.stringify(data)).toString('hex').toUpperCase()]
+                payload: [{type: "project/UpdateAgent", value: data}]
             }
             resolve(this.signMessageForBlockchain(blockChainPayload, request.projectDid));
         });
     }
 
     process = (args: any) => {
-        console.log(dateTimeLogger()+ ' start new transaction ' + JSON.stringify(args));
+        console.log(dateTimeLogger()+ ' start new Update Agent Status transaction ');
         return this.createTransaction(args, 'UpdateAgentStatus', AgentStatus, (request: any): Promise<boolean> => {
           let newVersion = request.version + 1;
           return new Promise((resolve: Function, reject: Function) => {

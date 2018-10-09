@@ -32,7 +32,7 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
             }
 
             blockChainPayload = {
-                payload: [25, new Buffer(JSON.stringify(data)).toString('hex').toUpperCase()]
+                payload: [{type: "project/UpdateProject", value: data}]
             }
             resolve(this.signMessageForBlockchain(blockChainPayload, request.projectDid));
         });
@@ -91,7 +91,7 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
     }
 
     process = (args: any) => {
-        console.log(dateTimeLogger() + ' start new transaction ' + JSON.stringify(args));
+        console.log(dateTimeLogger() + ' start new Update Project Status transaction ');
         let request = new Request(args);
         if (workflow.indexOf(request.data.status) === 0) {
             return this.createTransaction(args, 'UpdateProjectStatus', ProjectStatus);

@@ -41,7 +41,7 @@ export class CreateProjectProcessor extends AbstractHandler {
                         pubKey: wallet.verifyKey
                     }
                     blockChainPayload = {
-                        payload: [16, new Buffer(JSON.stringify(data)).toString('hex').toUpperCase()]
+                        payload: [{ type: "project/CreateProject", value: data }]
                     }
                     resolve(this.signMessageForBlockchain(blockChainPayload, request.projectDid));
                 })
@@ -49,13 +49,16 @@ export class CreateProjectProcessor extends AbstractHandler {
     }
 
     checkKycCredentials = (didDoc: any): boolean => {
-        let isKYCValidated : boolean = false;
-        if (didDoc.credentials) {
-            didDoc.credentials.forEach((element: any) => {
-                if (element.claim.KYCValidated) {
-                    isKYCValidated = true;
-                }
-            });
+        let isKYCValidated: boolean = false;
+        if (process.env.VALIDISSUERS != undefined) {
+            let validIssuers: string[] = (process.env.VALIDISSUERS.split(' '));
+            if (didDoc.credentials) {
+                didDoc.credentials.forEach((element: any) => {
+                    if (element.claim.KYCValidated && validIssuers.some(issuers => issuers === element.issuer)) {
+                        isKYCValidated = true;
+                    }
+                });
+            }
         }
         return isKYCValidated;
     }
@@ -65,7 +68,7 @@ export class CreateProjectProcessor extends AbstractHandler {
     }
 
     process = (args: any) => {
-        console.log(dateTimeLogger() + ' start new transaction ' + JSON.stringify(args));
+        console.log(dateTimeLogger() + ' start new Create Project transaction ');
         return this.generateProjectWallet()
             .then((did: any) => {
                 return InitHandler.initialise(did)
