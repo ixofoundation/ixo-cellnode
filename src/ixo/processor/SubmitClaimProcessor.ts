@@ -32,7 +32,7 @@ export class SubmitClaimProcessor extends AbstractHandler {
   };
 
   process = (args: any) => {
-    console.log(dateTimeLogger() + ' start new transaction ' + JSON.stringify(args));
+    console.log(dateTimeLogger() + ' start new Submit Claim transaction ');
     return this.createTransaction(args, 'SubmitClaim', Claim, (request: any): Promise<boolean> => {
       return new Promise((resolve: Function, reject: Function) => {
         // check to see that the project status is in a state that allows us to Submit Claims 

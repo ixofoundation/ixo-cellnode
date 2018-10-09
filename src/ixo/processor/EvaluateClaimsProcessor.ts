@@ -30,7 +30,7 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
         projectDid: request.projectDid
       }
       blockChainPayload = {
-        payload: [{type: "project/CreateEvaluation", value: data}]
+        payload: [{ type: "project/CreateEvaluation", value: data }]
       }
       resolve(this.signMessageForBlockchain(blockChainPayload, request.projectDid));
     });
@@ -43,25 +43,22 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
       axios.get(BLOCKCHAIN_URI_REST + 'project/getProjectAccounts/' + projectDid)
         .then((response) => {
           if (response.status == 200 && (response.data instanceof Array)) {
-            response.data.forEach((element: any) => {
-              if (element.did == projectDid) {
-                Project.findOne({
-                  projectDid: projectDid
-                })
-                  .then((project) => {
-                    if (project) {
-                      resolve(element.balance - project.evaluatorPayPerClaim >= 0);
-                    } else {
-                      console.log(dateTimeLogger() + ' check for funds no project found for projectDid ' + projectDid);
-                      resolve(false);
-                    }
-                  })
-                  .catch((err) => {
-                    console.log(dateTimeLogger() + ' error processing check for funds ' + err)
-                    resolve(false);
-                  });
-              }
+            let filter: any = response.data.filter((element: any) => element.did == projectDid);
+            Project.findOne({
+              projectDid: projectDid
             })
+              .then((project) => {
+                if (project) {
+                  resolve(filter[0].balance - project.evaluatorPayPerClaim >= 0);
+                } else {
+                  console.log(dateTimeLogger() + ' check for funds no project found for projectDid ' + projectDid);
+                  resolve(false);
+                }
+              })
+              .catch((err) => {
+                console.log(dateTimeLogger() + ' error processing check for funds ' + err)
+                resolve(false);
+              });
           }
           else {
             console.log(dateTimeLogger() + ' no valid response check for funds from blockchain ' + response.statusText);

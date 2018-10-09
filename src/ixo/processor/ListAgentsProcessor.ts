@@ -10,7 +10,7 @@ export class ListAgentsProcessor extends AbstractHandler {
     msgToPublish = (obj: any, request: Request) => { };
 
     process = (args: any) => {
-        console.log(dateTimeLogger() + ' start new transaction ' + JSON.stringify(args));
+        console.log(dateTimeLogger() + ' start new List Agents transaction ');
         return this.queryTransaction(args, 'ListAgents', (filter: any): Promise<any[]> => {
             return new Promise((resolve: Function, reject: Function) => {
                 Agent.aggregate([

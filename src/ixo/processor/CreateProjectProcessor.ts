@@ -68,7 +68,7 @@ export class CreateProjectProcessor extends AbstractHandler {
     }
 
     process = (args: any) => {
-        console.log(dateTimeLogger() + ' start new transaction ' + JSON.stringify(args));
+        console.log(dateTimeLogger() + ' start new Create Project transaction ');
         return this.generateProjectWallet()
             .then((did: any) => {
                 return InitHandler.initialise(did)

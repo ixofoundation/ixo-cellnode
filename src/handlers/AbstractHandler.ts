@@ -37,17 +37,8 @@ export abstract class AbstractHandler {
       capabilitiesService.findCapabilitiesForProject(request.projectDid)
         .then((result: ICapabilitiesModel) => {
           var capabilityMap: any;
-          result.capabilities.forEach(element => {
-            if (element.capability == method) {
-              capabilityMap = {
-                capability: element.capability,
-                template: element.template,
-                allow: element.allow,
-                validateKYC: element.validateKYC
-              }
-            }
-          })
-          return capabilityMap;
+          capabilityMap = result.capabilities.filter(element => element.capability == method);
+          return capabilityMap[0];
         }).catch(() => {
           console.log(dateTimeLogger() + ' capabilities not found for project' + request.projectDid);
           reject(new TransactionError('Capabilities not found for project'));
@@ -156,16 +147,8 @@ export abstract class AbstractHandler {
       capabilitiesService.findCapabilitiesForProject(request.projectDid)
         .then((result: ICapabilitiesModel) => {
           var capabilityMap: any;
-          result.capabilities.forEach(element => {
-            if (element.capability == method) {
-              capabilityMap = {
-                capability: element.capability,
-                template: element.template,
-                allow: element.allow
-              }
-            }
-          })
-          return capabilityMap;
+          capabilityMap = result.capabilities.filter(element => element.capability == method);
+          return capabilityMap[0];
         }).catch(() => {
           console.log(dateTimeLogger() + 'capabilities not found for project' + request.projectDid);
           reject(new TransactionError('Capabilities not found for project'));
@@ -232,7 +215,6 @@ export abstract class AbstractHandler {
       var did = String("did:ixo:" + sovrinWallet.did);
       walletService.createWallet(did, sovrinWallet.secret.signKey, sovrinWallet.verifyKey)
         .then((wallet: IWalletModel) => {
-          //wallet = resp;
           Cache.set(wallet.did, { publicKey: wallet.verifyKey });
           console.log(dateTimeLogger() + ' project wallet created');
           resolve(wallet.did);

@@ -42,7 +42,7 @@ export class UpdateAgentStatusProcessor extends AbstractHandler {
     }
 
     process = (args: any) => {
-        console.log(dateTimeLogger()+ ' start new transaction ' + JSON.stringify(args));
+        console.log(dateTimeLogger()+ ' start new Update Agent Status transaction ');
         return this.createTransaction(args, 'UpdateAgentStatus', AgentStatus, (request: any): Promise<boolean> => {
           let newVersion = request.version + 1;
           return new Promise((resolve: Function, reject: Function) => {
