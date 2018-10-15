@@ -44,7 +44,7 @@ export class UpdateAgentStatusProcessor extends AbstractHandler {
     process = (args: any) => {
         console.log(dateTimeLogger()+ ' start new Update Agent Status transaction ');
         return this.createTransaction(args, 'UpdateAgentStatus', AgentStatus, (request: any): Promise<boolean> => {
-          let newVersion = request.version + 1;
+          let newVersion = +request.version + 1;
           return new Promise((resolve: Function, reject: Function) => {
             // check that we are not updating an old record
             AgentStatus.findOne(
