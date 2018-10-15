@@ -78,7 +78,7 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
       .then((resp: boolean) => {
         if (resp) {
           return this.createTransaction(args, 'EvaluateClaim', EvaluateClaim, (request: any): Promise<boolean> => {
-            let newVersion = request.version + 1;
+            let newVersion = +request.version + 1;
             return new Promise((resolve: Function, reject: Function) => {
               // check that we are not updating an old record
               EvaluateClaim.findOne(
