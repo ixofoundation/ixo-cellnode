@@ -226,10 +226,11 @@ export abstract class AbstractHandler {
 
   abstract msgToPublish = (obj: any, request: Request): any => { };
 
-  signMessageForBlockchain(msgToSign: any, projectDid: string) {
+  messageForBlockchain(msgToSign: any, projectDid: string, msgType?: string, commit?: boolean) {
     return new Promise((resolve: Function, reject: Function) => {
       walletService.getWallet(projectDid)
         .then((wallet: IWalletModel) => {
+          Cache.set(wallet.did, { publicKey: wallet.verifyKey });
           var sovrinUtils = new SovrinUtils();
           var signedMsg = {
             ...msgToSign,
@@ -239,8 +240,9 @@ export abstract class AbstractHandler {
             }]
           }
           let message = {
-            msgType: 'blockchain',
+            msgType: (msgType || 'blockchain'),
             projectDid: wallet.did,
+            commit: (commit || false),
             data: new Buffer(JSON.stringify(signedMsg)).toString('hex')
           }
           resolve(message);

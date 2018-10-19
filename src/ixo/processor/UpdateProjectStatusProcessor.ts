@@ -34,7 +34,7 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
             blockChainPayload = {
                 payload: [{type: "project/UpdateProjectStatus", value: data}]
             }
-            resolve(this.signMessageForBlockchain(blockChainPayload, request.projectDid));
+            resolve(this.messageForBlockchain(blockChainPayload, request.projectDid));
         });
     }
 

@@ -43,7 +43,7 @@ export class CreateProjectProcessor extends AbstractHandler {
                     blockChainPayload = {
                         payload: [{ type: "project/CreateProject", value: data }]
                     }
-                    resolve(this.signMessageForBlockchain(blockChainPayload, request.projectDid));
+                    resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, 'project/CreateProject', true));
                 })
         });
     }
