@@ -1,5 +1,5 @@
 import { AbstractHandler } from '../../handlers/AbstractHandler';
-import { EvaluateClaim, IEvaluateClaimModel } from '../model/EvaluateClaimModel';
+import { EvaluateClaim } from '../model/EvaluateClaimModel';
 import { ProjectStatus, IProjectStatusModel } from '../model/ProjectStatusModel';
 import { UpdateProjectStatusProcessor } from "./UpdateProjectStatusProcessor";
 import { Project } from '../model/ProjectModel';
@@ -116,31 +116,33 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
           });
         }
         // funds have been depleted so we need to stop the project
-        console.log(dateTimeLogger() + ' insufficient funds available');
-        var updateProjectStatusProcessor = new UpdateProjectStatusProcessor();
-        var data: any = {
-          projectDid: projectDid,
-          status: Status.stopped
-        }
-        updateProjectStatusProcessor.selfSignMessage(data, projectDid)
-          .then((signature: any) => {
-            var projectStatusRequest: any = {
-              payload: {
-                template: {
-                  name: "project_status"
+        return new Promise((resolve: Function, reject: Function) => {
+          console.log(dateTimeLogger() + ' insufficient funds available');
+          var updateProjectStatusProcessor = new UpdateProjectStatusProcessor();
+          var data: any = {
+            projectDid: projectDid,
+            status: Status.stopped
+          }
+          updateProjectStatusProcessor.selfSignMessage(data, projectDid)
+            .then((signature: any) => {
+              var projectStatusRequest: any = {
+                payload: {
+                  template: {
+                    name: "project_status"
+                  },
+                  data: data
                 },
-                data: data
-              },
-              signature: {
-                type: "ed25519-sha-256",
-                created: new Date().toISOString(),
-                creator: projectDid,
-                signatureValue: signature
+                signature: {
+                  type: "ed25519-sha-256",
+                  created: new Date().toISOString(),
+                  creator: projectDid,
+                  signatureValue: signature
+                }
               }
-            }
-            updateProjectStatusProcessor.process(projectStatusRequest);
-          });
-        return 'Insufficient funds available, project stopped';
+              updateProjectStatusProcessor.process(projectStatusRequest);
+            });
+          reject(Error('Insufficient funds available, project stopped'));
+        });
       });
   }
 }

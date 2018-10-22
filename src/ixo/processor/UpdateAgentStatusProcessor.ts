@@ -1,5 +1,5 @@
 import { AbstractHandler } from '../../handlers/AbstractHandler';
-import { AgentStatus, IAgentStatusModel } from '../model/AgentStatusModel';
+import { AgentStatus } from '../model/AgentStatusModel';
 import { ProjectStatus, IProjectStatusModel } from '../model/ProjectStatusModel';
 import { Request } from "../../handlers/Request";
 import { dateTimeLogger } from '../../logger/Logger';
