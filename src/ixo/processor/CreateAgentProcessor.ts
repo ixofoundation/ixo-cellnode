@@ -42,14 +42,14 @@ export class CreateAgentProcessor extends AbstractHandler {
         });
     }
 
-    checkKycCredentials = (didDoc: any): boolean => {
+    checkLatestKycCredential = (didDoc: any): boolean => {
         let isKYCValidated: boolean = false;
         if (process.env.VALIDISSUERS != undefined) {
             let validIssuers: string[] = (process.env.VALIDISSUERS.split(' '));
             if (didDoc.credentials) {
                 didDoc.credentials.forEach((element: any) => {
-                    if (element.claim.KYCValidated && validIssuers.some(issuers => issuers === element.issuer)) {
-                        isKYCValidated = true;
+                    if (validIssuers.some(issuers => issuers === element.issuer)) {
+                        isKYCValidated = element.claim.KYCValidated;
                     }
                 });
             }
@@ -59,7 +59,7 @@ export class CreateAgentProcessor extends AbstractHandler {
 
     preVerifyDidSignature = (didDoc: any, request: Request, capability: string): boolean => {
         if (request.data.role != 'SA') {
-            return this.checkKycCredentials(didDoc);
+            return this.checkLatestKycCredential(didDoc);
         }
         return true;
     }
