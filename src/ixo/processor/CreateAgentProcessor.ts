@@ -73,35 +73,31 @@ export class CreateAgentProcessor extends AbstractHandler {
                     {
                         projectDid: request.data.projectDid,
                         agentDid: request.data.agentDid
-                    },
-                    (error: Error, results: IAgentModel[]) => {
-                        if (error) {
-                            reject(error);
-                        } else {
-                            if (results.some(elem => (elem.role === request.data.role) ||
-                                (elem.role === 'EA' && request.data.role === 'SA') ||
-                                (elem.role === 'SA' && request.data.role === 'EA')))
-                                reject("Agent already exists on this project in another role");
-                        }
+                    })
+                    .then((results: IAgentModel[]) => {
+                        if (results.some(elem => (elem.role === request.data.role) ||
+                            (elem.role === 'EA' && request.data.role === 'SA') ||
+                            (elem.role === 'SA' && request.data.role === 'EA')))
+                            reject("Agent already exists on this project in another role");
+                    })
+                    .then(() => {
+                        // check to see that the project status is in a state that allows us to Create Agents  
+                        const validStatus = ["CREATED", "PENDING", "FUNDED", "STARTED"];
+                        ProjectStatus.find(
+                            {
+                                projectDid: request.data.projectDid
+                            },
+                            (error: Error, results: IProjectStatusModel[]) => {
+                                if (error) {
+                                    reject(error);
+                                } else {
+                                    if (results.length > 0 && validStatus.some(elem => elem === results[0].status)) {
+                                        resolve(results[0]);
+                                    }
+                                    reject("Invalid Project Status. Valid statuses are " + validStatus.toString());
+                                }
+                            }).limit(1).sort({ $natural: -1 })
                     });
-
-                // check to see that the project status is in a state that allows us to Create Agents  
-                const validStatus = ["CREATED", "PENDING", "FUNDED", "STARTED"];
-                ProjectStatus.find(
-                    {
-                        projectDid: request.data.projectDid
-                    },
-                    (error: Error, results: IProjectStatusModel[]) => {
-                        if (error) {
-                            reject(error);
-                        } else {
-                            if (results.length > 0 && validStatus.some(elem => elem === results[0].status)) {
-                                resolve(results[0]);
-                            }
-                            reject("Invalid Project Status. Valid statuses are " + validStatus.toString());
-                        }
-                    }).limit(1).sort({ $natural: -1 })
-
             });
         });
     }

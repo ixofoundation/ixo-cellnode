@@ -89,32 +89,29 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
                   projectDid: request.data.projectDid,
                   claimId: request.data.claimId,
                   version: newVersion
-                },
-                function (error: Error, result: IEvaluateClaimModel) {
-                  if (error) {
-                    reject(error);
-                  } else {
-                    if (result) {
-                      reject("invalid record or record already exists");
-                    }
+                })
+                .then((result: any) => {
+                  if (result) {
+                    reject("invalid record or record already exists");
                   }
-                }).limit(1);
-
-              const validStatus = ["STARTED"];
-              ProjectStatus.find(
-                {
-                  projectDid: request.data.projectDid
-                },
-                (error: Error, results: IProjectStatusModel[]) => {
-                  if (error) {
-                    reject(error);
-                  } else {
-                    if (results.length > 0 && validStatus.some(elem => elem === results[0].status)) {
-                      resolve(results[0]);
-                    }
-                    reject("Invalid Project Status. Valid statuses are " + validStatus.toString());
-                  }
-                }).limit(1).sort({ $natural: -1 })
+                })
+                .then(() => {
+                  const validStatus = ["STARTED"];
+                  ProjectStatus.find(
+                    {
+                      projectDid: request.data.projectDid
+                    },
+                    (error: Error, results: IProjectStatusModel[]) => {
+                      if (error) {
+                        reject(error);
+                      } else {
+                        if (results.length > 0 && validStatus.some(elem => elem === results[0].status)) {
+                          resolve(results[0]);
+                        }
+                        reject("Invalid Project Status. Valid statuses are " + validStatus.toString());
+                      }
+                    }).limit(1).sort({ $natural: -1 })
+                })
             });
           });
         }
@@ -144,8 +141,6 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
             updateProjectStatusProcessor.process(projectStatusRequest);
           });
         return 'Insufficient funds available, project stopped';
-      }).catch((reason) => {
-        return reason;
       });
   }
 }
