@@ -58,7 +58,7 @@ export class UpdateAgentStatusProcessor extends AbstractHandler {
                   reject(error);
                 } else {
                   if (result) {
-                    reject("`invalid record or record already exists`");
+                    reject("invalid record or record already exists");
                   }
                 }
               }).limit(1);
