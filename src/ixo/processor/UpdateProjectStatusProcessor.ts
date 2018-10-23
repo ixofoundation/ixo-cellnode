@@ -2,10 +2,10 @@ import { AbstractHandler } from '../../handlers/AbstractHandler';
 import { ProjectStatus, IProjectStatusModel } from '../model/ProjectStatusModel';
 import { Request } from "../../handlers/Request";
 import axios from 'axios';
-import { Status } from '../common/shared';
+import { Status, workflow } from '../common/shared';
 import { dateTimeLogger } from '../../logger/Logger';
 
-const workflow = ["CREATED", "PENDING", "FUNDED", "STARTED", "STOPPED", "PAIDOUT"];
+
 const ETHEREUM_API = (process.env.ETHEREUM_API || '');
 const blockheight = 6;
 
@@ -32,25 +32,22 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
             }
 
             blockChainPayload = {
-                payload: [{type: "project/UpdateProjectStatus", value: data}]
+                payload: [{ type: "project/UpdateProjectStatus", value: data }]
             }
-            resolve(this.messageForBlockchain(blockChainPayload, request.projectDid));
+            resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, 'project/UpdateProjectStatus', true));
         });
     }
 
-    handleAsyncResponse = (jsonMsg: any) => {
-        axios({
-            method: 'post',
-            url: ETHEREUM_API,
-            data: { jsonrpc: "2.0", method: "eth_blockNumber", params: [], id: 1 }
-        })
-            .then((response) => {
-                if (parseInt(response.data.result, 16) - parseInt(jsonMsg.data.blockNumber, 16) > blockheight) {
+    handleAsyncProjectStatusResponse = (jsonResponseMsg: any) => {
+        //check that status update successfully else we roll back to previous status
+        if (jsonResponseMsg.code > 0) {
+            return this.getLatestProjectStatus(jsonResponseMsg.projectDid)
+                .then((currentStatus: IProjectStatusModel[]) => {
                     var data: any = {
-                        projectDid: jsonMsg.projectDid,
-                        status: Status.funded
+                        projectDid: jsonResponseMsg.projectDid,
+                        status: workflow[workflow.indexOf(currentStatus[0].status) - 1] || Status.created
                     }
-                    this.selfSignMessage(data, jsonMsg.projectDid)
+                    this.selfSignMessage(data, jsonResponseMsg.projectDid)
                         .then((signature: any) => {
                             var projectStatusRequest: any = {
                                 payload: {
@@ -62,7 +59,69 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
                                 signature: {
                                     type: "ed25519-sha-256",
                                     created: new Date().toISOString(),
-                                    creator: jsonMsg.projectDid,
+                                    creator: jsonResponseMsg.projectDid,
+                                    signatureValue: signature
+                                }
+                            }
+                            this.process(projectStatusRequest);
+                        });
+
+                })
+        }
+    }
+
+    handleAsyncCreateProjectResponse = (jsonResponseMsg: any) => {
+        //update project status to created once project ledgered
+        var data: any = {
+            projectDid: jsonResponseMsg.projectDid,
+            status: Status.created
+        }
+        this.selfSignMessage(data, jsonResponseMsg.projectDid)
+            .then((signature: any) => {
+                var projectStatusRequest: any = {
+                    payload: {
+                        template: {
+                            name: "project_status"
+                        },
+                        data: data
+                    },
+                    signature: {
+                        type: "ed25519-sha-256",
+                        created: new Date().toISOString(),
+                        creator: jsonResponseMsg.projectDid,
+                        signatureValue: signature
+                    }
+                }
+                this.process(projectStatusRequest);
+            });
+    }
+
+    handleAsyncEthResponse = (jsonResponseMsg: any) => {
+        //check ethereum if block height mined and then send project funded status
+        axios({
+            method: 'post',
+            url: ETHEREUM_API,
+            data: { jsonrpc: "2.0", method: "eth_blockNumber", params: [], id: 1 }
+        })
+            .then((response) => {
+                if (parseInt(response.data.result, 16) - parseInt(jsonResponseMsg.data.blockNumber, 16) > blockheight) {
+                    var data: any = {
+                        projectDid: jsonResponseMsg.projectDid,
+                        status: Status.funded
+                    }
+                    this.selfSignMessage(data, jsonResponseMsg.projectDid)
+                        .then((signature: any) => {
+                            var projectStatusRequest: any = {
+                                payload: {
+                                    template: {
+                                        name: "project_status"
+                                    },
+                                    data: data
+                                },
+                                signature: {
+                                    type: "ed25519-sha-256",
+                                    created: new Date().toISOString(),
+                                    creator: jsonResponseMsg.projectDid,
                                     signatureValue: signature
                                 }
                             }
@@ -71,11 +130,11 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
                 } else {
                     let message = {
                         msgType: "eth",
-                        data: jsonMsg.txnID, //"0xbb3a336e3f823ec18197f1e13ee875700f08f03e2cab75f0d0b118dabb44cba0",
-                        projectDid: jsonMsg.projectDid
+                        data: jsonResponseMsg.txnID, //"0xbb3a336e3f823ec18197f1e13ee875700f08f03e2cab75f0d0b118dabb44cba0",
+                        projectDid: jsonResponseMsg.projectDid
                     }
                     setTimeout(() => {
-                        console.log(dateTimeLogger() + ' resubmit fund check to Ethereum for TxnID ' + jsonMsg.txnID);
+                        console.log(dateTimeLogger() + ' resubmit fund check to Ethereum for TxnID ' + jsonResponseMsg.txnID);
                         this.publishMessageToQueue(message);
                     }, 30000)
 

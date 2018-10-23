@@ -6,3 +6,5 @@ export const enum Status {
     stopped = "STOPPED",
     payout = "PAIDOUT"
 }
+
+export const workflow = ["CREATED", "PENDING", "FUNDED", "STARTED", "STOPPED", "PAIDOUT"];
