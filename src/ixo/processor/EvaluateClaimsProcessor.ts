@@ -92,7 +92,7 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
                 })
                 .then((result: any) => {
                   if (result) {
-                    reject(Error("invalid record or record already exists"));
+                    reject("invalid record or record already exists");
                   }
                 })
                 .then(() => {
@@ -109,7 +109,7 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
                         if (results.length > 0 && validStatus.some(elem => elem === results[0].status)) {
                           resolve(results[0]);
                         }
-                        reject(Error("Invalid Project Status. Valid statuses are " + validStatus.toString()));
+                        reject("Invalid Project Status. Valid statuses are " + validStatus.toString());
                       }
                     }).limit(1).sort({ $natural: -1 })
                 })
