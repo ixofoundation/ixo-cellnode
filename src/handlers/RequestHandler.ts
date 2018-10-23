@@ -6,7 +6,6 @@ import listAgentsProcessor from '../ixo/processor/ListAgentsProcessor';
 import listClaimProcessor from '../ixo/processor/ListClaimsProcessor';
 import submitClaimProcessor from '../ixo/processor/SubmitClaimProcessor';
 import updateAgentStatusProcessor from '../ixo/processor/UpdateAgentStatusProcessor';
-import { Status } from '../ixo/common/shared';
 
 import mq from '../MessageQ';
 
@@ -25,32 +24,15 @@ export class RequestHandler {
     let jsonResponseMsg = JSON.parse(message);
 
     if (jsonResponseMsg.msgType === 'eth') {
-      updateProjectStatusProcessor.handleAsyncResponse(jsonResponseMsg);
+      updateProjectStatusProcessor.handleAsyncEthResponse(jsonResponseMsg);
     }
 
     if (jsonResponseMsg.msgType === 'project/CreateProject') {
-      var data: any = {
-        projectDid: jsonResponseMsg.projectDid,
-        status: Status.created
-      }
-      updateProjectStatusProcessor.selfSignMessage(data, jsonResponseMsg.projectDid)
-        .then((signature: any) => {
-          var projectStatusRequest: any = {
-            payload: {
-              template: {
-                name: "project_status"
-              },
-              data: data
-            },
-            signature: {
-              type: "ed25519-sha-256",
-              created: new Date().toISOString(),
-              creator: jsonResponseMsg.projectDid,
-              signatureValue: signature
-            }
-          }
-          updateProjectStatusProcessor.process(projectStatusRequest);
-        });
+      updateProjectStatusProcessor.handleAsyncCreateProjectResponse(jsonResponseMsg);
+    }
+
+    if (jsonResponseMsg.msgType === 'project/UpdateProjectStatus') {
+      updateProjectStatusProcessor.handleAsyncProjectStatusResponse(jsonResponseMsg);
     }
   }
 

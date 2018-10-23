@@ -1,10 +1,12 @@
 import { AbstractHandler } from '../../handlers/AbstractHandler';
-import { EvaluateClaim, IEvaluateClaimModel } from '../model/EvaluateClaimModel';
+import { EvaluateClaim } from '../model/EvaluateClaimModel';
 import { ProjectStatus, IProjectStatusModel } from '../model/ProjectStatusModel';
+import { UpdateProjectStatusProcessor } from "./UpdateProjectStatusProcessor";
 import { Project } from '../model/ProjectModel';
 import { Request } from "../../handlers/Request";
 import axios from 'axios';
 import { dateTimeLogger } from '../../logger/Logger';
+import { Status } from '../../ixo/common/shared';
 
 const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
 
@@ -52,29 +54,30 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
                   resolve(filter[0].balance - project.evaluatorPayPerClaim >= 0);
                 } else {
                   console.log(dateTimeLogger() + ' check for funds no project found for projectDid ' + projectDid);
-                  resolve(false);
+                  reject(Error('Check for funds no project found for projectDid ' + projectDid));
                 }
               })
               .catch((err) => {
                 console.log(dateTimeLogger() + ' error processing check for funds ' + err)
-                resolve(false);
+                reject(Error('error processing check for funds'));
               });
           }
           else {
             console.log(dateTimeLogger() + ' no valid response check for funds from blockchain ' + response.statusText);
-            resolve(false);
+            reject(Error('No valid response check for funds from blockchain'));
           }
         })
         .catch((reason) => {
           console.log(dateTimeLogger() + ' check for funds could not connect to blockchain ' + reason);
-          resolve(false);
+          reject(Error('Could not connect to blockchain'));
         });
     });
   };
 
   process = (args: any) => {
     console.log(dateTimeLogger() + ' start new transaction ' + JSON.stringify(args));
-    return this.checkForFunds(new Request(args).projectDid)
+    var projectDid = new Request(args).projectDid;
+    return this.checkForFunds(projectDid)
       .then((resp: boolean) => {
         if (resp) {
           return this.createTransaction(args, 'EvaluateClaim', EvaluateClaim, (request: any): Promise<boolean> => {
@@ -86,37 +89,66 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
                   projectDid: request.data.projectDid,
                   claimId: request.data.claimId,
                   version: newVersion
-                },
-                function (error: Error, result: IEvaluateClaimModel) {
-                  if (error) {
-                    reject(error);
-                  } else {
-                    if (result) {
-                      resolve(true);
-                    }
+                })
+                .then((result: any) => {
+                  if (result) {
+                    reject("invalid record or record already exists");
                   }
-                }).limit(1);
-
-              const validStatus = ["STARTED"];
-              ProjectStatus.find(
-                {
-                  projectDid: request.data.projectDid
-                },
-                (error: Error, results: IProjectStatusModel[]) => {
-                  if (error) {
-                    reject(error);
-                  } else {
-                    if (results.length > 0 && validStatus.some(elem => elem === results[0].status)) {
-                      resolve(results[0]);
-                    }
-                    reject("Invalid Project Status. Valid statuses are " + validStatus.toString());
-                  }
-                }).limit(1).sort({ $natural: -1 })
+                })
+                .then(() => {
+                  //check if project in correct status for evaluation
+                  const validStatus = ["STARTED"];
+                  ProjectStatus.find(
+                    {
+                      projectDid: request.data.projectDid
+                    },
+                    (error: Error, results: IProjectStatusModel[]) => {
+                      if (error) {
+                        reject(error);
+                      } else {
+                        if (results.length > 0 && validStatus.some(elem => elem === results[0].status)) {
+                          resolve(results[0]);
+                        }
+                        reject("Invalid Project Status. Valid statuses are " + validStatus.toString());
+                      }
+                    }).limit(1).sort({ $natural: -1 })
+                })
             });
           });
         }
-        console.log(dateTimeLogger() + ' insufficient funds available');
-        return 'Insufficient funds available';
+        // funds have been depleted so we need to stop the project
+        return new Promise((resolve: Function, reject: Function) => {
+          console.log(dateTimeLogger() + ' insufficient funds available');
+          var updateProjectStatusProcessor = new UpdateProjectStatusProcessor();
+          var data: any = {
+            projectDid: projectDid,
+            status: Status.stopped
+          }
+          updateProjectStatusProcessor.selfSignMessage(data, projectDid)
+            .then((signature: any) => {
+              var projectStatusRequest: any = {
+                payload: {
+                  template: {
+                    name: "project_status"
+                  },
+                  data: data
+                },
+                signature: {
+                  type: "ed25519-sha-256",
+                  created: new Date().toISOString(),
+                  creator: projectDid,
+                  signatureValue: signature
+                }
+              }
+              updateProjectStatusProcessor.process(projectStatusRequest);
+            });
+          reject(Error('Insufficient funds available, project stopped'));
+        });
+      })
+      .catch((reason: any) => {
+        return new Promise((resolve: Function, reject: Function) => {
+          reject(reason);
+        });
       });
   }
 }

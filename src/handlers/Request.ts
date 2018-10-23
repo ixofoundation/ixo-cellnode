@@ -44,15 +44,11 @@ export class Request {
 
   verifyCapability = (allow: any): RequestValidator => {
     var validator = new RequestValidator();
-    var inst = this;
-    validator.valid = false;
-    validator.addError('Capability not allowed for did ' + inst.signature.creator);
-    for (let index = 0; index < allow.length; index++) {
-      const element = allow[index];
-      if (inst.signature.creator.match(new RegExp(element))) {
-        validator.valid = true;
-        break;
-      }
+    if (allow.filter((e: string) => this.signature.creator.match(new RegExp(e))).length > 0) {
+      validator.valid = true;
+    } else {
+      validator.valid = false;
+      validator.addError('Capability not allowed for did ' + this.signature.creator);
     }
     return validator;
   }
