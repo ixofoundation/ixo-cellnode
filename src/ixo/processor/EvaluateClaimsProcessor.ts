@@ -54,22 +54,22 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
                   resolve(filter[0].balance - project.evaluatorPayPerClaim >= 0);
                 } else {
                   console.log(dateTimeLogger() + ' check for funds no project found for projectDid ' + projectDid);
-                  reject('Check for funds no project found for projectDid ' + projectDid);
+                  reject(Error('Check for funds no project found for projectDid ' + projectDid));
                 }
               })
               .catch((err) => {
                 console.log(dateTimeLogger() + ' error processing check for funds ' + err)
-                reject('error processing check for funds');
+                reject(Error('error processing check for funds'));
               });
           }
           else {
             console.log(dateTimeLogger() + ' no valid response check for funds from blockchain ' + response.statusText);
-            reject('No valid response check for funds from blockchain');
+            reject(Error('No valid response check for funds from blockchain'));
           }
         })
         .catch((reason) => {
           console.log(dateTimeLogger() + ' check for funds could not connect to blockchain ' + reason);
-          reject('Could not connect to blockchain');
+          reject(Error('Could not connect to blockchain'));
         });
     });
   };
@@ -92,10 +92,11 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
                 })
                 .then((result: any) => {
                   if (result) {
-                    reject("invalid record or record already exists");
+                    reject(Error("invalid record or record already exists"));
                   }
                 })
                 .then(() => {
+                  //check if project in correct status for evaluation
                   const validStatus = ["STARTED"];
                   ProjectStatus.find(
                     {
@@ -108,7 +109,7 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
                         if (results.length > 0 && validStatus.some(elem => elem === results[0].status)) {
                           resolve(results[0]);
                         }
-                        reject("Invalid Project Status. Valid statuses are " + validStatus.toString());
+                        reject(Error("Invalid Project Status. Valid statuses are " + validStatus.toString()));
                       }
                     }).limit(1).sort({ $natural: -1 })
                 })
@@ -142,6 +143,11 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
               updateProjectStatusProcessor.process(projectStatusRequest);
             });
           reject(Error('Insufficient funds available, project stopped'));
+        });
+      })
+      .catch((reason: any) => {
+        return new Promise((resolve: Function, reject: Function) => {
+          reject(reason);
         });
       });
   }
