@@ -8,6 +8,7 @@ services:
       - ETHEREUM_API=https://mainnet.infura.io/
       - ASYM_CYPHER=${ASYMCYPHER}
       - ASYM_KEY=${ASYMKEY}
+      - NODEDID=
 
   db:
     environment:

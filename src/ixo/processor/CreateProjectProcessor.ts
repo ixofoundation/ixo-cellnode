@@ -38,7 +38,8 @@ export class CreateProjectProcessor extends AbstractHandler {
                         txHash: txHash,
                         senderDid: request.signature.creator,
                         projectDid: request.projectDid,
-                        pubKey: wallet.verifyKey
+                        pubKey: wallet.verifyKey,
+                        nodeDid: process.env.NODEDID
                     }
                     blockChainPayload = {
                         payload: [{ type: "project/CreateProject", value: data }]
