@@ -33,7 +33,8 @@ export class CreateProjectProcessor extends AbstractHandler {
                         data: {
                             ...obj,
                             createdOn: request.signature.created,
-                            createdBy: request.signature.creator
+                            createdBy: request.signature.creator,
+                            nodeDid: process.env.NODEDID
                         },
                         txHash: txHash,
                         senderDid: request.signature.creator,
