@@ -40,12 +40,14 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
 
     handleAsyncProjectStatusResponse = (jsonResponseMsg: any) => {
         //check that status update successfully else we roll back to previous status
-        if (jsonResponseMsg.code > 0) {
+        //if funding failed, rollback to created
+        if (jsonResponseMsg.data.deliver_tx.code > 0) {
             return this.getLatestProjectStatus(jsonResponseMsg.projectDid)
                 .then((currentStatus: IProjectStatusModel[]) => {
+                    var rollbackStatus = currentStatus[0].status == Status.funded ? Status.created : workflow[workflow.indexOf(currentStatus[0].status) - 1] || Status.created
                     var data: any = {
                         projectDid: jsonResponseMsg.projectDid,
-                        status: workflow[workflow.indexOf(currentStatus[0].status) - 1] || Status.created
+                        status: rollbackStatus
                     }
                     this.selfSignMessage(data, jsonResponseMsg.projectDid)
                         .then((signature: any) => {
@@ -157,7 +159,8 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
         } else {
             return this.getLatestProjectStatus(request.projectDid)
                 .then((current: IProjectStatusModel[]) => {
-                    if (workflow[workflow.indexOf(request.data.status) - 1] === current[0].status) {
+                    // check that the status can only roll forward by 1 or backwards
+                    if (workflow.indexOf(request.data.status) - 1 <= workflow.indexOf(current[0].status)) {
                         return this.createTransaction(args, 'UpdateProjectStatus', ProjectStatus);
                     }
                     console.log(dateTimeLogger() + ' Invalid status workflow ' + request.data.status);
