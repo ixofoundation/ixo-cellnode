@@ -14,19 +14,19 @@ const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
 export class EvaluateClaimsProcessor extends AbstractHandler {
 
   handleAsyncEvaluateClaimResponse = (jsonResponseMsg: any) => {
-    Cache.get(jsonResponseMsg.data.hash)
+    Cache.get(jsonResponseMsg.txHash)
       .then((cached) => {
         console.log(dateTimeLogger() + ' updating the agent status update capabilities');
-        this.updateCapabilities(cached.request);
+        this.updateCapabilities(cached);
         console.log(dateTimeLogger() + ' commit agent status update to Elysian');
         var obj = {
-          ...cached.request.data,
-          txHash: cached.txHash,
-          _creator: cached.request.signature.creator,
-          _created: cached.request.signature.created,
-          version: cached.request.version >= 0 ? cached.request.version + 1 : 0
+          ...cached.data,
+          txHash: jsonResponseMsg.txHash,
+          _creator: cached.signature.creator,
+          _created: cached.signature.created,
+          version: cached.version >= 0 ? cached.version + 1 : 0
         };
-        EvaluateClaim.create({ ...obj, projectDid: cached.request.projectDid });
+        EvaluateClaim.create({ ...obj, projectDid: cached.projectDid });
         console.log(dateTimeLogger() + ' update agent status transaction completed successfully');
       });
   }
@@ -36,10 +36,6 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
   msgToPublish = (txHash: any, request: Request) => {
     return new Promise((resolve: Function, reject: Function) => {
       var blockChainPayload: any;
-      // delete request.version;
-      // delete request.signature._creator;
-      // delete request.signature._created;
-
       let data = {
         data: {
           claimID: request.data.claimId,

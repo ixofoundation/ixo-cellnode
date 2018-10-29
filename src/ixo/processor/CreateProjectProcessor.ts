@@ -9,19 +9,19 @@ import Cache from '../../Cache';
 export class CreateProjectProcessor extends AbstractHandler {
 
     handleAsyncCreateProjectResponse = (jsonResponseMsg: any) => {
-        Cache.get(jsonResponseMsg.data.hash)
+        Cache.get(jsonResponseMsg.txHash)
             .then((cached) => {
-                console.log(dateTimeLogger() + ' updating the create project capabilities');
-                this.updateCapabilities(cached.request);
+                console.log(dateTimeLogger() + ' updating the create project capabilities' + JSON.stringify(cached));
+                this.updateCapabilities(cached);
                 console.log(dateTimeLogger() + ' commit create project to Elysian');
                 var obj = {
-                    ...cached.request.data,
-                    txHash: cached.txHash,
-                    _creator: cached.request.signature.creator,
-                    _created: cached.request.signature.created
+                    ...cached.data,
+                    txHash: jsonResponseMsg.txHash,
+                    _creator: cached.signature.creator,
+                    _created: cached.signature.created
                 };
-                Project.create({ ...obj, projectDid: cached.request.projectDid });
-                Project.emit('postCommit', obj, cached.request.projectDid);
+                Project.create({ ...obj, projectDid: cached.projectDid });
+                Project.emit('postCommit', obj, cached.projectDid);
                 console.log(dateTimeLogger() + ' create project transaction completed successfully');
             });
     }

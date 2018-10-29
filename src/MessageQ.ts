@@ -57,7 +57,8 @@ export class MessageQ {
                 })
                 .then(() => {
                     let jsonContent = JSON.stringify(content);
-                    console.log(dateTimeLogger() + ' send to queue ' + content.data.msgType);
+                    console.log(dateTimeLogger() + ' send to queue ' + content.data.msgType + jsonContent);
+                    Cache.set(content.txHash, content.request);
                     this.channel.sendToQueue(this.queue, Buffer.from(jsonContent), {
                         persistent: false,
                         contentType: 'application/json'
@@ -89,7 +90,7 @@ export class MessageQ {
                             }
                             var JSONcontent = JSON.parse(messageData.content.toString());
                             console.log(dateTimeLogger() + " received response for %s", JSONcontent.msgType);                            
-                            Cache.set(JSONcontent.data.hash, JSONcontent);
+                            // Cache.set(JSONcontent.data.hash, JSONcontent);
                             resolve(messageData.content);
                             inst.channel.ack(messageData);
                         });

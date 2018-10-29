@@ -8,20 +8,20 @@ import Cache from '../../Cache';
 export class UpdateAgentStatusProcessor extends AbstractHandler {
 
   handleAsyncUpdateAgentStatusResponse = (jsonResponseMsg: any) => {
-    Cache.get(jsonResponseMsg.data.hash)
+    Cache.get(jsonResponseMsg.txHash)
       .then((cached) => {
         console.log(dateTimeLogger() + ' updating the agent status update capabilities');
-        this.updateCapabilities(cached.request);
+        this.updateCapabilities(cached);
         console.log(dateTimeLogger() + ' commit agent status update to Elysian');
         var obj = {
-          ...cached.request.data,
-          txHash: cached.txHash,
-          _creator: cached.request.signature.creator,
-          _created: cached.request.signature.created,
-          version: cached.request.version >= 0 ? cached.request.version + 1 : 0
+          ...cached.data,
+          txHash: jsonResponseMsg.txHash,
+          _creator: cached.signature.creator,
+          _created: cached.signature.created,
+          version: cached.version >= 0 ? cached.version + 1 : 0
         };
-        AgentStatus.create({ ...obj, projectDid: cached.request.projectDid });
-        AgentStatus.emit('postCommit', obj, cached.request.projectDid);
+        AgentStatus.create({ ...obj, projectDid: cached.projectDid });
+        AgentStatus.emit('postCommit', obj, cached.projectDid);
         console.log(dateTimeLogger() + ' update agent status transaction completed successfully');
       });
   }

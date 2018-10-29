@@ -37,17 +37,17 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
     handleAsyncProjectStatusResponse = (jsonResponseMsg: any) => {
         //check that status update successfully else we roll back to previous status
         //if funding failed, rollback to created
-        Cache.get(jsonResponseMsg.data.hash)
+        Cache.get(jsonResponseMsg.txHash)
             .then((cached) => {
                 if (jsonResponseMsg.data.deliver_tx.code > 0) {
-                    return this.getLatestProjectStatus(cached.request.projectDid)
+                    return this.getLatestProjectStatus(cached.projectDid)
                         .then((currentStatus: IProjectStatusModel[]) => {
                             var rollbackStatus = currentStatus[0].status == Status.funded ? Status.created : workflow[workflow.indexOf(currentStatus[0].status) - 1] || Status.created
                             var data: any = {
-                                projectDid: cached.request.projectDid,
+                                projectDid: cached.projectDid,
                                 status: rollbackStatus
                             }
-                            this.selfSignMessage(data, cached.request.projectDid)
+                            this.selfSignMessage(data, cached.projectDid)
                                 .then((signature: any) => {
                                     var projectStatusRequest: any = {
                                         payload: {
@@ -59,7 +59,7 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
                                         signature: {
                                             type: "ed25519-sha-256",
                                             created: new Date().toISOString(),
-                                            creator: cached.request.projectDid,
+                                            creator: cached.projectDid,
                                             signatureValue: signature
                                         }
                                     }
@@ -68,16 +68,16 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
                         })
                 } else {
                     console.log(dateTimeLogger() + ' updating the project status capabilities');
-                    this.updateCapabilities(cached.request);
+                    this.updateCapabilities(cached);
                     console.log(dateTimeLogger() + ' commit project status to Elysian');
                     var obj = {
-                        ...cached.request.data,
-                        txHash: cached.txHash,
-                        _creator: cached.request.signature.creator,
-                        _created: cached.request.signature.created
+                        ...cached.data,
+                        txHash: jsonResponseMsg.txHash,
+                        _creator: cached.signature.creator,
+                        _created: cached.signature.created
                     };
-                    ProjectStatus.create({ ...obj, projectDid: cached.request.projectDid });
-                    ProjectStatus.emit('postCommit', obj, cached.request.projectDid);
+                    ProjectStatus.create({ ...obj, projectDid: cached.projectDid });
+                    ProjectStatus.emit('postCommit', obj, cached.projectDid);
                     console.log(dateTimeLogger() + ' Update project status transaction completed successfully');
                 }
             });

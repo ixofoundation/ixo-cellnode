@@ -8,19 +8,19 @@ import Cache from '../../Cache';
 export class CreateAgentProcessor extends AbstractHandler {
 
     handleAsyncCreateAgentResponse = (jsonResponseMsg: any) => {
-        Cache.get(jsonResponseMsg.data.hash)
+        Cache.get(jsonResponseMsg.txHash)
             .then((cached) => {
                 console.log(dateTimeLogger() + ' updating the create agent capabilities');
-                this.updateCapabilities(cached.request);
+                this.updateCapabilities(cached);
                 console.log(dateTimeLogger() + ' commit create agent to Elysian');
                 var obj = {
-                    ...cached.request.data,
-                    txHash: cached.txHash,
-                    _creator: cached.request.signature.creator,
-                    _created: cached.request.signature.created
+                    ...cached.data,
+                    txHash: jsonResponseMsg.txHash,
+                    _creator: cached.signature.creator,
+                    _created: cached.signature.created
                 };
-                Agent.create({ ...obj, projectDid: cached.request.projectDid });
-                Agent.emit('postCommit', obj, cached.request.projectDid);
+                Agent.create({ ...obj, projectDid: cached.projectDid });
+                Agent.emit('postCommit', obj, cached.projectDid);
                 console.log(dateTimeLogger() + ' create agent transaction completed successfully');
             });
     }

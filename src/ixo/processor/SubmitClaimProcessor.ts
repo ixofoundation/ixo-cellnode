@@ -8,18 +8,18 @@ import Cache from '../../Cache';
 export class SubmitClaimProcessor extends AbstractHandler {
 
   handleAsyncSubmitClaimResponse = (jsonResponseMsg: any) => {
-    Cache.get(jsonResponseMsg.data.hash)
+    Cache.get(jsonResponseMsg.txHash)
       .then((cached) => {
         console.log(dateTimeLogger() + ' updating the submit claim capabilities');
-        this.updateCapabilities(cached.request);
+        this.updateCapabilities(cached);
         console.log(dateTimeLogger() + ' commit submit claim to Elysian');
         var obj = {
-          ...cached.request.data,
-          txHash: cached.txHash,
-          _creator: cached.request.signature.creator,
-          _created: cached.request.signature.created
+          ...cached.data,
+          txHash: jsonResponseMsg.txHash,
+          _creator: cached.signature.creator,
+          _created: cached.signature.created
         };
-        Claim.create({ ...obj, projectDid: cached.request.projectDid });
+        Claim.create({ ...obj, projectDid: cached.projectDid });
         console.log(dateTimeLogger() + ' submit claim transaction completed successfully');
       });
   }
