@@ -18,7 +18,7 @@ export class UpdateAgentStatusProcessor extends AbstractHandler {
           txHash: cached.txHash,
           _creator: cached.request.signature.creator,
           _created: cached.request.signature.created,
-          version: cached.request.version > 0 ? cached.request.version + 1 : 0
+          version: cached.request.version >= 0 ? cached.request.version + 1 : 0
         };
         AgentStatus.create({ ...obj, projectDid: cached.request.projectDid });
         AgentStatus.emit('postCommit', obj, cached.request.projectDid);
@@ -38,10 +38,6 @@ export class UpdateAgentStatusProcessor extends AbstractHandler {
   msgToPublish = (txHash: any, request: Request) => {
     return new Promise((resolve: Function, reject: Function) => {
       var blockChainPayload: any;
-      delete request.version;
-      delete request.signature._creator;
-      delete request.signature._created;
-
       let data = {
         data: {
           did: request.data.agentDid,

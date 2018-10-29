@@ -66,17 +66,7 @@ export abstract class AbstractHandler {
                                 //submit information to blockchain. Poller to add to cache once it gets hash from chain
                                 this.createTransactionLog(request, capabilityMap)
                                   .then((transaction: any) => {
-                                    this.msgToPublish(transaction.hash, request)
-                                      .then((msg: any) => {
-                                        console.log(dateTimeLogger() + ' message to be published ' + msg.msgType);
-                                        var cacheMsg = {
-                                          data: msg,
-                                          request: request,
-                                          txHash: transaction.hash
-                                        }
-                                        mq.publish(cacheMsg);
-                                      });
-                                    resolve(transaction.hash);
+                                    this.publishAndRespond(transaction.hash, request);
                                   });
                               })
                               .catch((error: string) => {
@@ -86,17 +76,7 @@ export abstract class AbstractHandler {
                             //submit information to blockchain. Poller to add to cache once it gets hash from chain
                             this.createTransactionLog(request, capabilityMap)
                               .then((transaction: any) => {
-                                this.msgToPublish(transaction.hash, request)
-                                  .then((msg: any) => {
-                                    console.log(dateTimeLogger() + ' message to be published ' + msg.msgType);
-                                    var cacheMsg = {
-                                      data: msg,
-                                      request: request,
-                                      txHash: transaction.hash
-                                    }
-                                    mq.publish(cacheMsg);
-                                  });
-                                resolve(transaction.hash);
+                                this.publishAndRespond(transaction.hash, request);
                               });
                           }
                         } else {
@@ -173,7 +153,23 @@ export abstract class AbstractHandler {
     });
   }
 
-  public createTransactionLog(request: Request, capabilityMap: any) {
+  private publishAndRespond(hash: string, request: Request) {
+    return new Promise((resolve: Function, reject: Function) => {
+      this.msgToPublish(hash, request)
+        .then((msg: any) => {
+          console.log(dateTimeLogger() + ' message to be published ' + msg.msgType);
+          var cacheMsg = {
+            data: msg,
+            request: request,
+            txHash: hash
+          }
+          mq.publish(cacheMsg);
+        });
+      resolve(hash);
+    });
+  }
+
+  private createTransactionLog(request: Request, capabilityMap: any) {
     return new Promise((resolve: Function, reject: Function) => {
       console.log(dateTimeLogger() + ' write transaction to log')
       transactionService.createTransaction(request.body, request.signature.type,

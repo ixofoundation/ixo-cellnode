@@ -16,9 +16,6 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
 
     msgToPublish = (txHash: any, request: Request) => {
         var blockChainPayload: any;
-        delete request.version;
-        delete request.signature._creator;
-        delete request.signature._created;
         return new Promise((resolve: Function, reject: Function) => {
             let data = {
                 data: {

@@ -24,7 +24,7 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
           txHash: cached.txHash,
           _creator: cached.request.signature.creator,
           _created: cached.request.signature.created,
-          version: cached.request.version > 0 ? cached.request.version + 1 : 0
+          version: cached.request.version >= 0 ? cached.request.version + 1 : 0
         };
         EvaluateClaim.create({ ...obj, projectDid: cached.request.projectDid });
         console.log(dateTimeLogger() + ' update agent status transaction completed successfully');
@@ -36,9 +36,9 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
   msgToPublish = (txHash: any, request: Request) => {
     return new Promise((resolve: Function, reject: Function) => {
       var blockChainPayload: any;
-      delete request.version;
-      delete request.signature._creator;
-      delete request.signature._created;
+      // delete request.version;
+      // delete request.signature._creator;
+      // delete request.signature._created;
 
       let data = {
         data: {
