@@ -90,7 +90,6 @@ export class MessageQ {
                             }
                             var JSONcontent = JSON.parse(messageData.content.toString());
                             console.log(dateTimeLogger() + " received response for %s", JSONcontent.msgType);                            
-                            // Cache.set(JSONcontent.data.hash, JSONcontent);
                             resolve(messageData.content);
                             inst.channel.ack(messageData);
                         });

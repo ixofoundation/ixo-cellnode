@@ -25,7 +25,8 @@ ProjectStatus.on("postCommit", function (obj, projectDid) {
         msgType: "eth",
         data: obj.txnID // "0xbb3a336e3f823ec18197f1e13ee875700f08f03e2cab75f0d0b118dabb44cba0",
       },
-      request: {projectDid: projectDid}
+      request: {projectDid: projectDid},
+      txHash: obj.txnID
     }
     processor.publishMessageToQueue(message);
   }

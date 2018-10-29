@@ -14,26 +14,6 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
 
     updateCapabilities = (request: Request) => { }
 
-    msgToPublish = (txHash: any, request: Request) => {
-        var blockChainPayload: any;
-        return new Promise((resolve: Function, reject: Function) => {
-            let data = {
-                data: {
-                    status: request.data.status,
-                    ethFundingTxnID: request.data.txnID
-                },
-                txHash: txHash,
-                senderDid: request.signature.creator,
-                projectDid: request.projectDid
-            }
-
-            blockChainPayload = {
-                payload: [{ type: "project/UpdateProjectStatus", value: data }]
-            }
-            resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, 'project/UpdateProjectStatus', true));
-        });
-    }
-
     handleAsyncProjectStatusResponse = (jsonResponseMsg: any) => {
         //check that status update successfully else we roll back to previous status
         //if funding failed, rollback to created
@@ -86,54 +66,76 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
 
     handleAsyncEthResponse = (jsonResponseMsg: any) => {
         //check ethereum if block height mined and then send project funded status
-        var projectDid = jsonResponseMsg.request.projectDid;
-        axios({
-            method: 'post',
-            url: ETHEREUM_API,
-            data: { jsonrpc: "2.0", method: "eth_blockNumber", params: [], id: 1 }
-        })
-            .then((response) => {
-                if (parseInt(response.data.result, 16) - parseInt(jsonResponseMsg.data.blockNumber, 16) > blockheight) {
-                    var data: any = {
-                        projectDid: projectDid,
-                        status: Status.funded
-                    }
-                    this.selfSignMessage(data, projectDid)
-                        .then((signature: any) => {
-                            var projectStatusRequest: any = {
-                                payload: {
-                                    template: {
-                                        name: "project_status"
-                                    },
-                                    data: data
-                                },
-                                signature: {
-                                    type: "ed25519-sha-256",
-                                    created: new Date().toISOString(),
-                                    creator: projectDid,
-                                    signatureValue: signature
-                                }
+        Cache.get(jsonResponseMsg.txHash)
+            .then((cached) => {
+                var projectDid = cached.projectDid;
+                axios({
+                    method: 'post',
+                    url: ETHEREUM_API,
+                    data: { jsonrpc: "2.0", method: "eth_blockNumber", params: [], id: 1 }
+                })
+                    .then((response) => {
+                        if (parseInt(response.data.result, 16) - parseInt(jsonResponseMsg.data.blockNumber, 16) > blockheight) {
+                            var data: any = {
+                                projectDid: projectDid,
+                                status: Status.funded
                             }
-                            this.process(projectStatusRequest);
-                        });
-                } else {
-                    let message = {
-                        data: {
-                            msgType: "eth",
-                            data: jsonResponseMsg.txnID // "0xbb3a336e3f823ec18197f1e13ee875700f08f03e2cab75f0d0b118dabb44cba0",
-                        },
-                        request: { projectDid: projectDid }
-                    }
+                            this.selfSignMessage(data, projectDid)
+                                .then((signature: any) => {
+                                    var projectStatusRequest: any = {
+                                        payload: {
+                                            template: {
+                                                name: "project_status"
+                                            },
+                                            data: data
+                                        },
+                                        signature: {
+                                            type: "ed25519-sha-256",
+                                            created: new Date().toISOString(),
+                                            creator: projectDid,
+                                            signatureValue: signature
+                                        }
+                                    }
+                                    this.process(projectStatusRequest);
+                                });
+                        } else {
+                            let message = {
+                                data: {
+                                    msgType: "eth",
+                                    data: jsonResponseMsg.txHash // "0xbb3a336e3f823ec18197f1e13ee875700f08f03e2cab75f0d0b118dabb44cba0",
+                                },
+                                request: { projectDid: projectDid },
+                                txHash: jsonResponseMsg.txHash
+                            }
+                            setTimeout(() => {
+                                console.log(dateTimeLogger() + ' resubmit fund check to Ethereum for TxnID ' + jsonResponseMsg.txnID);
+                                this.publishMessageToQueue(message);
+                            }, 30000)
 
-                    setTimeout(() => {
-                        console.log(dateTimeLogger() + ' resubmit fund check to Ethereum for TxnID ' + jsonResponseMsg.txnID);
-                        this.publishMessageToQueue(message);
-                    }, 30000)
-
-                }
-            })
+                        }
+                    })
+            });
     }
 
+    msgToPublish = (txHash: any, request: Request) => {
+        var blockChainPayload: any;
+        return new Promise((resolve: Function, reject: Function) => {
+            let data = {
+                data: {
+                    status: request.data.status,
+                    ethFundingTxnID: request.data.txnID
+                },
+                txHash: txHash,
+                senderDid: request.signature.creator,
+                projectDid: request.projectDid
+            }
+
+            blockChainPayload = {
+                payload: [{ type: "project/UpdateProjectStatus", value: data }]
+            }
+            resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, 'project/UpdateProjectStatus', true));
+        });
+    }
 
     getLatestProjectStatus = (projectDid: string): Promise<IProjectStatusModel[]> => {
         return new Promise((resolve: Function) => {
