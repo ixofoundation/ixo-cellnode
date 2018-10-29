@@ -28,11 +28,27 @@ export class RequestHandler {
     }
 
     if (jsonResponseMsg.msgType === 'project/CreateProject') {
-      updateProjectStatusProcessor.handleAsyncCreateProjectResponse(jsonResponseMsg);
+      createProjectProcessor.handleAsyncCreateProjectResponse(jsonResponseMsg);
     }
 
     if (jsonResponseMsg.msgType === 'project/UpdateProjectStatus') {
       updateProjectStatusProcessor.handleAsyncProjectStatusResponse(jsonResponseMsg);
+    }
+
+    if (jsonResponseMsg.msgType === 'project/CreateAgent') {
+      createAgentProcessor.handleAsyncCreateAgentResponse(jsonResponseMsg);
+    }
+
+    if (jsonResponseMsg.msgType === 'project/UpdateAgent') {
+      updateAgentStatusProcessor.handleAsyncUpdateAgentStatusResponse(jsonResponseMsg);
+    }
+
+    if (jsonResponseMsg.msgType === 'project/CreateClaim') {
+      submitClaimProcessor.handleAsyncSubmitClaimResponse(jsonResponseMsg);
+    }
+
+    if (jsonResponseMsg.msgType === 'project/CreateEvaluation') {
+      evaluateClaimsProcessor.handleAsyncEvaluateClaimResponse(jsonResponseMsg);
     }
   }
 

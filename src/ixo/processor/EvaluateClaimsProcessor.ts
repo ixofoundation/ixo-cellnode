@@ -7,25 +7,43 @@ import { Request } from "../../handlers/Request";
 import axios from 'axios';
 import { dateTimeLogger } from '../../logger/Logger';
 import { Status } from '../../ixo/common/shared';
+import Cache from '../../Cache';
 
 const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
 
 export class EvaluateClaimsProcessor extends AbstractHandler {
 
+  handleAsyncEvaluateClaimResponse = (jsonResponseMsg: any) => {
+    Cache.get(jsonResponseMsg.data.hash)
+      .then((cached) => {
+        console.log(dateTimeLogger() + ' updating the agent status update capabilities');
+        this.updateCapabilities(cached.request);
+        console.log(dateTimeLogger() + ' commit agent status update to Elysian');
+        var obj = {
+          ...cached.request.data,
+          txHash: cached.txHash,
+          _creator: cached.request.signature.creator,
+          _created: cached.request.signature.created,
+          version: cached.request.version > 0 ? cached.request.version + 1 : 0
+        };
+        EvaluateClaim.create({ ...obj, projectDid: cached.request.projectDid });
+        console.log(dateTimeLogger() + ' update agent status transaction completed successfully');
+      });
+  }
+
   updateCapabilities = (request: Request) => { }
 
-  msgToPublish = (obj: any, request: Request) => {
+  msgToPublish = (txHash: any, request: Request) => {
     return new Promise((resolve: Function, reject: Function) => {
       var blockChainPayload: any;
-      var txHash = obj.txHash;
-      delete obj.version;
-      delete obj.txHash;
-      delete obj._creator;
-      delete obj._created;
+      delete request.version;
+      delete request.signature._creator;
+      delete request.signature._created;
+
       let data = {
         data: {
-          claimID: obj.claimId,
-          status: obj.status
+          claimID: request.data.claimId,
+          status: request.data.status
         },
         txHash: txHash,
         senderDid: request.signature.creator,
@@ -34,7 +52,7 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
       blockChainPayload = {
         payload: [{ type: "project/CreateEvaluation", value: data }]
       }
-      resolve(this.messageForBlockchain(blockChainPayload, request.projectDid));
+      resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, "project/CreateEvaluation"));
     });
   };
 

@@ -4,8 +4,27 @@ import { Project } from '../model/ProjectModel';
 import { Request } from "../../handlers/Request";
 import { dateTimeLogger } from '../../logger/Logger';
 import walletService from '../../service/WalletService';
+import Cache from '../../Cache';
 
 export class CreateProjectProcessor extends AbstractHandler {
+
+    handleAsyncCreateProjectResponse = (jsonResponseMsg: any) => {
+        Cache.get(jsonResponseMsg.data.hash)
+            .then((cached) => {
+                console.log(dateTimeLogger() + ' updating the create project capabilities');
+                this.updateCapabilities(cached.request);
+                console.log(dateTimeLogger() + ' commit create project to Elysian');
+                var obj = {
+                    ...cached.request.data,
+                    txHash: cached.txHash,
+                    _creator: cached.request.signature.creator,
+                    _created: cached.request.signature.created
+                };
+                Project.create({ ...obj, projectDid: cached.request.projectDid });
+                Project.emit('postCommit', obj, cached.request.projectDid);
+                console.log(dateTimeLogger() + ' create project transaction completed successfully');
+            });
+    }
 
     updateCapabilities = (request: Request) => {
         this.addCapabilities(request.projectDid, 'did:sov:*', 'CreateAgent');
@@ -17,21 +36,18 @@ export class CreateProjectProcessor extends AbstractHandler {
         this.addCapabilities(request.projectDid, request.projectDid, 'UpdateProjectStatus');
     }
 
-    msgToPublish = (obj: any, request: Request) => {
+    msgToPublish = (txHash: any, request: Request) => {
         return new Promise((resolve: Function, reject: Function) => {
             var blockChainPayload: any;
-            var txHash = obj.txHash;
-            delete obj.version;
-            delete obj.txHash;
-            delete obj._creator;
-            delete obj._created;
-
-            delete obj.autoApprove;
+            delete request.version;
+            delete request.signature._creator;
+            delete request.signature._created;
+            delete request.data.autoApprove;
             walletService.getWallet(request.projectDid)
                 .then((wallet) => {
                     let data = {
                         data: {
-                            ...obj,
+                            ...request.data,
                             createdOn: request.signature.created,
                             createdBy: request.signature.creator,
                             nodeDid: process.env.NODEDID

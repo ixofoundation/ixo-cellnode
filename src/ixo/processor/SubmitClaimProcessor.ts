@@ -3,19 +3,36 @@ import { Claim } from '../model/ClaimModel';
 import { ProjectStatus, IProjectStatusModel } from '../model/ProjectStatusModel';
 import { Request } from "../../handlers/Request";
 import { dateTimeLogger } from '../../logger/Logger';
+import Cache from '../../Cache';
 
 export class SubmitClaimProcessor extends AbstractHandler {
 
+  handleAsyncSubmitClaimResponse = (jsonResponseMsg: any) => {
+    Cache.get(jsonResponseMsg.data.hash)
+      .then((cached) => {
+        console.log(dateTimeLogger() + ' updating the submit claim capabilities');
+        this.updateCapabilities(cached.request);
+        console.log(dateTimeLogger() + ' commit submit claim to Elysian');
+        var obj = {
+          ...cached.request.data,
+          txHash: cached.txHash,
+          _creator: cached.request.signature.creator,
+          _created: cached.request.signature.created
+        };
+        Claim.create({ ...obj, projectDid: cached.request.projectDid });
+        console.log(dateTimeLogger() + ' submit claim transaction completed successfully');
+      });
+  }
+
   updateCapabilities = (request: Request) => { }
 
-  msgToPublish = (obj: any, request: Request) => {
+  msgToPublish = (txHash: any, request: Request) => {
     return new Promise((resolve: Function, reject: Function) => {
       var blockChainPayload: any;
-      var txHash = obj.txHash;
-      delete obj.version;
-      delete obj.txHash;
-      delete obj._creator;
-      delete obj._created;
+      delete request.version;
+      delete request.signature._creator;
+      delete request.signature._created;
+
       let data = {
         data: {
           claimID: txHash
@@ -25,9 +42,9 @@ export class SubmitClaimProcessor extends AbstractHandler {
         projectDid: request.projectDid
       }
       blockChainPayload = {
-        payload: [{type: "project/CreateClaim", value: data}]
+        payload: [{ type: "project/CreateClaim", value: data }]
       }
-      resolve(this.messageForBlockchain(blockChainPayload, request.projectDid));
+      resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, "project/CreateClaim"));
     });
   };
 

@@ -3,8 +3,28 @@ import { AgentStatus } from '../model/AgentStatusModel';
 import { ProjectStatus, IProjectStatusModel } from '../model/ProjectStatusModel';
 import { Request } from "../../handlers/Request";
 import { dateTimeLogger } from '../../logger/Logger';
+import Cache from '../../Cache';
 
 export class UpdateAgentStatusProcessor extends AbstractHandler {
+
+  handleAsyncUpdateAgentStatusResponse = (jsonResponseMsg: any) => {
+    Cache.get(jsonResponseMsg.data.hash)
+      .then((cached) => {
+        console.log(dateTimeLogger() + ' updating the agent status update capabilities');
+        this.updateCapabilities(cached.request);
+        console.log(dateTimeLogger() + ' commit agent status update to Elysian');
+        var obj = {
+          ...cached.request.data,
+          txHash: cached.txHash,
+          _creator: cached.request.signature.creator,
+          _created: cached.request.signature.created,
+          version: cached.request.version > 0 ? cached.request.version + 1 : 0
+        };
+        AgentStatus.create({ ...obj, projectDid: cached.request.projectDid });
+        AgentStatus.emit('postCommit', obj, cached.request.projectDid);
+        console.log(dateTimeLogger() + ' update agent status transaction completed successfully');
+      });
+  }
 
   updateCapabilities = (request: Request) => {
     if (request.data.role === 'SA' && request.data.status === '1') this.addCapabilities(request.projectDid, request.data.agentDid, 'SubmitClaim');
@@ -15,20 +35,18 @@ export class UpdateAgentStatusProcessor extends AbstractHandler {
     if (request.data.status === '2') this.removeCapabilities(request.projectDid, request.data.agentDid, 'ListClaims');
   }
 
-  msgToPublish = (obj: any, request: Request) => {
+  msgToPublish = (txHash: any, request: Request) => {
     return new Promise((resolve: Function, reject: Function) => {
       var blockChainPayload: any;
-      var txHash = obj.txHash;
-      delete obj.version;
-      delete obj.txHash;
-      delete obj._creator;
-      delete obj._created;
+      delete request.version;
+      delete request.signature._creator;
+      delete request.signature._created;
 
       let data = {
         data: {
-          did: obj.agentDid,
-          status: obj.status,
-          role: obj.role
+          did: request.data.agentDid,
+          status: request.data.status,
+          role: request.data.role
         },
         txHash: txHash,
         senderDid: request.signature.creator,
@@ -37,7 +55,7 @@ export class UpdateAgentStatusProcessor extends AbstractHandler {
       blockChainPayload = {
         payload: [{ type: "project/UpdateAgent", value: data }]
       }
-      resolve(this.messageForBlockchain(blockChainPayload, request.projectDid));
+      resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, "project/UpdateAgent"));
     });
   }
 

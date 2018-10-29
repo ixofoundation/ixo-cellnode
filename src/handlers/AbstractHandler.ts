@@ -26,7 +26,6 @@ export abstract class AbstractHandler {
 
   public createTransaction(args: any, method: string, model: Model<any>, verifyData?: Function, projectDid?: string) {
 
-    var inst = this;
     var request = new Request(args);
 
     return new Promise((resolve: Function, reject: Function) => {
@@ -64,57 +63,40 @@ export abstract class AbstractHandler {
                           if (verifyData) {
                             verifyData(request)
                               .then(() => {
-                                console.log(dateTimeLogger() + ' write transaction to log')
-                                transactionService.createTransaction(request.body, request.signature.type,
-                                  request.signature.signatureValue, request.projectDid, capabilityMap.capability)
-                                  .then((transaction: ITransactionModel) => {
-                                    var obj = {
-                                      ...request.data,
-                                      txHash: transaction.hash,
-                                      _creator: request.signature.creator,
-                                      _created: request.signature.created,
-                                      version: request.version + 1
-                                    };
-                                    console.log(dateTimeLogger() + ' updating the capabilities');
-                                    this.updateCapabilities(request);
-                                    console.log(dateTimeLogger() + ' commit to Elysian');
-                                    resolve(model.create({ ...obj, projectDid: request.projectDid }));
-                                    console.log(dateTimeLogger() + ' publish to blockchain');
-                                    this.msgToPublish(obj, request)
+                                //submit information to blockchain. Poller to add to cache once it gets hash from chain
+                                this.createTransactionLog(request, capabilityMap)
+                                  .then((transaction: any) => {
+                                    this.msgToPublish(transaction.hash, request)
                                       .then((msg: any) => {
                                         console.log(dateTimeLogger() + ' message to be published ' + msg.msgType);
-                                        mq.publish(msg);
+                                        var cacheMsg = {
+                                          data: msg,
+                                          request: request,
+                                          txHash: transaction.hash
+                                        }
+                                        mq.publish(cacheMsg);
                                       });
-                                    model.emit('postCommit', obj, request.projectDid);
-                                    console.log(dateTimeLogger() + ' transaction completed successfully');
+                                    resolve(transaction.hash);
                                   });
                               })
                               .catch((error: string) => {
                                 reject(new TransactionError(error));
                               })
                           } else {
-                            console.log(dateTimeLogger() + ' write transaction to log');
-                            transactionService.createTransaction(request.body, request.signature.type, request.signature.signatureValue,
-                              request.projectDid, capabilityMap.capability)
-                              .then((transaction: ITransactionModel) => {
-                                var obj = {
-                                  ...request.data,
-                                  txHash: transaction.hash,
-                                  _creator: request.signature.creator,
-                                  _created: request.signature.created
-                                };
-                                console.log(dateTimeLogger() + ' updating the capabilities');
-                                inst.updateCapabilities(request);
-                                console.log(dateTimeLogger() + ' commit to Elysian');
-                                resolve(model.create({ ...obj, projectDid: request.projectDid }));
-                                console.log(dateTimeLogger() + ' publish to blockchain');
-                                this.msgToPublish(obj, request)
+                            //submit information to blockchain. Poller to add to cache once it gets hash from chain
+                            this.createTransactionLog(request, capabilityMap)
+                              .then((transaction: any) => {
+                                this.msgToPublish(transaction.hash, request)
                                   .then((msg: any) => {
                                     console.log(dateTimeLogger() + ' message to be published ' + msg.msgType);
-                                    mq.publish(msg);
+                                    var cacheMsg = {
+                                      data: msg,
+                                      request: request,
+                                      txHash: transaction.hash
+                                    }
+                                    mq.publish(cacheMsg);
                                   });
-                                model.emit('postCommit', obj, request.projectDid);
-                                console.log(dateTimeLogger() + ' transaction completed successfully');
+                                resolve(transaction.hash);
                               });
                           }
                         } else {
@@ -191,6 +173,16 @@ export abstract class AbstractHandler {
     });
   }
 
+  public createTransactionLog(request: Request, capabilityMap: any) {
+    return new Promise((resolve: Function, reject: Function) => {
+      console.log(dateTimeLogger() + ' write transaction to log')
+      transactionService.createTransaction(request.body, request.signature.type,
+        request.signature.signatureValue, request.projectDid, capabilityMap.capability)
+        .then((transaction: ITransactionModel) => {
+          resolve(transaction);
+        });
+    });
+  }
 
   preVerifyDidSignature = (didResponse: AxiosResponse, data: Request, capability: string): boolean => {
     return true;
@@ -224,7 +216,7 @@ export abstract class AbstractHandler {
 
   abstract updateCapabilities = (request: Request): void => { };
 
-  abstract msgToPublish = (obj: any, request: Request): any => { };
+  abstract msgToPublish = (hash: any, request: Request): any => { };
 
   messageForBlockchain(msgToSign: any, projectDid: string, msgType?: string, commit?: boolean) {
     return new Promise((resolve: Function, reject: Function) => {
@@ -257,13 +249,16 @@ export abstract class AbstractHandler {
           Cache.set(wallet.did, { publicKey: wallet.verifyKey });
           var sovrinUtils = new SovrinUtils();
           resolve(sovrinUtils.signDocumentNoEncoding(wallet.signKey, wallet.verifyKey, wallet.did, msgToSign));
+        })
+        .catch(() => {
+          reject(new TransactionError('Exception signing request with did ' + projectDid));
         });
     });
   }
 
   async publishMessageToQueue(message: any) {
     return new Promise((resolve: Function, reject: Function) => {
-      console.log(dateTimeLogger() + ' message to be published ' + message.msgType);
+      console.log(dateTimeLogger() + ' message to be published ' + message.data.msgType);
       resolve(mq.publish(message));
     });
   }

@@ -14,19 +14,19 @@ AgentSchema.pre("save", function (next) {
 
 export const Agent: Model<IAgentModel> = model<IAgentModel>("Agent", AgentSchema);
 
-Agent.on("postCommit", function (obj) {
+Agent.on("postCommit", function (obj, projectDid) {
   Project.findOne({
     projectDid: obj.projectDid
   }).then((project) => {
     if (project) {
       let status = (project.autoApprove.some(function (element) { return (obj.role === element) })) ? "1" : "0";
       var data: any = {
-        projectDid: obj.projectDid,
+        projectDid: projectDid,
         status: status,
         agentDid: obj.agentDid,
         role: obj.role
       }
-      updateAgentStatusProcessor.selfSignMessage(data, obj.projectDid)
+      updateAgentStatusProcessor.selfSignMessage(data, projectDid)
         .then((signature: any) => {
           var statusRequest: any = {
             payload: {
@@ -38,7 +38,7 @@ Agent.on("postCommit", function (obj) {
             signature: {
               type: "ed25519-sha-256",
               created: new Date().toISOString(),
-              creator: obj.projectDid,
+              creator: projectDid,
               signatureValue: signature
             }
           }
