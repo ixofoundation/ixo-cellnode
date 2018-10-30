@@ -11,7 +11,7 @@ export class CreateProjectProcessor extends AbstractHandler {
     handleAsyncCreateProjectResponse = (jsonResponseMsg: any) => {
         Cache.get(jsonResponseMsg.txHash)
             .then((cached) => {
-                console.log(dateTimeLogger() + ' updating the create project capabilities' + JSON.stringify(cached));
+                console.log(dateTimeLogger() + ' updating the create project capabilities');
                 this.updateCapabilities(cached);
                 console.log(dateTimeLogger() + ' commit create project to Elysian');
                 var obj = {

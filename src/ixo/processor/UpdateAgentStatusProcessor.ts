@@ -10,19 +10,26 @@ export class UpdateAgentStatusProcessor extends AbstractHandler {
   handleAsyncUpdateAgentStatusResponse = (jsonResponseMsg: any) => {
     Cache.get(jsonResponseMsg.txHash)
       .then((cached) => {
-        console.log(dateTimeLogger() + ' updating the agent status update capabilities');
-        this.updateCapabilities(cached);
-        console.log(dateTimeLogger() + ' commit agent status update to Elysian');
-        var obj = {
-          ...cached.data,
-          txHash: jsonResponseMsg.txHash,
-          _creator: cached.signature.creator,
-          _created: cached.signature.created,
-          version: cached.version >= 0 ? cached.version + 1 : 0
-        };
-        AgentStatus.create({ ...obj, projectDid: cached.projectDid });
-        AgentStatus.emit('postCommit', obj, cached.projectDid);
-        console.log(dateTimeLogger() + ' update agent status transaction completed successfully');
+        if (cached != undefined) {
+          console.log(dateTimeLogger() + ' updating the agent status update capabilities');
+          this.updateCapabilities(cached);
+          console.log(dateTimeLogger() + ' commit agent status update to Elysian');
+          var obj = {
+            ...cached.data,
+            txHash: jsonResponseMsg.txHash,
+            _creator: cached.signature.creator,
+            _created: cached.signature.created,
+            version: cached.version >= 0 ? cached.version + 1 : 0
+          };
+          AgentStatus.create({ ...obj, projectDid: cached.projectDid });
+          AgentStatus.emit('postCommit', obj, cached.projectDid);
+          console.log(dateTimeLogger() + ' update agent status transaction completed successfully');
+        } else {
+          console.log(dateTimeLogger() + ' cached transaction for %s not found ', jsonResponseMsg.txHash);
+        }
+      })
+      .catch(() => {
+        console.log(dateTimeLogger() + ' exception for cached transaction for %s not found ', jsonResponseMsg.txHash);
       });
   }
 

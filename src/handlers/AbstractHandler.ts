@@ -66,7 +66,7 @@ export abstract class AbstractHandler {
                                 //submit information to blockchain. Poller to add to cache once it gets hash from chain
                                 this.createTransactionLog(request, capabilityMap)
                                   .then((transaction: any) => {
-                                    this.publishAndRespond(transaction.hash, request);
+                                    resolve(this.publishAndRespond(transaction.hash, request));
                                   });
                               })
                               .catch((error: string) => {
@@ -76,7 +76,7 @@ export abstract class AbstractHandler {
                             //submit information to blockchain. Poller to add to cache once it gets hash from chain
                             this.createTransactionLog(request, capabilityMap)
                               .then((transaction: any) => {
-                                this.publishAndRespond(transaction.hash, request);
+                                resolve (this.publishAndRespond(transaction.hash, request));
                               });
                           }
                         } else {

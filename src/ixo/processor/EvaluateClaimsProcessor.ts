@@ -16,9 +16,9 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
   handleAsyncEvaluateClaimResponse = (jsonResponseMsg: any) => {
     Cache.get(jsonResponseMsg.txHash)
       .then((cached) => {
-        console.log(dateTimeLogger() + ' updating the agent status update capabilities');
+        console.log(dateTimeLogger() + ' updating the evaluate claim capabilities');
         this.updateCapabilities(cached);
-        console.log(dateTimeLogger() + ' commit agent status update to Elysian');
+        console.log(dateTimeLogger() + ' commit evaluate claim to Elysian');
         var obj = {
           ...cached.data,
           txHash: jsonResponseMsg.txHash,
@@ -27,7 +27,7 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
           version: cached.version >= 0 ? cached.version + 1 : 0
         };
         EvaluateClaim.create({ ...obj, projectDid: cached.projectDid });
-        console.log(dateTimeLogger() + ' update agent status transaction completed successfully');
+        console.log(dateTimeLogger() + ' evaluate claim transaction completed successfully');
       });
   }
 
