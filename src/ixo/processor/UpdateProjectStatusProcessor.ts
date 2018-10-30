@@ -24,6 +24,7 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
                         return this.getLatestProjectStatus(cached.projectDid)
                             .then((currentStatus: IProjectStatusModel[]) => {
                                 var rollbackStatus = currentStatus[0].status == Status.funded ? Status.created : workflow[workflow.indexOf(currentStatus[0].status) - 1] || Status.created
+                                console.log(dateTimeLogger() + ' blockchain failed update project status, rollback to ' + rollbackStatus);
                                 var data: any = {
                                     projectDid: cached.projectDid,
                                     status: rollbackStatus
