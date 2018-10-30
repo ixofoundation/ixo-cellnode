@@ -7,21 +7,41 @@ import Cache from '../../Cache';
 
 export class CreateAgentProcessor extends AbstractHandler {
 
-    handleAsyncCreateAgentResponse = (jsonResponseMsg: any) => {
+    handleAsyncCreateAgentResponse = (jsonResponseMsg: any, retries?: number) => {
         Cache.get(jsonResponseMsg.txHash)
             .then((cached) => {
-                console.log(dateTimeLogger() + ' updating the create agent capabilities');
-                this.updateCapabilities(cached);
-                console.log(dateTimeLogger() + ' commit create agent to Elysian');
-                var obj = {
-                    ...cached.data,
-                    txHash: jsonResponseMsg.txHash,
-                    _creator: cached.signature.creator,
-                    _created: cached.signature.created
-                };
-                Agent.create({ ...obj, projectDid: cached.projectDid });
-                Agent.emit('postCommit', obj, cached.projectDid);
-                console.log(dateTimeLogger() + ' create agent transaction completed successfully');
+                if (cached != undefined) {
+                    console.log(dateTimeLogger() + ' updating the create agent capabilities');
+                    this.updateCapabilities(cached);
+                    console.log(dateTimeLogger() + ' commit create agent to Elysian');
+                    var obj = {
+                        ...cached.data,
+                        txHash: jsonResponseMsg.txHash,
+                        _creator: cached.signature.creator,
+                        _created: cached.signature.created
+                    };
+                    Agent.create({ ...obj, projectDid: cached.projectDid });
+                    Agent.emit('postCommit', obj, cached.projectDid);
+                    console.log(dateTimeLogger() + ' create agent transaction completed successfully');
+                } else {
+                    var retry: number = retries || 0;
+                    if (retry <= 3) {
+                        retry++
+                        setTimeout(() => {
+                            console.log(dateTimeLogger() + ' retry cached create agent transaction for %s ', jsonResponseMsg.txHash);
+                            this.handleAsyncCreateAgentResponse(jsonResponseMsg, retry)
+                        }, 2000)
+                    } else {
+                        //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to 
+                        //force the data into the DB
+                        console.log(dateTimeLogger() + ' cached create agent not found for transaction %s ', jsonResponseMsg.txHash);
+                    }
+                }
+            })
+            .catch(() => {
+                //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to 
+                //force the data into the DB
+                console.log(dateTimeLogger() + ' exception for cached transaction for %s not found ', jsonResponseMsg.txHash);
             });
     }
 

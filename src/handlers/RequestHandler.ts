@@ -6,10 +6,13 @@ import listAgentsProcessor from '../ixo/processor/ListAgentsProcessor';
 import listClaimProcessor from '../ixo/processor/ListClaimsProcessor';
 import submitClaimProcessor from '../ixo/processor/SubmitClaimProcessor';
 import updateAgentStatusProcessor from '../ixo/processor/UpdateAgentStatusProcessor';
+import { dateTimeLogger } from '../logger/Logger';
 
 import mq from '../MessageQ';
 
 export class RequestHandler {
+
+  
 
   constructor() {
     setInterval(() => {
@@ -23,32 +26,49 @@ export class RequestHandler {
   handleResponseFromMessageQueue = (message: any) => {
     let jsonResponseMsg = JSON.parse(message);
 
+    // var lookupProcessor: any = {
+    //   'project/CreateProject' : createProjectProcessor.handleAsyncCreateProjectResponse(jsonResponseMsg),
+    //   'project/UpdateProjectStatus' : updateProjectStatusProcessor.handleAsyncProjectStatusResponse(jsonResponseMsg),
+    //   'project/CreateAgent' : createAgentProcessor.handleAsyncCreateAgentResponse(jsonResponseMsg),
+    //   'project/UpdateAgent' : updateAgentStatusProcessor.handleAsyncUpdateAgentStatusResponse(jsonResponseMsg),
+    //   'project/CreateClaim' : submitClaimProcessor.handleAsyncSubmitClaimResponse(jsonResponseMsg),
+    //   'project/CreateEvaluation' : evaluateClaimsProcessor.handleAsyncEvaluateClaimResponse(jsonResponseMsg)
+    // }
+    
+
+    // blockchain node has accepted the transaction, we can go ahead and commit the data
     if (jsonResponseMsg.msgType === 'eth') {
       updateProjectStatusProcessor.handleAsyncEthResponse(jsonResponseMsg);
-    }
+    } else {
+      //TODO update transaction log with blockchain response data
+      var errorCode = jsonResponseMsg.data.code != undefined ? jsonResponseMsg.data.code : jsonResponseMsg.data.check_tx.code || 0;
+      if (errorCode >= 1) {
+        console.log(dateTimeLogger() + ' blockchain failed the transaction with code ' + errorCode);
+      } else {
+        if (jsonResponseMsg.msgType === 'project/CreateProject') {
+          createProjectProcessor.handleAsyncCreateProjectResponse(jsonResponseMsg);
+        }
 
-    if (jsonResponseMsg.msgType === 'project/CreateProject') {
-      createProjectProcessor.handleAsyncCreateProjectResponse(jsonResponseMsg);
-    }
+        if (jsonResponseMsg.msgType === 'project/UpdateProjectStatus') {
+          updateProjectStatusProcessor.handleAsyncProjectStatusResponse(jsonResponseMsg);
+        }
 
-    if (jsonResponseMsg.msgType === 'project/UpdateProjectStatus') {
-      updateProjectStatusProcessor.handleAsyncProjectStatusResponse(jsonResponseMsg);
-    }
+        if (jsonResponseMsg.msgType === 'project/CreateAgent') {
+          createAgentProcessor.handleAsyncCreateAgentResponse(jsonResponseMsg);
+        }
 
-    if (jsonResponseMsg.msgType === 'project/CreateAgent') {
-      createAgentProcessor.handleAsyncCreateAgentResponse(jsonResponseMsg);
-    }
+        if (jsonResponseMsg.msgType === 'project/UpdateAgent') {
+          updateAgentStatusProcessor.handleAsyncUpdateAgentStatusResponse(jsonResponseMsg);
+        }
 
-    if (jsonResponseMsg.msgType === 'project/UpdateAgent') {
-      updateAgentStatusProcessor.handleAsyncUpdateAgentStatusResponse(jsonResponseMsg);
-    }
+        if (jsonResponseMsg.msgType === 'project/CreateClaim') {
+          submitClaimProcessor.handleAsyncSubmitClaimResponse(jsonResponseMsg);
+        }
 
-    if (jsonResponseMsg.msgType === 'project/CreateClaim') {
-      submitClaimProcessor.handleAsyncSubmitClaimResponse(jsonResponseMsg);
-    }
-
-    if (jsonResponseMsg.msgType === 'project/CreateEvaluation') {
-      evaluateClaimsProcessor.handleAsyncEvaluateClaimResponse(jsonResponseMsg);
+        if (jsonResponseMsg.msgType === 'project/CreateEvaluation') {
+          evaluateClaimsProcessor.handleAsyncEvaluateClaimResponse(jsonResponseMsg);
+        }
+      }
     }
   }
 

@@ -8,21 +8,41 @@ import Cache from '../../Cache';
 
 export class CreateProjectProcessor extends AbstractHandler {
 
-    handleAsyncCreateProjectResponse = (jsonResponseMsg: any) => {
+    handleAsyncCreateProjectResponse = (jsonResponseMsg: any, retries?: number) => {
         Cache.get(jsonResponseMsg.txHash)
             .then((cached) => {
-                console.log(dateTimeLogger() + ' updating the create project capabilities');
-                this.updateCapabilities(cached);
-                console.log(dateTimeLogger() + ' commit create project to Elysian');
-                var obj = {
-                    ...cached.data,
-                    txHash: jsonResponseMsg.txHash,
-                    _creator: cached.signature.creator,
-                    _created: cached.signature.created
-                };
-                Project.create({ ...obj, projectDid: cached.projectDid });
-                Project.emit('postCommit', obj, cached.projectDid);
-                console.log(dateTimeLogger() + ' create project transaction completed successfully');
+                if (cached != undefined) {
+                    console.log(dateTimeLogger() + ' updating the create project capabilities');
+                    this.updateCapabilities(cached);
+                    console.log(dateTimeLogger() + ' commit create project to Elysian');
+                    var obj = {
+                        ...cached.data,
+                        txHash: jsonResponseMsg.txHash,
+                        _creator: cached.signature.creator,
+                        _created: cached.signature.created
+                    };
+                    Project.create({ ...obj, projectDid: cached.projectDid });
+                    Project.emit('postCommit', obj, cached.projectDid);
+                    console.log(dateTimeLogger() + ' create project transaction completed successfully');
+                } else {
+                    var retry: number = retries || 0;
+                    if (retry <= 3) {
+                        retry++
+                        setTimeout(() => {
+                            console.log(dateTimeLogger() + ' retry cached create project transaction for %s ', jsonResponseMsg.txHash);
+                            this.handleAsyncCreateProjectResponse(jsonResponseMsg, retry)
+                        }, 2000)
+                    } else {
+                        //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to 
+                        //force the data into the DB
+                        console.log(dateTimeLogger() + ' cached create project not found for transaction %s ', jsonResponseMsg.txHash);
+                    }
+                }
+            })
+            .catch(() => {
+                //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to 
+                //force the data into the DB
+                console.log(dateTimeLogger() + ' exception for cached transaction for %s not found ', jsonResponseMsg.txHash);
             });
     }
 

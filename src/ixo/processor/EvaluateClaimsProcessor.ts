@@ -13,21 +13,41 @@ const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
 
 export class EvaluateClaimsProcessor extends AbstractHandler {
 
-  handleAsyncEvaluateClaimResponse = (jsonResponseMsg: any) => {
+  handleAsyncEvaluateClaimResponse = (jsonResponseMsg: any, retries?: number) => {
     Cache.get(jsonResponseMsg.txHash)
       .then((cached) => {
-        console.log(dateTimeLogger() + ' updating the evaluate claim capabilities');
-        this.updateCapabilities(cached);
-        console.log(dateTimeLogger() + ' commit evaluate claim to Elysian');
-        var obj = {
-          ...cached.data,
-          txHash: jsonResponseMsg.txHash,
-          _creator: cached.signature.creator,
-          _created: cached.signature.created,
-          version: cached.version >= 0 ? cached.version + 1 : 0
-        };
-        EvaluateClaim.create({ ...obj, projectDid: cached.projectDid });
-        console.log(dateTimeLogger() + ' evaluate claim transaction completed successfully');
+        if (cached != undefined) {
+          console.log(dateTimeLogger() + ' updating the evaluate claim capabilities');
+          this.updateCapabilities(cached);
+          console.log(dateTimeLogger() + ' commit evaluate claim to Elysian');
+          var obj = {
+            ...cached.data,
+            txHash: jsonResponseMsg.txHash,
+            _creator: cached.signature.creator,
+            _created: cached.signature.created,
+            version: cached.version >= 0 ? cached.version + 1 : 0
+          };
+          EvaluateClaim.create({ ...obj, projectDid: cached.projectDid });
+          console.log(dateTimeLogger() + ' evaluate claim transaction completed successfully');
+        } else {
+          var retry: number = retries || 0;
+          if (retry <= 3) {
+            retry++
+            setTimeout(() => {
+              console.log(dateTimeLogger() + ' retry cached evaluate claim transaction for %s ', jsonResponseMsg.txHash);
+              this.handleAsyncEvaluateClaimResponse(jsonResponseMsg, retry)
+            }, 2000)
+          } else {
+            //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to 
+            //force the data into the DB
+            console.log(dateTimeLogger() + ' cached evaluate claim not found for transaction %s ', jsonResponseMsg.txHash);
+          }
+        }
+      })
+      .catch(() => {
+        //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to 
+        //force the data into the DB
+        console.log(dateTimeLogger() + ' exception for cached transaction for %s not found ', jsonResponseMsg.txHash);
       });
   }
 
@@ -68,28 +88,28 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
                   resolve(filter[0].balance - project.evaluatorPayPerClaim >= 0);
                 } else {
                   console.log(dateTimeLogger() + ' check for funds no project found for projectDid ' + projectDid);
-                  reject(Error('Check for funds no project found for projectDid ' + projectDid));
+                  reject('Check for funds no project found for projectDid ' + projectDid);
                 }
               })
               .catch((err) => {
                 console.log(dateTimeLogger() + ' error processing check for funds ' + err)
-                reject(Error('error processing check for funds'));
+                reject('error processing check for funds');
               });
           }
           else {
             console.log(dateTimeLogger() + ' no valid response check for funds from blockchain ' + response.statusText);
-            reject(Error('No valid response check for funds from blockchain'));
+            reject('No valid response check for funds from blockchain');
           }
         })
         .catch((reason) => {
           console.log(dateTimeLogger() + ' check for funds could not connect to blockchain ' + reason);
-          reject(Error('Could not connect to blockchain'));
+          reject('Could not connect to blockchain');
         });
     });
   };
 
   process = (args: any) => {
-    console.log(dateTimeLogger() + ' start new transaction ' + JSON.stringify(args));
+    console.log(dateTimeLogger() + ' start new evaluate claimtransaction ');
     var projectDid = new Request(args).projectDid;
     return this.checkForFunds(projectDid)
       .then((resp: boolean) => {

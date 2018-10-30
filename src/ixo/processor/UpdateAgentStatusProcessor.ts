@@ -7,7 +7,8 @@ import Cache from '../../Cache';
 
 export class UpdateAgentStatusProcessor extends AbstractHandler {
 
-  handleAsyncUpdateAgentStatusResponse = (jsonResponseMsg: any) => {
+  handleAsyncUpdateAgentStatusResponse = (jsonResponseMsg: any, retries?: number) => {
+
     Cache.get(jsonResponseMsg.txHash)
       .then((cached) => {
         if (cached != undefined) {
@@ -25,10 +26,23 @@ export class UpdateAgentStatusProcessor extends AbstractHandler {
           AgentStatus.emit('postCommit', obj, cached.projectDid);
           console.log(dateTimeLogger() + ' update agent status transaction completed successfully');
         } else {
-          console.log(dateTimeLogger() + ' cached transaction for %s not found ', jsonResponseMsg.txHash);
+          var retry: number = retries || 0;
+          if (retry <= 3) {
+            retry++
+            setTimeout(() => {
+              console.log(dateTimeLogger() + ' retry cached agent status update transaction for %s ', jsonResponseMsg.txHash);
+              this.handleAsyncUpdateAgentStatusResponse(jsonResponseMsg, retry)
+            }, 2000)
+          } else {
+            //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to 
+            //force the data into the DB
+            console.log(dateTimeLogger() + ' cached agent status update not found for transaction %s ', jsonResponseMsg.txHash);
+          }
         }
       })
       .catch(() => {
+        //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to 
+        //force the data into the DB
         console.log(dateTimeLogger() + ' exception for cached transaction for %s not found ', jsonResponseMsg.txHash);
       });
   }

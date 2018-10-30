@@ -14,52 +14,72 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
 
     updateCapabilities = (request: Request) => { }
 
-    handleAsyncProjectStatusResponse = (jsonResponseMsg: any) => {
+    handleAsyncProjectStatusResponse = (jsonResponseMsg: any, retries?: number) => {
         //check that status update successfully else we roll back to previous status
         //if funding failed, rollback to created
         Cache.get(jsonResponseMsg.txHash)
             .then((cached) => {
-                if (jsonResponseMsg.data.deliver_tx.code > 0) {
-                    return this.getLatestProjectStatus(cached.projectDid)
-                        .then((currentStatus: IProjectStatusModel[]) => {
-                            var rollbackStatus = currentStatus[0].status == Status.funded ? Status.created : workflow[workflow.indexOf(currentStatus[0].status) - 1] || Status.created
-                            var data: any = {
-                                projectDid: cached.projectDid,
-                                status: rollbackStatus
-                            }
-                            this.selfSignMessage(data, cached.projectDid)
-                                .then((signature: any) => {
-                                    var projectStatusRequest: any = {
-                                        payload: {
-                                            template: {
-                                                name: "project_status"
+                if (cached != undefined) {
+                    if (jsonResponseMsg.data.deliver_tx.code >= 1) {
+                        return this.getLatestProjectStatus(cached.projectDid)
+                            .then((currentStatus: IProjectStatusModel[]) => {
+                                var rollbackStatus = currentStatus[0].status == Status.funded ? Status.created : workflow[workflow.indexOf(currentStatus[0].status) - 1] || Status.created
+                                var data: any = {
+                                    projectDid: cached.projectDid,
+                                    status: rollbackStatus
+                                }
+                                this.selfSignMessage(data, cached.projectDid)
+                                    .then((signature: any) => {
+                                        var projectStatusRequest: any = {
+                                            payload: {
+                                                template: {
+                                                    name: "project_status"
+                                                },
+                                                data: data
                                             },
-                                            data: data
-                                        },
-                                        signature: {
-                                            type: "ed25519-sha-256",
-                                            created: new Date().toISOString(),
-                                            creator: cached.projectDid,
-                                            signatureValue: signature
+                                            signature: {
+                                                type: "ed25519-sha-256",
+                                                created: new Date().toISOString(),
+                                                creator: cached.projectDid,
+                                                signatureValue: signature
+                                            }
                                         }
-                                    }
-                                    this.process(projectStatusRequest);
-                                });
-                        })
+                                        this.process(projectStatusRequest);
+                                    });
+                            })
+                    } else {
+                        console.log(dateTimeLogger() + ' updating the project status capabilities');
+                        this.updateCapabilities(cached);
+                        console.log(dateTimeLogger() + ' commit project status to Elysian');
+                        var obj = {
+                            ...cached.data,
+                            txHash: jsonResponseMsg.txHash,
+                            _creator: cached.signature.creator,
+                            _created: cached.signature.created
+                        };
+                        ProjectStatus.create({ ...obj, projectDid: cached.projectDid });
+                        ProjectStatus.emit('postCommit', obj, cached.projectDid);
+                        console.log(dateTimeLogger() + ' Update project status transaction completed successfully');
+                    }
                 } else {
-                    console.log(dateTimeLogger() + ' updating the project status capabilities');
-                    this.updateCapabilities(cached);
-                    console.log(dateTimeLogger() + ' commit project status to Elysian');
-                    var obj = {
-                        ...cached.data,
-                        txHash: jsonResponseMsg.txHash,
-                        _creator: cached.signature.creator,
-                        _created: cached.signature.created
-                    };
-                    ProjectStatus.create({ ...obj, projectDid: cached.projectDid });
-                    ProjectStatus.emit('postCommit', obj, cached.projectDid);
-                    console.log(dateTimeLogger() + ' Update project status transaction completed successfully');
+                    var retry: number = retries || 0;
+                    if (retry <= 3) {
+                        retry++
+                        setTimeout(() => {
+                            console.log(dateTimeLogger() + ' retry cached update project transaction for %s ', jsonResponseMsg.txHash);
+                            this.handleAsyncProjectStatusResponse(jsonResponseMsg, retry)
+                        }, 2000)
+                    } else {
+                        //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to 
+                        //force the data into the DB
+                        console.log(dateTimeLogger() + ' cached update project not found for transaction %s ', jsonResponseMsg.txHash);
+                    }
                 }
+            })
+            .catch(() => {
+                //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to 
+                //force the data into the DB
+                console.log(dateTimeLogger() + ' exception for cached transaction for %s not found ', jsonResponseMsg.txHash);
             });
 
     }
