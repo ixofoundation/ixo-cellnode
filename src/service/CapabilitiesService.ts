@@ -39,7 +39,6 @@ export class CapabilitiesService {
         {},
         function (error: Error, result: ICapabilitiesModel) {
           if (error) {
-            console.log("Error is " + error);
             reject(error);
           } else {
             resolve(result);
@@ -56,7 +55,6 @@ export class CapabilitiesService {
         },
         function (error: Error, result: ICapabilitiesModel) {
           if (error) {
-            console.log("Error is " + error);
             reject(error);
           } else {
             resolve(result);
@@ -76,7 +74,6 @@ export class CapabilitiesService {
         { $addToSet: { "capabilities.$.allow": did } },
         function (error: Error, result: ICapabilitiesModel) {
           if (error) {
-            console.log('DB ERROR ' + error);
             reject(error);
           } else {
             resolve(result);
@@ -96,7 +93,6 @@ export class CapabilitiesService {
         { $pull: { "capabilities.$.allow": did } },
         function (error: Error, result: ICapabilitiesModel) {
           if (error) {
-            console.log('DB ERROR ' + error);
             reject(error);
           } else {
             resolve(result);
