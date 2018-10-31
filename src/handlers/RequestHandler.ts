@@ -11,6 +11,57 @@ import { dateTimeLogger } from '../logger/Logger';
 
 import mq from '../MessageQ';
 
+export const RequestLookupHandler: any = {
+  'createProject': (args: any) => {
+    return new Promise((resolve: Function, reject: Function) => {
+      resolve(createProjectProcessor.process(args));
+    });
+  },
+
+  'createAgent': (args: any) => {
+    return new Promise((resolve: Function, reject: Function) => {
+      resolve(createAgentProcessor.process(args));
+    });
+  },
+  
+    'evaluateClaim': (args: any) => {
+    return new Promise((resolve: Function, reject: Function) => {
+      resolve(evaluateClaimsProcessor.process(args));
+    });
+  },
+  
+    'listAgents': (args: any) => {
+    return new Promise((resolve: Function, reject: Function) => {
+      resolve(listAgentsProcessor.process(args));
+    });
+  },
+  
+    'listClaims': (args: any) => {
+    return new Promise((resolve: Function, reject: Function) => {
+      resolve(listClaimProcessor.process(args));
+    });
+  },
+  
+    'submitClaim': (args: any) => {
+    return new Promise((resolve: Function, reject: Function) => {
+      resolve(submitClaimProcessor.process(args));
+    });
+  },
+  
+    'updateAgentStatus': (args: any) => {
+    return new Promise((resolve: Function, reject: Function) => {
+      resolve(updateAgentStatusProcessor.process(args));
+    });
+  },
+  
+    'updateProjectStatus': (args: any) => {
+    return new Promise((resolve: Function, reject: Function) => {
+      resolve(updateProjectStatusProcessor.process(args));
+    });
+  }
+}
+
+
 export class RequestHandler {
 
   constructor() {
@@ -42,7 +93,7 @@ export class RequestHandler {
       //update transaction log with blockchain response data
       transactionLogService.updateTransactionLogForHash(jsonResponseMsg.txHash, jsonResponseMsg.data.hash, jsonResponseMsg.data.height)
         .then((result: any) => {
-          console.log(dateTimeLogger() + ' transaction log updated with block information for txHash ' + result.hash);
+          console.log(dateTimeLogger() + ' transaction log updated with block information for txHash ' + jsonResponseMsg.txHash);
         })
         .catch(() => {
           console.log(dateTimeLogger() + ' transaction log failed to update for txHash ' + jsonResponseMsg.txHash);
@@ -55,53 +106,5 @@ export class RequestHandler {
         lookupProcessor[jsonResponseMsg.msgType]();
       }
     }
-  }
-
-  createProject = (args: any) => {
-    return new Promise((resolve: Function, reject: Function) => {
-      resolve(createProjectProcessor.process(args));
-    });
-  }
-
-  createAgent = (args: any) => {
-    return new Promise((resolve: Function, reject: Function) => {
-      resolve(createAgentProcessor.process(args));
-    });
-  }
-
-  evaluateClaim = (args: any) => {
-    return new Promise((resolve: Function, reject: Function) => {
-      resolve(evaluateClaimsProcessor.process(args));
-    });
-  }
-
-  listAgents = (args: any) => {
-    return new Promise((resolve: Function, reject: Function) => {
-      resolve(listAgentsProcessor.process(args));
-    });
-  }
-
-  listClaims = (args: any) => {
-    return new Promise((resolve: Function, reject: Function) => {
-      resolve(listClaimProcessor.process(args));
-    });
-  }
-
-  submitClaim = (args: any) => {
-    return new Promise((resolve: Function, reject: Function) => {
-      resolve(submitClaimProcessor.process(args));
-    });
-  }
-
-  updateAgentStatus = (args: any) => {
-    return new Promise((resolve: Function, reject: Function) => {
-      resolve(updateAgentStatusProcessor.process(args));
-    });
-  }
-
-  updateProjectStatus = (args: any) => {
-    return new Promise((resolve: Function, reject: Function) => {
-      resolve(updateProjectStatusProcessor.process(args));
-    });
   }
 }
