@@ -21,6 +21,7 @@ import { AxiosResponse } from "axios";
 import Cache from '../Cache';
 
 import { dateTimeLogger } from '../logger/Logger';
+import { BlockchainURI } from "../ixo/common/shared";
 
 export abstract class AbstractHandler {
 
@@ -214,7 +215,7 @@ export abstract class AbstractHandler {
 
   abstract msgToPublish = (hash: any, request: Request): any => { };
 
-  messageForBlockchain(msgToSign: any, projectDid: string, msgType?: string, commit?: boolean) {
+  messageForBlockchain(msgToSign: any, projectDid: string, msgType?: string, blockchainUri?: string) {
     return new Promise((resolve: Function, reject: Function) => {
       walletService.getWallet(projectDid)
         .then((wallet: IWalletModel) => {
@@ -230,7 +231,7 @@ export abstract class AbstractHandler {
           let message = {
             msgType: (msgType || 'blockchain'),
             projectDid: wallet.did,
-            commit: (commit || false),
+            uri: (blockchainUri || BlockchainURI.sync),
             data: new Buffer(JSON.stringify(signedMsg)).toString('hex')
           }
           resolve(message);

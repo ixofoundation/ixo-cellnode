@@ -57,7 +57,7 @@ export class MessageQ {
                 })
                 .then(() => {
                     let jsonContent = JSON.stringify(content);
-                    console.log(dateTimeLogger() + ' send to queue ' + content.data.msgType);
+                    console.log(dateTimeLogger() + ' cache object ' + content.txHash);
                     Cache.set(content.txHash, content.request);
                     this.channel.sendToQueue(this.queue, Buffer.from(jsonContent), {
                         persistent: false,

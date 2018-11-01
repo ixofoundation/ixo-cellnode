@@ -25,7 +25,8 @@ export var TransactionSchema: Schema = new Schema({
   timestamp: Date,
   capability: String,
   blockHeight: String,
-  blockHash: String
+  blockHash: String,
+  blockResponseCode: Number
 });
 
 export const Transaction: Model<ITransactionModel> = model<ITransactionModel>("Transaction", TransactionSchema);

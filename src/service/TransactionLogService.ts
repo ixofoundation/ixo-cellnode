@@ -44,11 +44,11 @@ export class TransactionLogService {
   }
 
 
-  updateTransactionLogForHash(txHash: String, blockHash: string, blockHeight: string): Promise<ITransactionModel> {
+  updateTransactionLogForHash(txHash: String, blockHash: string, blockHeight: string, blockResponseCode: number): Promise<ITransactionModel> {
     return new Promise(function (resolve: Function, reject: Function) {
       Transaction.updateOne(
         {hash: txHash},
-        { $set : {blockHash: blockHash, blockHeight:  blockHeight}},
+        { $set : {blockHash: blockHash, blockHeight:  blockHeight, blockResponseCode: blockResponseCode}},
         function (error: Error, result: ITransactionModel) {
           if (error) {
             reject(error);

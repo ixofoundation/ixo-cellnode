@@ -23,38 +23,38 @@ export const RequestLookupHandler: any = {
       resolve(createAgentProcessor.process(args));
     });
   },
-  
-    'evaluateClaim': (args: any) => {
+
+  'evaluateClaim': (args: any) => {
     return new Promise((resolve: Function, reject: Function) => {
       resolve(evaluateClaimsProcessor.process(args));
     });
   },
-  
-    'listAgents': (args: any) => {
+
+  'listAgents': (args: any) => {
     return new Promise((resolve: Function, reject: Function) => {
       resolve(listAgentsProcessor.process(args));
     });
   },
-  
-    'listClaims': (args: any) => {
+
+  'listClaims': (args: any) => {
     return new Promise((resolve: Function, reject: Function) => {
       resolve(listClaimProcessor.process(args));
     });
   },
-  
-    'submitClaim': (args: any) => {
+
+  'submitClaim': (args: any) => {
     return new Promise((resolve: Function, reject: Function) => {
       resolve(submitClaimProcessor.process(args));
     });
   },
-  
-    'updateAgentStatus': (args: any) => {
+
+  'updateAgentStatus': (args: any) => {
     return new Promise((resolve: Function, reject: Function) => {
       resolve(updateAgentStatusProcessor.process(args));
     });
   },
-  
-    'updateProjectStatus': (args: any) => {
+
+  'updateProjectStatus': (args: any) => {
     return new Promise((resolve: Function, reject: Function) => {
       resolve(updateProjectStatusProcessor.process(args));
     });
@@ -82,7 +82,10 @@ export class RequestHandler {
       'project/CreateAgent': () => { createAgentProcessor.handleAsyncCreateAgentResponse(jsonResponseMsg) },
       'project/UpdateAgent': () => { updateAgentStatusProcessor.handleAsyncUpdateAgentStatusResponse(jsonResponseMsg) },
       'project/CreateClaim': () => { submitClaimProcessor.handleAsyncSubmitClaimResponse(jsonResponseMsg) },
-      'project/CreateEvaluation': () => { evaluateClaimsProcessor.handleAsyncEvaluateClaimResponse(jsonResponseMsg) }
+      'project/CreateEvaluation': () => { evaluateClaimsProcessor.handleAsyncEvaluateClaimResponse(jsonResponseMsg) },
+      'validate/UpdateProjectStatus': () => { updateProjectStatusProcessor.handleBlockChainValidation(jsonResponseMsg) },
+      'validate/CreateClaim': () => { updateProjectStatusProcessor.handleBlockChainValidation(jsonResponseMsg) },
+      'validate/CreateEvaluation': () => { updateProjectStatusProcessor.handleBlockChainValidation(jsonResponseMsg) },
     }
 
 
@@ -91,7 +94,13 @@ export class RequestHandler {
       updateProjectStatusProcessor.handleAsyncEthResponse(jsonResponseMsg);
     } else {
       //update transaction log with blockchain response data
-      transactionLogService.updateTransactionLogForHash(jsonResponseMsg.txHash, jsonResponseMsg.data.hash, jsonResponseMsg.data.height)
+      //do't check the commit status as I want to perform a specific action for that in each handler
+      var blockResponseCode = jsonResponseMsg.data.code != undefined ? jsonResponseMsg.data.code : undefined;
+      blockResponseCode = jsonResponseMsg.data.check_tx != undefined ? jsonResponseMsg.data.check_tx.code : blockResponseCode;
+      blockResponseCode = jsonResponseMsg.data.tx_result != undefined ? jsonResponseMsg.data.tx_result.code : blockResponseCode;
+      blockResponseCode = blockResponseCode == undefined ? 0 : blockResponseCode;
+
+      transactionLogService.updateTransactionLogForHash(jsonResponseMsg.txHash, jsonResponseMsg.data.hash, jsonResponseMsg.data.height, blockResponseCode)
         .then((result: any) => {
           console.log(dateTimeLogger() + ' transaction log updated with block information for txHash ' + jsonResponseMsg.txHash);
         })
@@ -99,9 +108,8 @@ export class RequestHandler {
           console.log(dateTimeLogger() + ' transaction log failed to update for txHash ' + jsonResponseMsg.txHash);
         });
 
-      var errorCode = jsonResponseMsg.data.code != undefined ? jsonResponseMsg.data.code : jsonResponseMsg.data.check_tx.code || 0;
-      if (errorCode >= 1) {
-        console.log(dateTimeLogger() + ' blockchain failed the transaction with code ' + errorCode);
+      if (blockResponseCode >= 1) {
+        console.log(dateTimeLogger() + ' blockchain failed the transaction with code ' + blockResponseCode);
       } else {
         lookupProcessor[jsonResponseMsg.msgType]();
       }
