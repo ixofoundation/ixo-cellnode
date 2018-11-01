@@ -40,7 +40,7 @@
     "jsonschema": "^1.2.4",
     "memcache": "^0.3.0",
     "memcached": "^2.2.2",
-    "merge": "^1.2.0",
+    "merge": ">=1.2.1",
     "mongoose": "^5.1.1",
     "node": "^9.11.0",
     "node-fetch": "^2.1.2",

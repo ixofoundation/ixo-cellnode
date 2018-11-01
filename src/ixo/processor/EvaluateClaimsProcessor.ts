@@ -37,18 +37,14 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
     Cache.get(jsonResponseMsg.txHash)
       .then((cached) => {
         if (cached != undefined) {
-          if (jsonResponseMsg.data.deliver_tx.code == undefined || 0) {
-            // blockchain accepted the transaction but we want to confirm that there was consensus before committing transaction
-            let message = {
-              msgType: 'validate/CreateEvaluation',
-              projectDid: cached.projectDid,
-              uri: BlockchainURI.validate,
-              data: jsonResponseMsg.data.hash
-            }
-            this.publishMessageToQueue(message);
-          } else {
-            console.log(dateTimeLogger() + ' blockchain failed commit evaluate claim ' + jsonResponseMsg.data.deliver_tx.code);
+          // blockchain accepted the transaction but we want to confirm that there was consensus before committing transaction
+          let message = {
+            msgType: 'validate/CreateEvaluation',
+            projectDid: cached.projectDid,
+            uri: BlockchainURI.validate,
+            data: jsonResponseMsg.data.hash
           }
+          this.publishMessageToQueue(message);
         } else {
           var retry: number = retries || 0;
           if (retry <= 3) {

@@ -29,20 +29,15 @@ export class SubmitClaimProcessor extends AbstractHandler {
     Cache.get(jsonResponseMsg.txHash)
       .then((cached) => {
         if (cached != undefined) {
-          if (jsonResponseMsg.data.deliver_tx.code == undefined || 0) {
-            // blockchain accepted the transaction but we want to confirm that there was consensus before committing transaction
-            console.log(dateTimeLogger() + ' publish blockchain validation request for updte project status');
-            let message = {
-              msgType: 'validate/CreateClaim',
-              projectDid: cached.projectDid,
-              uri: BlockchainURI.validate,
-              data: jsonResponseMsg.data.hash
-            }
-            this.publishMessageToQueue(message);
-          } else {
-            console.log(dateTimeLogger() + ' blockchain failed commit submit claim ' + jsonResponseMsg.data.deliver_tx.code);
+          // blockchain accepted the transaction but we want to confirm that there was consensus before committing transaction
+          console.log(dateTimeLogger() + ' publish blockchain validation request for updte project status');
+          let message = {
+            msgType: 'validate/CreateClaim',
+            projectDid: cached.projectDid,
+            uri: BlockchainURI.validate,
+            data: jsonResponseMsg.data.hash
           }
-
+          this.publishMessageToQueue(message);
         } else {
           var retry: number = retries || 0;
           if (retry <= 3) {
