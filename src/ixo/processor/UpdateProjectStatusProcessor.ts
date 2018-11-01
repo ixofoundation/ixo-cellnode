@@ -30,57 +30,60 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
                 ProjectStatus.emit('postCommit', obj, cached.projectDid);
                 console.log(dateTimeLogger() + ' Update project status transaction completed successfully');
             });
-
     }
 
-    handleAsyncProjectStatusResponse = (jsonResponseMsg: any, retries?: number) => {
-        //check that status update successfully else we roll back to previous status
-        //if funding failed, rollback to created
+    handleRollbackProjectStatus = (jsonResponseMsg: any, retries?: number) => {
         Cache.get(jsonResponseMsg.txHash)
             .then((cached) => {
                 if (cached != undefined) {
-                    if (jsonResponseMsg.data.deliver_tx.code >= 1) {
-                        return this.getLatestProjectStatus(cached.projectDid)
-                            .then((currentStatus: IProjectStatusModel[]) => {
-                                var rollbackStatus = currentStatus[0].status == Status.funded ? Status.created : workflow[workflow.indexOf(currentStatus[0].status) - 1] || Status.created
-                                console.log(dateTimeLogger() + ' blockchain failed update project status, rollback to ' + rollbackStatus);
-                                var data: any = {
-                                    projectDid: cached.projectDid,
-                                    status: rollbackStatus
-                                }
-                                this.selfSignMessage(data, cached.projectDid)
-                                    .then((signature: any) => {
-                                        var projectStatusRequest: any = {
-                                            payload: {
-                                                template: {
-                                                    name: "project_status"
-                                                },
-                                                data: data
+                    return this.getLatestProjectStatus(cached.projectDid)
+                        .then((currentStatus: IProjectStatusModel[]) => {
+                            var rollbackStatus = currentStatus[0].status == Status.funded ? Status.created : workflow[workflow.indexOf(currentStatus[0].status) - 1] || Status.created
+                            console.log(dateTimeLogger() + ' blockchain failed update project status, rollback to ' + rollbackStatus);
+                            var data: any = {
+                                projectDid: cached.projectDid,
+                                status: rollbackStatus
+                            }
+                            this.selfSignMessage(data, cached.projectDid)
+                                .then((signature: any) => {
+                                    var projectStatusRequest: any = {
+                                        payload: {
+                                            template: {
+                                                name: "project_status"
                                             },
-                                            signature: {
-                                                type: "ed25519-sha-256",
-                                                created: new Date().toISOString(),
-                                                creator: cached.projectDid,
-                                                signatureValue: signature
-                                            }
+                                            data: data
+                                        },
+                                        signature: {
+                                            type: "ed25519-sha-256",
+                                            created: new Date().toISOString(),
+                                            creator: cached.projectDid,
+                                            signatureValue: signature
                                         }
-                                        this.process(projectStatusRequest);
-                                    });
-                            })
-                    } else {
-                        // blockchain accepted the transaction but we want to confirm that there was consensus before committing transaction
-                        console.log(dateTimeLogger() + ' publish blockchain validation request for update project status');
-                        let message = {
-                            data: {
-                                msgType: "validate/UpdateProjectStatus",
-                                data: jsonResponseMsg.data.hash,
-                                uri: BlockchainURI.validate
-                            },
-                            txHash: jsonResponseMsg.txHash,
-                            request: cached
-                        }
-                        this.publishMessageToQueue(message);
+                                    }
+                                    this.process(projectStatusRequest);
+                                });
+                        })
+                }
+            });
+    }
+
+    handleAsyncProjectStatusResponse = (jsonResponseMsg: any, retries?: number) => {
+        //successfull status response
+        Cache.get(jsonResponseMsg.txHash)
+            .then((cached) => {
+                if (cached != undefined) {
+                    // blockchain accepted the transaction but we want to confirm that there was consensus before committing transaction
+                    console.log(dateTimeLogger() + ' publish blockchain validation request for update project status');
+                    let message = {
+                        data: {
+                            msgType: "validate/UpdateProjectStatus",
+                            data: jsonResponseMsg.data.hash,
+                            uri: BlockchainURI.validate
+                        },
+                        txHash: jsonResponseMsg.txHash,
+                        request: cached
                     }
+                    this.publishMessageToQueue(message);
                 } else {
                     var retry: number = retries || 0;
                     if (retry <= 3) {
@@ -119,7 +122,7 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
                             var data: any = {
                                 projectDid: projectDid,
                                 status: Status.funded,
-                                ethFundingTxnID: jsonResponseMsg.data.hash
+                                txnID: jsonResponseMsg.data.hash
                             }
                             this.selfSignMessage(data, projectDid)
                                 .then((signature: any) => {
@@ -201,7 +204,6 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
                 })
         }
     }
-
 }
 
 export default new UpdateProjectStatusProcessor();

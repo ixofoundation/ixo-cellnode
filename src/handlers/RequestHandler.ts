@@ -76,7 +76,7 @@ export class RequestHandler {
   handleResponseFromMessageQueue = (message: any) => {
     let jsonResponseMsg = JSON.parse(message);
 
-    var lookupProcessor: any = {
+    const lookupProcessor: any = {
       'project/CreateProject': () => { createProjectProcessor.handleAsyncCreateProjectResponse(jsonResponseMsg) },
       'project/UpdateProjectStatus': () => { updateProjectStatusProcessor.handleAsyncProjectStatusResponse(jsonResponseMsg) },
       'project/CreateAgent': () => { createAgentProcessor.handleAsyncCreateAgentResponse(jsonResponseMsg) },
@@ -86,6 +86,7 @@ export class RequestHandler {
       'validate/UpdateProjectStatus': () => { updateProjectStatusProcessor.handleBlockChainValidation(jsonResponseMsg) },
       'validate/CreateClaim': () => { updateProjectStatusProcessor.handleBlockChainValidation(jsonResponseMsg) },
       'validate/CreateEvaluation': () => { updateProjectStatusProcessor.handleBlockChainValidation(jsonResponseMsg) },
+      'project/UpdateProjectStatus/rollback': () => { updateProjectStatusProcessor.handleRollbackProjectStatus(jsonResponseMsg) }
     }
 
 
@@ -97,6 +98,7 @@ export class RequestHandler {
       //do't check the commit status as I want to perform a specific action for that in each handler
       var blockResponseCode = jsonResponseMsg.data.code != undefined ? jsonResponseMsg.data.code : undefined;
       blockResponseCode = jsonResponseMsg.data.check_tx != undefined ? jsonResponseMsg.data.check_tx.code : blockResponseCode;
+      blockResponseCode = jsonResponseMsg.data.deliver_tx != undefined ? jsonResponseMsg.data.deliver_tx.code : blockResponseCode;
       blockResponseCode = jsonResponseMsg.data.tx_result != undefined ? jsonResponseMsg.data.tx_result.code : blockResponseCode;
       blockResponseCode = blockResponseCode == undefined ? 0 : blockResponseCode;
 
@@ -109,7 +111,12 @@ export class RequestHandler {
         });
 
       if (blockResponseCode >= 1) {
-        console.log(dateTimeLogger() + ' blockchain failed the transaction with code ' + blockResponseCode);
+        //here we handle specific rollback tasks if required
+        var rollbackProcessor = jsonResponseMsg.msgType+'/rollback';
+        if (lookupProcessor[rollbackProcessor] !== undefined) {
+          lookupProcessor[rollbackProcessor]();
+        }
+        console.log(dateTimeLogger() + ' blockchain failed for message %s with code %s', jsonResponseMsg.msgType, blockResponseCode);
       } else {
         lookupProcessor[jsonResponseMsg.msgType]();
       }
