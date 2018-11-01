@@ -2,7 +2,7 @@ import { AbstractHandler } from '../../handlers/AbstractHandler';
 import { ProjectStatus, IProjectStatusModel } from '../model/ProjectStatusModel';
 import { Request } from "../../handlers/Request";
 import axios from 'axios';
-import { Status, workflow } from '../common/shared';
+import { Status, workflow, BlockchainURI } from '../common/shared';
 import { dateTimeLogger } from '../../logger/Logger';
 import Cache from '../../Cache';
 
@@ -14,13 +14,32 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
 
     updateCapabilities = (request: Request) => { }
 
+    handleBlockChainValidation = (jsonResponseMsg: any) => {
+        Cache.get(jsonResponseMsg.txHash)
+            .then((cached) => {
+                console.log(dateTimeLogger() + ' updating the project status capabilities');
+                this.updateCapabilities(cached);
+                console.log(dateTimeLogger() + ' commit project status to Elysian');
+                var obj = {
+                    ...cached.data,
+                    txHash: jsonResponseMsg.txHash,
+                    _creator: cached.signature.creator,
+                    _created: cached.signature.created
+                };
+                ProjectStatus.create({ ...obj, projectDid: cached.projectDid });
+                ProjectStatus.emit('postCommit', obj, cached.projectDid);
+                console.log(dateTimeLogger() + ' Update project status transaction completed successfully');
+            });
+
+    }
+
     handleAsyncProjectStatusResponse = (jsonResponseMsg: any, retries?: number) => {
         //check that status update successfully else we roll back to previous status
         //if funding failed, rollback to created
         Cache.get(jsonResponseMsg.txHash)
             .then((cached) => {
                 if (cached != undefined) {
-                    if (jsonResponseMsg.data.deliver_tx.code >= 1) {
+                    if (jsonResponseMsg.data.deliver_tx.code <= 1) {
                         return this.getLatestProjectStatus(cached.projectDid)
                             .then((currentStatus: IProjectStatusModel[]) => {
                                 var rollbackStatus = currentStatus[0].status == Status.funded ? Status.created : workflow[workflow.indexOf(currentStatus[0].status) - 1] || Status.created
@@ -49,18 +68,18 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
                                     });
                             })
                     } else {
-                        console.log(dateTimeLogger() + ' updating the project status capabilities');
-                        this.updateCapabilities(cached);
-                        console.log(dateTimeLogger() + ' commit project status to Elysian');
-                        var obj = {
-                            ...cached.data,
+                        // blockchain accepted the transaction but we want to confirm that there was consensus before committing transaction
+                        console.log(dateTimeLogger() + ' publish blockchain validation request for update project status');
+                        let message = {
+                            data: {
+                                msgType: "validate/UpdateProjectStatus",
+                                data: jsonResponseMsg.data.hash,
+                                uri: BlockchainURI.validate
+                            },
                             txHash: jsonResponseMsg.txHash,
-                            _creator: cached.signature.creator,
-                            _created: cached.signature.created
-                        };
-                        ProjectStatus.create({ ...obj, projectDid: cached.projectDid });
-                        ProjectStatus.emit('postCommit', obj, cached.projectDid);
-                        console.log(dateTimeLogger() + ' Update project status transaction completed successfully');
+                            request: cached
+                        }
+                        this.publishMessageToQueue(message);
                     }
                 } else {
                     var retry: number = retries || 0;
@@ -99,7 +118,8 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
                         if (parseInt(response.data.result, 16) - parseInt(jsonResponseMsg.data.blockNumber, 16) > blockheight) {
                             var data: any = {
                                 projectDid: projectDid,
-                                status: Status.funded
+                                status: Status.funded,
+                                ethFundingTxnID: jsonResponseMsg.data.hash
                             }
                             this.selfSignMessage(data, projectDid)
                                 .then((signature: any) => {
@@ -123,13 +143,13 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
                             let message = {
                                 data: {
                                     msgType: "eth",
-                                    data: jsonResponseMsg.txHash // "0xbb3a336e3f823ec18197f1e13ee875700f08f03e2cab75f0d0b118dabb44cba0",
+                                    data: jsonResponseMsg.txHash
                                 },
                                 request: { projectDid: projectDid },
                                 txHash: jsonResponseMsg.txHash
                             }
                             setTimeout(() => {
-                                console.log(dateTimeLogger() + ' resubmit fund check to Ethereum for TxnID ' + jsonResponseMsg.txnID);
+                                console.log(dateTimeLogger() + ' resubmit fund check to Ethereum for TxnID ' + jsonResponseMsg.txHash);
                                 this.publishMessageToQueue(message);
                             }, 30000)
 
@@ -154,7 +174,7 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
             blockChainPayload = {
                 payload: [{ type: "project/UpdateProjectStatus", value: data }]
             }
-            resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, 'project/UpdateProjectStatus', true));
+            resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, 'project/UpdateProjectStatus', BlockchainURI.commit));
         });
     }
 

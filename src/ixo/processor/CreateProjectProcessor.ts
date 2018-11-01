@@ -5,6 +5,7 @@ import { Request } from "../../handlers/Request";
 import { dateTimeLogger } from '../../logger/Logger';
 import walletService from '../../service/WalletService';
 import Cache from '../../Cache';
+import { BlockchainURI } from '../common/shared';
 
 export class CreateProjectProcessor extends AbstractHandler {
 
@@ -77,7 +78,7 @@ export class CreateProjectProcessor extends AbstractHandler {
                     blockChainPayload = {
                         payload: [{ type: "project/CreateProject", value: data }]
                     }
-                    resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, 'project/CreateProject', true));
+                    resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, 'project/CreateProject', BlockchainURI.commit));
                 })
         });
     }
