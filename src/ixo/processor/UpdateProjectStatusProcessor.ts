@@ -39,7 +39,7 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
         Cache.get(jsonResponseMsg.txHash)
             .then((cached) => {
                 if (cached != undefined) {
-                    if (jsonResponseMsg.data.deliver_tx.code <= 1) {
+                    if (jsonResponseMsg.data.deliver_tx.code >= 1) {
                         return this.getLatestProjectStatus(cached.projectDid)
                             .then((currentStatus: IProjectStatusModel[]) => {
                                 var rollbackStatus = currentStatus[0].status == Status.funded ? Status.created : workflow[workflow.indexOf(currentStatus[0].status) - 1] || Status.created
