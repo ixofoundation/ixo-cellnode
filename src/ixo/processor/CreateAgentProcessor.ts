@@ -3,8 +3,47 @@ import { Agent, IAgentModel } from '../model/AgentModel';
 import { ProjectStatus, IProjectStatusModel } from '../model/ProjectStatusModel';
 import { Request } from "../../handlers/Request";
 import { dateTimeLogger } from '../../logger/Logger';
+import Cache from '../../Cache';
 
 export class CreateAgentProcessor extends AbstractHandler {
+
+    handleAsyncCreateAgentResponse = (jsonResponseMsg: any, retries?: number) => {
+        Cache.get(jsonResponseMsg.txHash)
+            .then((cached) => {
+                if (cached != undefined) {
+                    console.log(dateTimeLogger() + ' updating the create agent capabilities');
+                    this.updateCapabilities(cached);
+                    console.log(dateTimeLogger() + ' commit create agent to Elysian');
+                    var obj = {
+                        ...cached.data,
+                        txHash: jsonResponseMsg.txHash,
+                        _creator: cached.signature.creator,
+                        _created: cached.signature.created
+                    };
+                    Agent.create({ ...obj, projectDid: cached.projectDid });
+                    Agent.emit('postCommit', obj, cached.projectDid);
+                    console.log(dateTimeLogger() + ' create agent transaction completed successfully');
+                } else {
+                    var retry: number = retries || 0;
+                    if (retry <= 3) {
+                        retry++
+                        setTimeout(() => {
+                            console.log(dateTimeLogger() + ' retry cached create agent transaction for %s ', jsonResponseMsg.txHash);
+                            this.handleAsyncCreateAgentResponse(jsonResponseMsg, retry)
+                        }, 2000)
+                    } else {
+                        //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to 
+                        //force the data into the DB
+                        console.log(dateTimeLogger() + ' cached create agent not found for transaction %s ', jsonResponseMsg.txHash);
+                    }
+                }
+            })
+            .catch(() => {
+                //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to 
+                //force the data into the DB
+                console.log(dateTimeLogger() + ' exception for cached transaction for %s not found ', jsonResponseMsg.txHash);
+            });
+    }
 
     updateCapabilities = (request: Request) => {
         this.addCapabilities(request.projectDid, 'did:sov:*', 'CreateAgent');
@@ -16,20 +55,13 @@ export class CreateAgentProcessor extends AbstractHandler {
         this.addCapabilities(request.projectDid, request.projectDid, 'UpdateProjectStatus');
     }
 
-    msgToPublish = (obj: any, request: Request) => {
+    msgToPublish = (txHash: any, request: Request) => {
         return new Promise((resolve: Function, reject: Function) => {
             var blockChainPayload: any;
-            var txHash = obj.txHash;
-            delete obj.version;
-            delete obj.txHash;
-            delete obj._creator;
-            delete obj._created;
-            delete obj.autoApprove;
-
             let data = {
                 data: {
-                    did: obj.agentDid,
-                    role: obj.role,
+                    did: request.data.agentDid,
+                    role: request.data.role,
                 },
                 txHash: txHash,
                 senderDid: request.signature.creator,
@@ -38,7 +70,7 @@ export class CreateAgentProcessor extends AbstractHandler {
             blockChainPayload = {
                 payload: [{ type: "project/CreateAgent", value: data }]
             }
-            resolve(this.messageForBlockchain(blockChainPayload, request.projectDid));
+            resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, "project/CreateAgent"));
         });
     }
 

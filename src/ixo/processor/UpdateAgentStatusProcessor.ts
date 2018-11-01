@@ -3,8 +3,49 @@ import { AgentStatus } from '../model/AgentStatusModel';
 import { ProjectStatus, IProjectStatusModel } from '../model/ProjectStatusModel';
 import { Request } from "../../handlers/Request";
 import { dateTimeLogger } from '../../logger/Logger';
+import Cache from '../../Cache';
 
 export class UpdateAgentStatusProcessor extends AbstractHandler {
+
+  handleAsyncUpdateAgentStatusResponse = (jsonResponseMsg: any, retries?: number) => {
+
+    Cache.get(jsonResponseMsg.txHash)
+      .then((cached) => {
+        if (cached != undefined) {
+          console.log(dateTimeLogger() + ' updating the agent status update capabilities');
+          this.updateCapabilities(cached);
+          console.log(dateTimeLogger() + ' commit agent status update to Elysian');
+          var obj = {
+            ...cached.data,
+            txHash: jsonResponseMsg.txHash,
+            _creator: cached.signature.creator,
+            _created: cached.signature.created,
+            version: cached.version >= 0 ? cached.version + 1 : 0
+          };
+          AgentStatus.create({ ...obj, projectDid: cached.projectDid });
+          AgentStatus.emit('postCommit', obj, cached.projectDid);
+          console.log(dateTimeLogger() + ' update agent status transaction completed successfully');
+        } else {
+          var retry: number = retries || 0;
+          if (retry <= 3) {
+            retry++
+            setTimeout(() => {
+              console.log(dateTimeLogger() + ' retry cached agent status update transaction for %s ', jsonResponseMsg.txHash);
+              this.handleAsyncUpdateAgentStatusResponse(jsonResponseMsg, retry)
+            }, 2000)
+          } else {
+            //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to 
+            //force the data into the DB
+            console.log(dateTimeLogger() + ' cached agent status update not found for transaction %s ', jsonResponseMsg.txHash);
+          }
+        }
+      })
+      .catch(() => {
+        //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to 
+        //force the data into the DB
+        console.log(dateTimeLogger() + ' exception for cached transaction for %s not found ', jsonResponseMsg.txHash);
+      });
+  }
 
   updateCapabilities = (request: Request) => {
     if (request.data.role === 'SA' && request.data.status === '1') this.addCapabilities(request.projectDid, request.data.agentDid, 'SubmitClaim');
@@ -15,20 +56,14 @@ export class UpdateAgentStatusProcessor extends AbstractHandler {
     if (request.data.status === '2') this.removeCapabilities(request.projectDid, request.data.agentDid, 'ListClaims');
   }
 
-  msgToPublish = (obj: any, request: Request) => {
+  msgToPublish = (txHash: any, request: Request) => {
     return new Promise((resolve: Function, reject: Function) => {
       var blockChainPayload: any;
-      var txHash = obj.txHash;
-      delete obj.version;
-      delete obj.txHash;
-      delete obj._creator;
-      delete obj._created;
-
       let data = {
         data: {
-          did: obj.agentDid,
-          status: obj.status,
-          role: obj.role
+          did: request.data.agentDid,
+          status: request.data.status,
+          role: request.data.role
         },
         txHash: txHash,
         senderDid: request.signature.creator,
@@ -37,7 +72,7 @@ export class UpdateAgentStatusProcessor extends AbstractHandler {
       blockChainPayload = {
         payload: [{ type: "project/UpdateAgent", value: data }]
       }
-      resolve(this.messageForBlockchain(blockChainPayload, request.projectDid));
+      resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, "project/UpdateAgent"));
     });
   }
 

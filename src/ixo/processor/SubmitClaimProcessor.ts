@@ -3,19 +3,52 @@ import { Claim } from '../model/ClaimModel';
 import { ProjectStatus, IProjectStatusModel } from '../model/ProjectStatusModel';
 import { Request } from "../../handlers/Request";
 import { dateTimeLogger } from '../../logger/Logger';
+import Cache from '../../Cache';
 
 export class SubmitClaimProcessor extends AbstractHandler {
 
+  handleAsyncSubmitClaimResponse = (jsonResponseMsg: any, retries?: number) => {
+    Cache.get(jsonResponseMsg.txHash)
+      .then((cached) => {
+        if (cached != undefined) {
+          console.log(dateTimeLogger() + ' updating the submit claim capabilities');
+          this.updateCapabilities(cached);
+          console.log(dateTimeLogger() + ' commit submit claim to Elysian');
+          var obj = {
+            ...cached.data,
+            txHash: jsonResponseMsg.txHash,
+            _creator: cached.signature.creator,
+            _created: cached.signature.created
+          };
+          Claim.create({ ...obj, projectDid: cached.projectDid });
+          console.log(dateTimeLogger() + ' submit claim transaction completed successfully');
+        } else {
+          var retry: number = retries || 0;
+          if (retry <= 3) {
+            retry++
+            setTimeout(() => {
+              console.log(dateTimeLogger() + ' retry cached submit claim transaction for %s ', jsonResponseMsg.txHash);
+              this.handleAsyncSubmitClaimResponse(jsonResponseMsg, retry)
+            }, 2000)
+          } else {
+            //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to 
+            //force the data into the DB
+            console.log(dateTimeLogger() + ' cached submit claim not found for transaction %s ', jsonResponseMsg.txHash);
+          }
+        }
+      })
+      .catch(() => {
+        //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to 
+        //force the data into the DB
+        console.log(dateTimeLogger() + ' exception for cached transaction for %s not found ', jsonResponseMsg.txHash);
+      });
+  }
+
   updateCapabilities = (request: Request) => { }
 
-  msgToPublish = (obj: any, request: Request) => {
+  msgToPublish = (txHash: any, request: Request) => {
     return new Promise((resolve: Function, reject: Function) => {
       var blockChainPayload: any;
-      var txHash = obj.txHash;
-      delete obj.version;
-      delete obj.txHash;
-      delete obj._creator;
-      delete obj._created;
       let data = {
         data: {
           claimID: txHash
@@ -25,9 +58,9 @@ export class SubmitClaimProcessor extends AbstractHandler {
         projectDid: request.projectDid
       }
       blockChainPayload = {
-        payload: [{type: "project/CreateClaim", value: data}]
+        payload: [{ type: "project/CreateClaim", value: data }]
       }
-      resolve(this.messageForBlockchain(blockChainPayload, request.projectDid));
+      resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, "project/CreateClaim"));
     });
   };
 

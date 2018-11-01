@@ -1,5 +1,6 @@
 import { TransactionError } from "./error/TransactionError";
 import { dateTimeLogger } from './logger/Logger';
+import Cache from './Cache';
 
 var amqplib = require('amqplib');
 
@@ -56,7 +57,8 @@ export class MessageQ {
                 })
                 .then(() => {
                     let jsonContent = JSON.stringify(content);
-                    console.log(dateTimeLogger() + ' send to queue');
+                    console.log(dateTimeLogger() + ' send to queue ' + content.data.msgType);
+                    Cache.set(content.txHash, content.request);
                     this.channel.sendToQueue(this.queue, Buffer.from(jsonContent), {
                         persistent: false,
                         contentType: 'application/json'
@@ -86,7 +88,8 @@ export class MessageQ {
                             if (messageData === null) {
                                 return;
                             }
-                            console.log(dateTimeLogger() + " Received response %s", messageData.content.toString());
+                            var JSONcontent = JSON.parse(messageData.content.toString());
+                            console.log(dateTimeLogger() + " received response for %s", JSONcontent.msgType);                            
                             resolve(messageData.content);
                             inst.channel.ack(messageData);
                         });

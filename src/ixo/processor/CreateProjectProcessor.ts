@@ -4,8 +4,47 @@ import { Project } from '../model/ProjectModel';
 import { Request } from "../../handlers/Request";
 import { dateTimeLogger } from '../../logger/Logger';
 import walletService from '../../service/WalletService';
+import Cache from '../../Cache';
 
 export class CreateProjectProcessor extends AbstractHandler {
+
+    handleAsyncCreateProjectResponse = (jsonResponseMsg: any, retries?: number) => {
+        Cache.get(jsonResponseMsg.txHash)
+            .then((cached) => {
+                if (cached != undefined) {
+                    console.log(dateTimeLogger() + ' updating the create project capabilities');
+                    this.updateCapabilities(cached);
+                    console.log(dateTimeLogger() + ' commit create project to Elysian');
+                    var obj = {
+                        ...cached.data,
+                        txHash: jsonResponseMsg.txHash,
+                        _creator: cached.signature.creator,
+                        _created: cached.signature.created
+                    };
+                    Project.create({ ...obj, projectDid: cached.projectDid });
+                    Project.emit('postCommit', obj, cached.projectDid);
+                    console.log(dateTimeLogger() + ' create project transaction completed successfully');
+                } else {
+                    var retry: number = retries || 0;
+                    if (retry <= 3) {
+                        retry++
+                        setTimeout(() => {
+                            console.log(dateTimeLogger() + ' retry cached create project transaction for %s ', jsonResponseMsg.txHash);
+                            this.handleAsyncCreateProjectResponse(jsonResponseMsg, retry)
+                        }, 2000)
+                    } else {
+                        //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to 
+                        //force the data into the DB
+                        console.log(dateTimeLogger() + ' cached create project not found for transaction %s ', jsonResponseMsg.txHash);
+                    }
+                }
+            })
+            .catch(() => {
+                //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to 
+                //force the data into the DB
+                console.log(dateTimeLogger() + ' exception for cached transaction for %s not found ', jsonResponseMsg.txHash);
+            });
+    }
 
     updateCapabilities = (request: Request) => {
         this.addCapabilities(request.projectDid, 'did:sov:*', 'CreateAgent');
@@ -17,21 +56,15 @@ export class CreateProjectProcessor extends AbstractHandler {
         this.addCapabilities(request.projectDid, request.projectDid, 'UpdateProjectStatus');
     }
 
-    msgToPublish = (obj: any, request: Request) => {
+    msgToPublish = (txHash: any, request: Request) => {
         return new Promise((resolve: Function, reject: Function) => {
             var blockChainPayload: any;
-            var txHash = obj.txHash;
-            delete obj.version;
-            delete obj.txHash;
-            delete obj._creator;
-            delete obj._created;
-
-            delete obj.autoApprove;
+            delete request.data.autoApprove;
             walletService.getWallet(request.projectDid)
                 .then((wallet) => {
                     let data = {
                         data: {
-                            ...obj,
+                            ...request.data,
                             createdOn: request.signature.created,
                             createdBy: request.signature.creator,
                             nodeDid: process.env.NODEDID

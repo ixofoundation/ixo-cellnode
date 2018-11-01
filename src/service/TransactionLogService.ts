@@ -42,6 +42,22 @@ export class TransactionLogService {
   findTransaction(): any {
     return Transaction.find();
   }
+
+
+  updateTransactionLogForHash(txHash: String, blockHash: string, blockHeight: string): Promise<ITransactionModel> {
+    return new Promise(function (resolve: Function, reject: Function) {
+      Transaction.updateOne(
+        {hash: txHash},
+        { $set : {blockHash: blockHash, blockHeight:  blockHeight}},
+        function (error: Error, result: ITransactionModel) {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        });
+    });
+  }
 }
 
 export default new TransactionLogService();
