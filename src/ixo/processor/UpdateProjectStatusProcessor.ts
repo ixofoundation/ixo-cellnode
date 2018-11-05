@@ -5,6 +5,7 @@ import axios from 'axios';
 import { Status, workflow, BlockchainURI } from '../common/shared';
 import { dateTimeLogger } from '../../logger/Logger';
 import Cache from '../../Cache';
+import { TransactionError } from '../../error/TransactionError';
 
 
 const ETHEREUM_API = (process.env.ETHEREUM_API || '');
@@ -29,6 +30,9 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
                 ProjectStatus.create({ ...obj, projectDid: cached.projectDid });
                 ProjectStatus.emit('postCommit', obj, cached.projectDid);
                 console.log(dateTimeLogger() + ' Update project status transaction completed successfully');
+            })
+            .catch(() => {
+                console.log(dateTimeLogger() + ' exception caught for handleBlockChainValidation');
             });
     }
 
@@ -38,32 +42,38 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
                 if (cached != undefined) {
                     return this.getLatestProjectStatus(cached.projectDid)
                         .then((currentStatus: IProjectStatusModel[]) => {
-                            var rollbackStatus = currentStatus[0].status == Status.funded ? Status.created : workflow[workflow.indexOf(currentStatus[0].status) - 1] || Status.created
-                            console.log(dateTimeLogger() + ' blockchain failed update project status, rollback to ' + rollbackStatus);
-                            var data: any = {
-                                projectDid: cached.projectDid,
-                                status: rollbackStatus
-                            }
-                            this.selfSignMessage(data, cached.projectDid)
-                                .then((signature: any) => {
-                                    var projectStatusRequest: any = {
-                                        payload: {
-                                            template: {
-                                                name: "project_status"
+                            // check if previous status exists
+                            if (currentStatus.length > 0) {
+                                var rollbackStatus = currentStatus[0].status == Status.funded ? Status.created : workflow[workflow.indexOf(currentStatus[0].status) - 1] || Status.created
+                                console.log(dateTimeLogger() + ' blockchain failed update project status, rollback to ' + rollbackStatus);
+                                var data: any = {
+                                    projectDid: cached.projectDid,
+                                    status: rollbackStatus
+                                }
+                                this.selfSignMessage(data, cached.projectDid)
+                                    .then((signature: any) => {
+                                        var projectStatusRequest: any = {
+                                            payload: {
+                                                template: {
+                                                    name: "project_status"
+                                                },
+                                                data: data
                                             },
-                                            data: data
-                                        },
-                                        signature: {
-                                            type: "ed25519-sha-256",
-                                            created: new Date().toISOString(),
-                                            creator: cached.projectDid,
-                                            signatureValue: signature
+                                            signature: {
+                                                type: "ed25519-sha-256",
+                                                created: new Date().toISOString(),
+                                                creator: cached.projectDid,
+                                                signatureValue: signature
+                                            }
                                         }
-                                    }
-                                    this.process(projectStatusRequest);
-                                });
+                                        this.process(projectStatusRequest);
+                                    });
+                            }
                         })
                 }
+            })
+            .catch(() => {
+                console.log(dateTimeLogger() + ' exception caught for handleRollbackProjectStatus');
             });
     }
 
@@ -72,7 +82,7 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
         Cache.get(jsonResponseMsg.txHash)
             .then((cached) => {
                 if (cached != undefined) {
-                    // blockchain accepted the transaction but we want to confirm that there was consensus before committing transaction
+                    // blockchain accepted the   transaction but we want to confirm that there was consensus before committing transaction
                     console.log(dateTimeLogger() + ' publish blockchain validation request for update project status');
                     let message = {
                         data: {
@@ -102,7 +112,7 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
             .catch(() => {
                 //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to 
                 //force the data into the DB
-                console.log(dateTimeLogger() + ' exception for cached transaction for %s not found ', jsonResponseMsg.txHash);
+                console.log(dateTimeLogger() + ' exception caught for handleAsyncProjectStatusResponse');
             });
 
     }
@@ -158,6 +168,9 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
 
                         }
                     })
+            })
+            .catch(() => {
+                console.log(dateTimeLogger() + ' exception caught for handleAsyncEthResponse');
             });
     }
 
@@ -190,19 +203,26 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
     process = (args: any) => {
         console.log(dateTimeLogger() + ' start new Update Project Status transaction ');
         let request = new Request(args);
-        if (workflow.indexOf(request.data.status) === 0) {
-            return this.createTransaction(args, 'UpdateProjectStatus', ProjectStatus);
-        } else {
-            return this.getLatestProjectStatus(request.projectDid)
-                .then((current: IProjectStatusModel[]) => {
-                    // check that the status can only roll forward by 1 or backwards
-                    if (workflow.indexOf(request.data.status) - 1 <= workflow.indexOf(current[0].status)) {
-                        return this.createTransaction(args, 'UpdateProjectStatus', ProjectStatus);
-                    }
-                    console.log(dateTimeLogger() + ' Invalid status workflow ' + request.data.status);
-                    return "Invalid status workflow";
-                })
-        }
+        return this.createTransaction(args, 'UpdateProjectStatus', ProjectStatus, (request: any): Promise<boolean> => {
+            return new Promise((resolve: Function, reject: Function) => {
+                if (workflow.indexOf(request.data.status) !== 0) {
+                    this.getLatestProjectStatus(request.projectDid)
+                        .then((current: IProjectStatusModel[]) => {
+                            // check that the status can only roll forward by 1 or backwards
+                            if (current.length > 0) {
+                                if (workflow.indexOf(request.data.status) - 1 <= workflow.indexOf(current[0].status))
+                                    resolve(true);
+
+                                console.log(dateTimeLogger() + ' Invalid status workflow ' + request.data.status);
+                                reject("Invalid status workflow");
+                            } else {
+                                console.log(dateTimeLogger() + ' no status exists for project ' + request.projectDid);
+                                reject('No status exists for project ' + request.projectDid);
+                            }
+                        })
+                } else {resolve(true)}
+            });
+        })
     }
 }
 
