@@ -37,13 +37,7 @@ export abstract class AbstractHandler {
       capabilitiesService.findCapabilitiesForProject(request.projectDid)
         .then((result: ICapabilitiesModel) => {
           var capabilityMap: any;
-          capabilityMap = result.capabilities.filter(element => element.capability == method);
-          return capabilityMap[0];
-        }).catch(() => {
-          console.log(dateTimeLogger() + ' capabilities not found for project' + request.projectDid);
-          reject(new TransactionError('Capabilities not found for project'));
-        })
-        .then((capabilityMap: any) => {
+          capabilityMap = result.capabilities.filter(element => element.capability == method)[0];
           console.log(dateTimeLogger() + ' have capability ' + capabilityMap.capability);
           TemplateUtils.getTemplateFromCache(capabilityMap.template, request.template)
             .then((schema: any) => {
@@ -77,7 +71,7 @@ export abstract class AbstractHandler {
                             //submit information to blockchain. Poller to add to cache once it gets hash from chain
                             this.createTransactionLog(request, capabilityMap)
                               .then((transaction: any) => {
-                                resolve (this.publishAndRespond(transaction.hash, request));
+                                resolve(this.publishAndRespond(transaction.hash, request));
                               });
                           }
                         } else {
@@ -99,6 +93,10 @@ export abstract class AbstractHandler {
               console.log(dateTimeLogger() + 'template registry failed' + reason);
               reject(new TransactionError('Cannot connect to template registry'));
             });
+        })
+        .catch(() => {
+          console.log(dateTimeLogger() + ' capabilities not found for project' + request.projectDid);
+          reject(new TransactionError('Capabilities not found for project'));
         });
     });
   }
@@ -110,14 +108,8 @@ export abstract class AbstractHandler {
       capabilitiesService.findCapabilitiesForProject(request.projectDid)
         .then((result: ICapabilitiesModel) => {
           var capabilityMap: any;
-          capabilityMap = result.capabilities.filter(element => element.capability == method);
-          return capabilityMap[0];
-        }).catch(() => {
-          console.log(dateTimeLogger() + 'capabilities not found for project' + request.projectDid);
-          reject(new TransactionError('Capabilities not found for project'));
-        })
-        .then((capabilityMap: any) => {
-          console.log(dateTimeLogger() + ' have capability ' + capabilityMap.capability);
+          capabilityMap = result.capabilities.filter(element => element.capability == method)[0];
+          console.log(dateTimeLogger() + ' have capability ' + capabilityMap[0].capability);
           TemplateUtils.getTemplateFromCache(capabilityMap.template, request.template)
             .then((schema: any) => {
               console.log(dateTimeLogger() + ' validate the template');
@@ -150,6 +142,10 @@ export abstract class AbstractHandler {
               console.log(dateTimeLogger() + 'template registry failed' + reason);
               reject(new TransactionError('Cannot connect to template registry'));
             });
+        })
+        .catch(() => {
+          console.log(dateTimeLogger() + 'capabilities not found for project' + request.projectDid);
+          reject(new TransactionError('Capabilities not found for project'));
         });
     });
   }

@@ -47,61 +47,56 @@ export class MessageQ {
     }
 
     async publish(content: any) {
-        try {
-            this.channel.assertExchange("pds.ex", "direct", { durable: true });
-            this.channel.assertQueue(this.queue, {
-                durable: true
-            })
+        var inst: any;
+        inst = this;
+        return new Promise(function (resolve: Function, reject: Function) {
+            inst.channel.assertExchange("pds.ex", "direct", { durable: true });
+            inst.channel.assertQueue(inst.queue, { durable: true })
                 .then(() => {
-                    this.channel.bindQueue(this.queue, 'pds.ex');
+                    inst.channel.bindQueue(inst.queue, 'pds.ex');
                 })
                 .then(() => {
                     let jsonContent = JSON.stringify(content);
                     console.log(dateTimeLogger() + ' cache object ' + content.txHash);
                     Cache.set(content.txHash, content.request);
-                    this.channel.sendToQueue(this.queue, Buffer.from(jsonContent), {
+                    inst.channel.sendToQueue(inst.queue, Buffer.from(jsonContent), {
                         persistent: false,
                         contentType: 'application/json'
                     });
                     return true;
+                })
+                .catch(() => {
+                    throw new TransactionError('Exception connecting to mq');
                 });
+        })
 
-        } catch (error) {
-            throw new TransactionError(error.message);
-        }
     }
 
     public subscribe(): Promise<any> {
         var inst: any;
         inst = this;
         return new Promise(function (resolve: Function, reject: Function) {
-            try {
-                inst.channel.assertQueue('pds.res', {
-                    durable: true
+            inst.channel.assertQueue('pds.res', { durable: true })
+                .then(() => {
+                    inst.channel.bindQueue('pds.res', 'pds.ex');
                 })
-                    .then(() => {
-                        inst.channel.bindQueue('pds.res', 'pds.ex');
-                    })
-                    .then(() => {
-                        inst.channel.prefetch(50);
-                        inst.channel.consume('pds.res', (messageData: any) => {
-                            if (messageData === null) {
-                                return;
-                            }
-                            var JSONcontent = JSON.parse(messageData.content.toString());
-                            console.log(dateTimeLogger() + " received response for %s", JSONcontent.msgType);                            
-                            resolve(messageData.content);
-                            inst.channel.ack(messageData);
-                        });
-
-                    }, (error: any) => {
-                        throw error;
+                .then(() => {
+                    inst.channel.prefetch(50);
+                    inst.channel.consume('pds.res', (messageData: any) => {
+                        if (messageData === null) {
+                            return;
+                        }
+                        var JSONcontent = JSON.parse(messageData.content.toString());
+                        console.log(dateTimeLogger() + " received response for %s", JSONcontent.msgType);
+                        resolve(messageData.content);
+                        inst.channel.ack(messageData);
                     });
+                })
+                .catch(() => {
+                    throw new TransactionError('Exception connecting to mq');
+                });
+        })
 
-            } catch (error) {
-                throw new Error(error.message);
-            }
-        });
     }
 }
 

@@ -69,7 +69,7 @@ export class RequestHandler {
       mq.subscribe()
         .then((response: any) => {
           this.handleResponseFromMessageQueue(response);
-        });
+        }).catch(() => { console.log(dateTimeLogger() + ' exception caught for handleResponseFromMessageQueue') });
     }, 2000)
   }
 
