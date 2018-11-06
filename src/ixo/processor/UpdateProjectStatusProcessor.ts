@@ -43,12 +43,11 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
                     return this.getLatestProjectStatus(cached.projectDid)
                         .then((currentStatus: IProjectStatusModel[]) => {
                             // check if previous status exists
-                            if (currentStatus.length > 0) {
-                                var rollbackStatus = currentStatus[0].status == Status.funded ? Status.created : workflow[workflow.indexOf(currentStatus[0].status) - 1] || Status.created
-                                console.log(dateTimeLogger() + ' blockchain failed update project status, rollback to ' + rollbackStatus);
+                            if (currentStatus.length > 0 && currentStatus[0].status === Status.pending) {
+                                console.log(dateTimeLogger() + ' blockchain failed update project status, rollback to ' + Status.created);
                                 var data: any = {
                                     projectDid: cached.projectDid,
-                                    status: rollbackStatus
+                                    status: Status.created
                                 }
                                 this.selfSignMessage(data, cached.projectDid)
                                     .then((signature: any) => {
@@ -68,6 +67,8 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
                                         }
                                         this.process(projectStatusRequest);
                                     });
+                            } else {
+                                console.log(dateTimeLogger() + ' blockchain failed update project status');
                             }
                         })
                 }
