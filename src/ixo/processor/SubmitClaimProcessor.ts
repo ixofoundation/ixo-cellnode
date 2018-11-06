@@ -30,12 +30,15 @@ export class SubmitClaimProcessor extends AbstractHandler {
       .then((cached) => {
         if (cached != undefined) {
           // blockchain accepted the transaction but we want to confirm that there was consensus before committing transaction
-          console.log(dateTimeLogger() + ' publish blockchain validation request for updte project status');
+          console.log(dateTimeLogger() + ' publish blockchain validation request for update project status');
           let message = {
-            msgType: 'validate/CreateClaim',
-            projectDid: cached.projectDid,
-            uri: BlockchainURI.validate,
-            data: jsonResponseMsg.data.hash
+            data: {
+              msgType: "validate/CreateClaim",
+              data: jsonResponseMsg.data.hash,
+              uri: BlockchainURI.validate
+            },
+            txHash: jsonResponseMsg.txHash,
+            request: cached
           }
           this.publishMessageToQueue(message);
         } else {
@@ -76,7 +79,7 @@ export class SubmitClaimProcessor extends AbstractHandler {
       blockChainPayload = {
         payload: [{ type: "project/CreateClaim", value: data }]
       }
-      resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, "project/CreateClaim"));
+      resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, "project/CreateClaim", BlockchainURI.commit));
     });
   };
 

@@ -84,7 +84,7 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
       blockChainPayload = {
         payload: [{ type: "project/CreateEvaluation", value: data }]
       }
-      resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, "project/CreateEvaluation"));
+      resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, "project/CreateEvaluation", BlockchainURI.commit));
     });
   };
 

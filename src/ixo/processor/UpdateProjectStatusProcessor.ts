@@ -67,8 +67,6 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
                                         }
                                         this.process(projectStatusRequest);
                                     });
-                            } else {
-                                console.log(dateTimeLogger() + ' blockchain failed update project status');
                             }
                         })
                 }
