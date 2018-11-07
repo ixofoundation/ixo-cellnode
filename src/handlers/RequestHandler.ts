@@ -64,13 +64,13 @@ export const RequestLookupHandler: any = {
 
 export class RequestHandler {
 
-  constructor() {
+  constructor() {   
     setInterval(() => {
       mq.subscribe()
         .then((response: any) => {
           this.handleResponseFromMessageQueue(response);
         }).catch(() => { console.log(dateTimeLogger() + ' exception caught for handleResponseFromMessageQueue') });
-    }, 2000)
+    }, 500)
   }
 
   handleResponseFromMessageQueue = (message: any) => {
@@ -95,7 +95,6 @@ export class RequestHandler {
       updateProjectStatusProcessor.handleAsyncEthResponse(jsonResponseMsg);
     } else {
       //update transaction log with blockchain response data
-      //do't check the commit status as I want to perform a specific action for that in each handler
       var blockResponseCode = jsonResponseMsg.data.code != undefined ? jsonResponseMsg.data.code : undefined;
       blockResponseCode = jsonResponseMsg.data.check_tx != undefined ? jsonResponseMsg.data.check_tx.code : blockResponseCode;
       blockResponseCode = jsonResponseMsg.data.deliver_tx != undefined ? jsonResponseMsg.data.deliver_tx.code : blockResponseCode;
@@ -104,22 +103,22 @@ export class RequestHandler {
 
       transactionLogService.updateTransactionLogForHash(jsonResponseMsg.txHash, jsonResponseMsg.data.hash, jsonResponseMsg.data.height, blockResponseCode)
         .then((result: any) => {
-          console.log(dateTimeLogger() + ' transaction log updated with block information for txHash ' + jsonResponseMsg.txHash);
+          console.log(dateTimeLogger() + ' transaction log updated with block information for txHash %s %s', jsonResponseMsg.txHash, blockResponseCode);
+          if (blockResponseCode >= 1) {
+            //here we handle specific rollback tasks if required
+            var rollbackProcessor = jsonResponseMsg.msgType+'/rollback';
+            if (lookupProcessor[rollbackProcessor] !== undefined) {
+              lookupProcessor[rollbackProcessor]();
+            }
+            console.log(dateTimeLogger() + ' blockchain failed for message %s with code %s', jsonResponseMsg.msgType, blockResponseCode);
+          } else {
+            console.log(dateTimeLogger() + ' process blockchain response for %s hash %s ', jsonResponseMsg.msgType, jsonResponseMsg.txHash);
+            lookupProcessor[jsonResponseMsg.msgType]();
+          }
         })
         .catch(() => {
           console.log(dateTimeLogger() + ' transaction log failed to update for txHash ' + jsonResponseMsg.txHash);
         });
-
-      if (blockResponseCode >= 1) {
-        //here we handle specific rollback tasks if required
-        var rollbackProcessor = jsonResponseMsg.msgType+'/rollback';
-        if (lookupProcessor[rollbackProcessor] !== undefined) {
-          lookupProcessor[rollbackProcessor]();
-        }
-        console.log(dateTimeLogger() + ' blockchain failed for message %s with code %s', jsonResponseMsg.msgType, blockResponseCode);
-      } else {
-        lookupProcessor[jsonResponseMsg.msgType]();
-      }
     }
   }
 }
