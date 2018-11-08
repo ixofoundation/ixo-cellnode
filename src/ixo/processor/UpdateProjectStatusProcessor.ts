@@ -15,26 +15,26 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
 
     updateCapabilities = (request: Request) => { }
 
-    handleBlockChainValidation = (jsonResponseMsg: any) => {
-        Cache.get(jsonResponseMsg.txHash)
-            .then((cached) => {
-                console.log(dateTimeLogger() + ' updating the project status capabilities');
-                this.updateCapabilities(cached);
-                console.log(dateTimeLogger() + ' commit project status to Elysian');
-                var obj = {
-                    ...cached.data,
-                    txHash: jsonResponseMsg.txHash,
-                    _creator: cached.signature.creator,
-                    _created: cached.signature.created
-                };
-                ProjectStatus.create({ ...obj, projectDid: cached.projectDid });
-                ProjectStatus.emit('postCommit', obj, cached.projectDid);
-                console.log(dateTimeLogger() + ' Update project status transaction completed successfully');
-            })
-            .catch(() => {
-                console.log(dateTimeLogger() + ' exception caught for handleBlockChainValidation');
-            });
-    }
+    // handleBlockChainValidation = (jsonResponseMsg: any) => {
+    //     Cache.get(jsonResponseMsg.txHash)
+    //         .then((cached) => {
+    //             console.log(dateTimeLogger() + ' updating the project status capabilities');
+    //             this.updateCapabilities(cached);
+    //             console.log(dateTimeLogger() + ' commit project status to Elysian');
+    //             var obj = {
+    //                 ...cached.data,
+    //                 txHash: jsonResponseMsg.txHash,
+    //                 _creator: cached.signature.creator,
+    //                 _created: cached.signature.created
+    //             };
+    //             ProjectStatus.create({ ...obj, projectDid: cached.projectDid });
+    //             ProjectStatus.emit('postCommit', obj, cached.projectDid);
+    //             console.log(dateTimeLogger() + ' Update project status transaction completed successfully');
+    //         })
+    //         .catch(() => {
+    //             console.log(dateTimeLogger() + ' exception caught for handleBlockChainValidation');
+    //         });
+    // }
 
     handleRollbackProjectStatus = (jsonResponseMsg: any, retries?: number) => {
         Cache.get(jsonResponseMsg.txHash)
@@ -81,18 +81,30 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
         Cache.get(jsonResponseMsg.txHash)
             .then((cached) => {
                 if (cached != undefined) {
-                    // blockchain accepted the   transaction but we want to confirm that there was consensus before committing transaction
-                    console.log(dateTimeLogger() + ' publish blockchain validation request for update project status');
-                    let message = {
-                        data: {
-                            msgType: "validate/UpdateProjectStatus",
-                            data: jsonResponseMsg.data.hash,
-                            uri: BlockchainURI.validate
-                        },
+                    console.log(dateTimeLogger() + ' updating the project status capabilities');
+                    this.updateCapabilities(cached);
+                    console.log(dateTimeLogger() + ' commit project status to Elysian');
+                    var obj = {
+                        ...cached.data,
                         txHash: jsonResponseMsg.txHash,
-                        request: cached
-                    }
-                    this.publishMessageToQueue(message);
+                        _creator: cached.signature.creator,
+                        _created: cached.signature.created
+                    };
+                    ProjectStatus.create({ ...obj, projectDid: cached.projectDid });
+                    ProjectStatus.emit('postCommit', obj, cached.projectDid);
+                    console.log(dateTimeLogger() + ' Update project status transaction completed successfully');
+                    // blockchain accepted the   transaction but we want to confirm that there was consensus before committing transaction
+                    // console.log(dateTimeLogger() + ' publish blockchain validation request for update project status');
+                    // let message = {
+                    //     data: {
+                    //         msgType: "validate/UpdateProjectStatus",
+                    //         data: jsonResponseMsg.data.hash,
+                    //         uri: BlockchainURI.validate
+                    //     },
+                    //     txHash: jsonResponseMsg.txHash,
+                    //     request: cached
+                    // }
+                    // this.publishMessageToQueue(message);
                 } else {
                     var retry: number = retries || 0;
                     if (retry <= 3) {

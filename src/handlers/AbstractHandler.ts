@@ -90,7 +90,7 @@ export abstract class AbstractHandler {
               };
             })
             .catch((reason) => {
-              console.log(dateTimeLogger() + 'template registry failed' + reason);
+              console.log(dateTimeLogger() + ' template registry failed' + reason);
               reject(new TransactionError('Cannot connect to template registry'));
             });
         })
@@ -139,7 +139,7 @@ export abstract class AbstractHandler {
               };
             })
             .catch((reason) => {
-              console.log(dateTimeLogger() + 'template registry failed' + reason);
+              console.log(dateTimeLogger() + ' template registry failed' + reason);
               reject(new TransactionError('Cannot connect to template registry'));
             });
         })

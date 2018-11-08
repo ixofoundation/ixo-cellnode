@@ -2,8 +2,6 @@ import publicService from '../service/PublicService';
 import { IPublicModel } from '../model/Public';
 import { dateTimeLogger } from '../logger/Logger';
 import { TransactionError } from '../error/TransactionError';
-
-const { validationResult } = require('express-validator/check');
 var validator = require('validator');
 
 declare var Promise: any;
