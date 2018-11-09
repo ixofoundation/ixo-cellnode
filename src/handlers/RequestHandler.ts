@@ -83,9 +83,9 @@ export class RequestHandler {
       'project/UpdateAgent': () => { updateAgentStatusProcessor.handleAsyncUpdateAgentStatusResponse(jsonResponseMsg) },
       'project/CreateClaim': () => { submitClaimProcessor.handleAsyncSubmitClaimResponse(jsonResponseMsg) },
       'project/CreateEvaluation': () => { evaluateClaimsProcessor.handleAsyncEvaluateClaimResponse(jsonResponseMsg) },
-      'validate/UpdateProjectStatus': () => { updateProjectStatusProcessor.handleBlockChainValidation(jsonResponseMsg) },
-      'validate/CreateClaim': () => { submitClaimProcessor.handleBlockChainValidation(jsonResponseMsg) },
-      'validate/CreateEvaluation': () => { evaluateClaimsProcessor.handleBlockChainValidation(jsonResponseMsg) },
+      //'validate/UpdateProjectStatus': () => { updateProjectStatusProcessor.handleBlockChainValidation(jsonResponseMsg) },
+      //'validate/CreateClaim': () => { submitClaimProcessor.handleBlockChainValidation(jsonResponseMsg) },
+      //'validate/CreateEvaluation': () => { evaluateClaimsProcessor.handleBlockChainValidation(jsonResponseMsg) },
       'project/UpdateProjectStatus/rollback': () => { updateProjectStatusProcessor.handleRollbackProjectStatus(jsonResponseMsg) }
     }
 

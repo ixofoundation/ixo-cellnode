@@ -13,10 +13,10 @@ const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
 
 export class EvaluateClaimsProcessor extends AbstractHandler {
 
-  handleBlockChainValidation = (jsonResponseMsg: any) => {
-    if (jsonResponseMsg.data.tx_result.code >= 1) {
-      Cache.get(jsonResponseMsg.txHash)
-        .then((cached) => {
+  handleAsyncEvaluateClaimResponse = (jsonResponseMsg: any, retries?: number) => {
+    Cache.get(jsonResponseMsg.txHash)
+      .then((cached) => {
+        if (cached != undefined) {
           console.log(dateTimeLogger() + ' updating the evaluate claim capabilities');
           this.updateCapabilities(cached);
           console.log(dateTimeLogger() + ' commit evaluate claim to Elysian');
@@ -29,22 +29,6 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
           };
           EvaluateClaim.create({ ...obj, projectDid: cached.projectDid });
           console.log(dateTimeLogger() + ' evaluate claim transaction completed successfully');
-        });
-    }
-  }
-
-  handleAsyncEvaluateClaimResponse = (jsonResponseMsg: any, retries?: number) => {
-    Cache.get(jsonResponseMsg.txHash)
-      .then((cached) => {
-        if (cached != undefined) {
-          // blockchain accepted the transaction but we want to confirm that there was consensus before committing transaction
-          let message = {
-            msgType: 'validate/CreateEvaluation',
-            projectDid: cached.projectDid,
-            uri: BlockchainURI.validate,
-            data: jsonResponseMsg.data.hash
-          }
-          this.publishMessageToQueue(message);
         } else {
           var retry: number = retries || 0;
           if (retry <= 3) {
