@@ -8,23 +8,6 @@ import { BlockchainURI } from '../common/shared';
 
 export class SubmitClaimProcessor extends AbstractHandler {
 
-  // handleBlockChainValidation = (jsonResponseMsg: any) => {
-  //   Cache.get(jsonResponseMsg.txHash)
-  //     .then((cached) => {
-  //       console.log(dateTimeLogger() + ' updating the submit claim capabilities');
-  //       this.updateCapabilities(cached);
-  //       console.log(dateTimeLogger() + ' commit submit claim to Elysian');
-  //       var obj = {
-  //         ...cached.data,
-  //         txHash: jsonResponseMsg.txHash,
-  //         _creator: cached.signature.creator,
-  //         _created: cached.signature.created
-  //       };
-  //       Claim.create({ ...obj, projectDid: cached.projectDid });
-  //       console.log(dateTimeLogger() + ' submit claim transaction completed successfully');
-  //     });
-  // }
-
   handleAsyncSubmitClaimResponse = (jsonResponseMsg: any, retries?: number) => {
     Cache.get(jsonResponseMsg.txHash)
       .then((cached) => {
@@ -40,18 +23,6 @@ export class SubmitClaimProcessor extends AbstractHandler {
           };
           Claim.create({ ...obj, projectDid: cached.projectDid });
           console.log(dateTimeLogger() + ' submit claim transaction completed successfully');
-          // blockchain accepted the transaction but we want to confirm that there was consensus before committing transaction
-          // console.log(dateTimeLogger() + ' publish blockchain validation request for update project status');
-          // let message = {
-          //   data: {
-          //     msgType: "validate/CreateClaim",
-          //     data: jsonResponseMsg.data.hash,
-          //     uri: BlockchainURI.validate
-          //   },
-          //   txHash: jsonResponseMsg.txHash,
-          //   request: cached
-          // }
-          // this.publishMessageToQueue(message);
         } else {
           var retry: number = retries || 0;
           if (retry <= 3) {
