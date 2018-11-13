@@ -5,8 +5,8 @@ import axios from 'axios';
 import { Status, workflow, BlockchainURI } from '../common/shared';
 import { dateTimeLogger } from '../../logger/Logger';
 import Cache from '../../Cache';
-import { TransactionError } from '../../error/TransactionError';
 
+var xss = require("xss-filter-object")();
 
 const ETHEREUM_API = (process.env.ETHEREUM_API || '');
 const blockheight = 6;
@@ -69,7 +69,8 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
                         _creator: cached.signature.creator,
                         _created: cached.signature.created
                     };
-                    ProjectStatus.create({ ...obj, projectDid: cached.projectDid });
+                    var sanitizedData = xss.sanitize(obj);
+                    ProjectStatus.create({ ...sanitizedData, projectDid: cached.projectDid });
                     ProjectStatus.emit('postCommit', obj, cached.projectDid);
                     console.log(dateTimeLogger() + ' Update project status transaction completed successfully');
                 } else {
@@ -164,9 +165,9 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
                 senderDid: request.signature.creator,
                 projectDid: request.projectDid
             }
-
+            var sanitizedData = xss.sanitize(data);
             blockChainPayload = {
-                payload: [{ type: "project/UpdateProjectStatus", value: data }]
+                payload: [{ type: "project/UpdateProjectStatus", value: sanitizedData }]
             }
             resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, 'project/UpdateProjectStatus', BlockchainURI.commit));
         });

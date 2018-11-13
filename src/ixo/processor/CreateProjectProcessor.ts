@@ -7,6 +7,8 @@ import walletService from '../../service/WalletService';
 import Cache from '../../Cache';
 import { BlockchainURI } from '../common/shared';
 
+var xss = require("xss-filter-object")();
+
 export class CreateProjectProcessor extends AbstractHandler {
 
     handleAsyncCreateProjectResponse = (jsonResponseMsg: any, retries?: number) => {
@@ -22,7 +24,8 @@ export class CreateProjectProcessor extends AbstractHandler {
                         _creator: cached.signature.creator,
                         _created: cached.signature.created
                     };
-                    Project.create({ ...obj, projectDid: cached.projectDid });
+                    var sanitizedData = xss.sanitize(obj);
+                    Project.create({ ...sanitizedData, projectDid: cached.projectDid });
                     Project.emit('postCommit', obj, cached.projectDid);
                     console.log(dateTimeLogger() + ' create project transaction completed successfully');
                 } else {
@@ -75,8 +78,9 @@ export class CreateProjectProcessor extends AbstractHandler {
                         projectDid: request.projectDid,
                         pubKey: wallet.verifyKey
                     }
+                    var sanitizedData = xss.sanitize(data);
                     blockChainPayload = {
-                        payload: [{ type: "project/CreateProject", value: data }]
+                        payload: [{ type: "project/CreateProject", value: sanitizedData }]
                     }
                     resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, 'project/CreateProject', BlockchainURI.commit));
                 })

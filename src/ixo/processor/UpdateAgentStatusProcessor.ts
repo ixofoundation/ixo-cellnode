@@ -5,6 +5,8 @@ import { Request } from "../../handlers/Request";
 import { dateTimeLogger } from '../../logger/Logger';
 import Cache from '../../Cache';
 
+var xss = require("xss-filter-object")();
+
 export class UpdateAgentStatusProcessor extends AbstractHandler {
 
   handleAsyncUpdateAgentStatusResponse = (jsonResponseMsg: any, retries?: number) => {
@@ -22,7 +24,8 @@ export class UpdateAgentStatusProcessor extends AbstractHandler {
             _created: cached.signature.created,
             version: cached.version >= 0 ? cached.version + 1 : 0
           };
-          AgentStatus.create({ ...obj, projectDid: cached.projectDid });
+          var sanitizedData = xss.sanitize(obj);
+          AgentStatus.create({ ...sanitizedData, projectDid: cached.projectDid });
           AgentStatus.emit('postCommit', obj, cached.projectDid);
           console.log(dateTimeLogger() + ' update agent status transaction completed successfully');
         } else {
@@ -69,8 +72,9 @@ export class UpdateAgentStatusProcessor extends AbstractHandler {
         senderDid: request.signature.creator,
         projectDid: request.projectDid
       }
+      var sanitizedData = xss.sanitize(data);
       blockChainPayload = {
-        payload: [{ type: "project/UpdateAgent", value: data }]
+        payload: [{ type: "project/UpdateAgent", value: sanitizedData }]
       }
       resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, "project/UpdateAgent"));
     });
