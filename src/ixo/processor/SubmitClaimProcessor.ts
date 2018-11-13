@@ -6,6 +6,8 @@ import { dateTimeLogger } from '../../logger/Logger';
 import Cache from '../../Cache';
 import { BlockchainURI } from '../common/shared';
 
+var xss = require("xss-filter-object")();
+
 export class SubmitClaimProcessor extends AbstractHandler {
 
   handleAsyncSubmitClaimResponse = (jsonResponseMsg: any, retries?: number) => {
@@ -21,7 +23,8 @@ export class SubmitClaimProcessor extends AbstractHandler {
             _creator: cached.signature.creator,
             _created: cached.signature.created
           };
-          Claim.create({ ...obj, projectDid: cached.projectDid });
+          var sanitizedData = xss.sanitize(obj);
+          Claim.create({ ...sanitizedData, projectDid: cached.projectDid });
           console.log(dateTimeLogger() + ' submit claim transaction completed successfully');
         } else {
           var retry: number = retries || 0;
@@ -58,8 +61,9 @@ export class SubmitClaimProcessor extends AbstractHandler {
         senderDid: request.signature.creator,
         projectDid: request.projectDid
       }
+      var sanitizedData = xss.sanitize(data);
       blockChainPayload = {
-        payload: [{ type: "project/CreateClaim", value: data }]
+        payload: [{ type: "project/CreateClaim", value: sanitizedData }]
       }
       resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, "project/CreateClaim", BlockchainURI.commit));
     });

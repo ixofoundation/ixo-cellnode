@@ -46,6 +46,7 @@
     "tweetnacl": "^1.0.0",
     "typescript": "^2.8.3",
     "validator": "^10.8.0",
-    "winston": "^2.4.2"
+    "winston": "^2.4.2",
+    "xss-filter-object": "^1.0.1"
   }
 }
