@@ -4,8 +4,7 @@ import { ProjectStatus, IProjectStatusModel } from '../model/ProjectStatusModel'
 import { Request } from "../../handlers/Request";
 import { dateTimeLogger } from '../../logger/Logger';
 import Cache from '../../Cache';
-
-var xss = require("xss-filter-object")();
+import xss from "../../Xss";
 
 export class CreateAgentProcessor extends AbstractHandler {
 

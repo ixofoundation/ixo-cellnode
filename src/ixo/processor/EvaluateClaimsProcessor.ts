@@ -8,8 +8,7 @@ import axios from 'axios';
 import { dateTimeLogger } from '../../logger/Logger';
 import { Status, BlockchainURI } from '../../ixo/common/shared';
 import Cache from '../../Cache';
-
-var xss = require("xss-filter-object")();
+import xss from "../../Xss";
 
 const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
 

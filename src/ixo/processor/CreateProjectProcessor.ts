@@ -6,8 +6,7 @@ import { dateTimeLogger } from '../../logger/Logger';
 import walletService from '../../service/WalletService';
 import Cache from '../../Cache';
 import { BlockchainURI } from '../common/shared';
-
-var xss = require("xss-filter-object")();
+import xss from "../../Xss";
 
 export class CreateProjectProcessor extends AbstractHandler {
 

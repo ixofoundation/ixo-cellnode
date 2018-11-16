@@ -29,10 +29,8 @@ export var TransactionSchema: Schema = new Schema({
   blockResponseCode: Number
 });
 
-export const Transaction: Model<ITransactionModel> = model<ITransactionModel>("Transaction", TransactionSchema);
-
 TransactionSchema.pre('save', function (next) {
-  var inst : any;
+  var inst: any;
   inst = this;
   transactionLog.findPreviousTransaction()
     .then((prevTxn: ITransactionModel[]) => {
@@ -44,3 +42,4 @@ TransactionSchema.pre('save', function (next) {
     });
 });
 
+export const Transaction: Model<ITransactionModel> = model<ITransactionModel>("Transaction", TransactionSchema);
