@@ -34,8 +34,8 @@ export var WalletSchema: Schema = new Schema({
 
 }, { strict: false });
 
-export const Wallet: Model<IWalletModel> = model<IWalletModel>("Wallet", WalletSchema);
-
 WalletSchema.pre("save", function (next) {
     next();
 });
+
+export const Wallet: Model<IWalletModel> = model<IWalletModel>("Wallet", WalletSchema);

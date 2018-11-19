@@ -228,7 +228,7 @@ export abstract class AbstractHandler {
             msgType: (msgType || 'blockchain'),
             projectDid: wallet.did,
             uri: (blockchainUri || BlockchainURI.sync),
-            data: new Buffer(JSON.stringify(signedMsg)).toString('hex')
+            data: Buffer.from(JSON.stringify(signedMsg)).toString('hex')
           }
           resolve(message);
         });

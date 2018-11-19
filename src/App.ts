@@ -1,8 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import * as bodyParser from 'body-parser';
-import * as logger from './logger/Logger';
-
 import { RequestRouter } from './routes/RequestRouter';
 import { QueryRouter } from './routes/QueryRouter';
 import { PublicRouter } from './routes/PublicRouter';
@@ -31,7 +29,6 @@ class App {
     this.express.use(compression({ threshold: 0 }));
     this.express.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
     this.express.use(bodyParser.json({ limit: '4mb' }));
-    this.express.use(logger.before);
   }
 
 
@@ -48,7 +45,6 @@ class App {
     this.express.use('/api/request', new RequestRouter().router);
     this.express.use('/api/query', new QueryRouter().router);
     this.express.use('/api/public', new PublicRouter().router);
-    this.express.use(logger.after);
   }
 
 }

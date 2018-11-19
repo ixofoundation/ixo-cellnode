@@ -5,8 +5,7 @@ import axios from 'axios';
 import { Status, workflow, BlockchainURI } from '../common/shared';
 import { dateTimeLogger } from '../../logger/Logger';
 import Cache from '../../Cache';
-
-var xss = require("xss-filter-object")();
+import xss from "../../Xss";
 
 const ETHEREUM_API = (process.env.ETHEREUM_API || '');
 const blockheight = 6;

@@ -39,7 +39,7 @@ export class SovrinUtils {
             toSign = JSON.stringify(input)
         }
         var signedMsg = sovrin.signMessage(toSign, signKey, verifyKey);
-        return new Buffer(signedMsg.slice(0,64)).toString('base64');
+        return Buffer.from(signedMsg.slice(0,64)).toString('base64');
     }
 }
 

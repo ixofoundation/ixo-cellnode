@@ -47,7 +47,7 @@ export class PublicHandler {
     getPublic = (req: any, res: any) => {
         return this.fetchPublic(req.params)
             .then((obj: any) => {
-                let img = new Buffer(obj.data, 'base64');
+                let img = Buffer.from(obj.data, 'base64');
                 let maxAge = 0;
                 if (obj.contentType.indexOf('image/') == 0) {
                     maxAge = MAX_AGE;

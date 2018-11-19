@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import * as logger from '../logger/Logger';
 import { Promise } from 'mongoose';
 
 const jayson = require('jayson/promise');
@@ -29,7 +28,6 @@ export abstract class AbstractRouter {
                 handlerFunction(args)
                     .then((data: any) => resolve(data))
                     .catch((err: Error) => {
-                        logger.base.error(err.message, err);
                         reject(jayson.server().error(null, err.message))
                     });
             });

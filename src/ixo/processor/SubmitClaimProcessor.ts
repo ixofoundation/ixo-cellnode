@@ -5,8 +5,7 @@ import { Request } from "../../handlers/Request";
 import { dateTimeLogger } from '../../logger/Logger';
 import Cache from '../../Cache';
 import { BlockchainURI } from '../common/shared';
-
-var xss = require("xss-filter-object")();
+import xss from "../../Xss";
 
 export class SubmitClaimProcessor extends AbstractHandler {
 
