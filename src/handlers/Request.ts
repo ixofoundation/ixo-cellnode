@@ -48,7 +48,7 @@ export class Request {
       validator.valid = true;
     } else {
       validator.valid = false;
-      validator.addError('Capability not allowed for did ' + this.signature.creator);
+      validator.addError('Capability not allowed for did ' + this.signature.creator );
     }
     return validator;
   }

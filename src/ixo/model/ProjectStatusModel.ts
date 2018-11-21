@@ -1,6 +1,7 @@
 import { Document, Schema, Model, model } from "mongoose";
 import { UpdateProjectStatusProcessor } from "../processor/UpdateProjectStatusProcessor";
 import { Status } from '../common/shared';
+import { dateTimeLogger } from '../../logger/Logger';
 
 
 export interface IProjectStatusModel extends Document {
@@ -28,6 +29,9 @@ ProjectStatus.on("postCommit", function (obj, projectDid) {
       request: {projectDid: projectDid},
       txHash: obj.txnID
     }
-    processor.publishMessageToQueue(message);
+    processor.publishMessageToQueue(message)
+    .catch((err) => {
+      console.log(dateTimeLogger() + ' update project status call to ethereum failed for %s %s', projectDid, err);
+    });;
   }
 });

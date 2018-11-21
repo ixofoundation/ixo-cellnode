@@ -47,15 +47,7 @@ export class CreateAgentProcessor extends AbstractHandler {
             });
     }
 
-    updateCapabilities = (request: Request) => {
-        this.addCapabilities(request.projectDid, 'did:sov:*', 'CreateAgent');
-        this.addCapabilities(request.projectDid, request.signature.creator, 'UpdateAgentStatus');
-        this.addCapabilities(request.projectDid, request.projectDid, 'UpdateAgentStatus');
-        this.addCapabilities(request.projectDid, request.signature.creator, 'ListAgents');
-        this.addCapabilities(request.projectDid, request.signature.creator, 'ListClaims');
-        this.addCapabilities(request.projectDid, request.signature.creator, 'UpdateProjectStatus');
-        this.addCapabilities(request.projectDid, request.projectDid, 'UpdateProjectStatus');
-    }
+    updateCapabilities = (request: Request) => { }
 
     msgToPublish = (txHash: any, request: Request) => {
         return new Promise((resolve: Function, reject: Function) => {
