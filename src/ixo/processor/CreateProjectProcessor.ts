@@ -15,18 +15,20 @@ export class CreateProjectProcessor extends AbstractHandler {
             .then((cached) => {
                 if (cached != undefined) {
                     console.log(dateTimeLogger() + ' updating the create project capabilities');
-                    this.updateCapabilities(cached);
-                    console.log(dateTimeLogger() + ' commit create project to Elysian');
-                    var obj = {
-                        ...cached.data,
-                        txHash: jsonResponseMsg.txHash,
-                        _creator: cached.signature.creator,
-                        _created: cached.signature.created
-                    };
-                    var sanitizedData = xss.sanitize(obj);
-                    Project.create({ ...sanitizedData, projectDid: cached.projectDid });
-                    Project.emit('postCommit', obj, cached.projectDid);
-                    console.log(dateTimeLogger() + ' create project transaction completed successfully');
+                    this.updateCapabilities(cached)
+                        .then(() => {
+                            console.log(dateTimeLogger() + ' commit create project to Elysian');
+                            var obj = {
+                                ...cached.data,
+                                txHash: jsonResponseMsg.txHash,
+                                _creator: cached.signature.creator,
+                                _created: cached.signature.created
+                            };
+                            var sanitizedData = xss.sanitize(obj);
+                            Project.create({ ...sanitizedData, projectDid: cached.projectDid });
+                            Project.emit('postCommit', obj, cached.projectDid);
+                            console.log(dateTimeLogger() + ' create project transaction completed successfully');
+                        });
                 } else {
                     var retry: number = retries || 0;
                     if (retry <= 3) {
@@ -50,13 +52,14 @@ export class CreateProjectProcessor extends AbstractHandler {
     }
 
     updateCapabilities = (request: Request) => {
-        this.addCapabilities(request.projectDid, 'did:sov:*', 'CreateAgent');
-        this.addCapabilities(request.projectDid, request.signature.creator, 'UpdateAgentStatus');
-        this.addCapabilities(request.projectDid, request.projectDid, 'UpdateAgentStatus');
-        this.addCapabilities(request.projectDid, request.signature.creator, 'ListAgents');
-        this.addCapabilities(request.projectDid, request.signature.creator, 'ListClaims');
-        this.addCapabilities(request.projectDid, request.signature.creator, 'UpdateProjectStatus');
-        this.addCapabilities(request.projectDid, request.projectDid, 'UpdateProjectStatus');
+        return new Promise((resolve: Function, reject: Function) => {
+            resolve(this.addCapabilities(request.projectDid, [request.projectDid, request.signature.creator], 'UpdateProjectStatus'));
+            this.addCapabilities(request.projectDid, [request.projectDid, request.signature.creator], 'UpdateAgentStatus');
+            this.addCapabilities(request.projectDid, ['did:sov:*'], 'CreateAgent');
+            this.addCapabilities(request.projectDid, [request.signature.creator], 'ListAgents');
+            this.addCapabilities(request.projectDid, [request.signature.creator], 'ListClaims');
+        });
+
     }
 
     msgToPublish = (txHash: any, request: Request) => {

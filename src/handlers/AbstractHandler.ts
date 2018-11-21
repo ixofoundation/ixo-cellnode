@@ -65,6 +65,7 @@ export abstract class AbstractHandler {
                                   });
                               })
                               .catch((error: string) => {
+                                console.log(dateTimeLogger() + ' error creating transaction log ' + request.projectDid);
                                 reject(new TransactionError(error));
                               })
                           } else {
@@ -72,6 +73,10 @@ export abstract class AbstractHandler {
                             this.createTransactionLog(request, capabilityMap)
                               .then((transaction: any) => {
                                 resolve(this.publishAndRespond(transaction.hash, request));
+                              })
+                              .catch((error: string) => {
+                                console.log(dateTimeLogger() + ' error creating transaction log ' + request.projectDid);
+                                reject(new TransactionError(error));
                               });
                           }
                         } else {
@@ -82,7 +87,12 @@ export abstract class AbstractHandler {
                         reject(new ValidationError(sigValid.errors[0]));
                       }
                     })
+                    .catch((error: string) => {
+                      console.log(dateTimeLogger() + ' error verifying signature ' + request.projectDid);
+                      reject(new TransactionError(error));
+                    });
                 } else {
+                  console.log(dateTimeLogger() + ' error processing capability ' + request.projectDid);
                   reject(new ValidationError(capValid.errors[0]));
                 }
               } else {
@@ -168,10 +178,10 @@ export abstract class AbstractHandler {
 
   private createTransactionLog(request: Request, capabilityMap: any) {
     return new Promise((resolve: Function, reject: Function) => {
-      console.log(dateTimeLogger() + ' write transaction to log')
       transactionService.createTransaction(request.body, request.signature.type,
         request.signature.signatureValue, request.projectDid, capabilityMap.capability)
         .then((transaction: ITransactionModel) => {
+          console.log(dateTimeLogger() + ' write transaction to log ' + transaction.hash)
           resolve(transaction);
         });
     });
@@ -181,7 +191,7 @@ export abstract class AbstractHandler {
     return true;
   }
 
-  addCapabilities(projectDid: string, did: string, requestType: string) {
+  addCapabilities(projectDid: string, did: string[], requestType: string) {
     capabilitiesService.addCapabilities(projectDid, did, requestType);
   }
 

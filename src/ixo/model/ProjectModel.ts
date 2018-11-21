@@ -1,6 +1,7 @@
 import { Document, Schema, Model, model } from "mongoose";
 import updateProjectStatusProcessor from "../processor/UpdateProjectStatusProcessor";
 import { Status } from '../common/shared';
+import { dateTimeLogger } from '../../logger/Logger';
 
 export interface IProjectModel extends Document {
   autoApprove: [string],
@@ -40,6 +41,12 @@ Project.on("postCommit", function (obj, projectDid) {
           signatureValue: signature
         }
       }
-      updateProjectStatusProcessor.process(projectStatusRequest);
+      updateProjectStatusProcessor.process(projectStatusRequest)
+        .catch((err) => {
+          console.log(dateTimeLogger() + ' update project status CREATED processor failed for project %s %s', projectDid, err);
+        });
+    })
+    .catch((err) => {
+      console.log(dateTimeLogger() + ' sign update project status to CREATED failed for project %s %s', projectDid, err);
     });
 });

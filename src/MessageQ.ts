@@ -1,6 +1,7 @@
 import { TransactionError } from "./error/TransactionError";
 import { dateTimeLogger } from './logger/Logger';
 import Cache from './Cache';
+import { handleResponseFromMessageQueue } from './handlers/RequestHandler';
 
 var amqplib = require('amqplib');
 
@@ -75,6 +76,7 @@ export class MessageQ {
     public subscribe(): Promise<any> {
         var inst: any;
         inst = this;
+
         return new Promise(function (resolve: Function, reject: Function) {
             inst.channel.assertQueue('pds.res', { durable: true })
                 .then(() => {
@@ -88,7 +90,8 @@ export class MessageQ {
                         }
                         var JSONcontent = JSON.parse(messageData.content.toString());
                         console.log(dateTimeLogger() + " received response for %s with hash %s", JSONcontent.msgType, JSONcontent.txHash);
-                        resolve(messageData.content);
+
+                        handleResponseFromMessageQueue(messageData.content)
                         inst.channel.ack(messageData);
                     });
                 })

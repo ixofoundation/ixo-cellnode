@@ -63,7 +63,7 @@ export class CapabilitiesService {
     });
   }
 
-  addCapabilities(projectDid: string, did: string, requestType: string): Promise<ICapabilitiesModel> {
+  addCapabilities(projectDid: string, did: string[], requestType: string): Promise<ICapabilitiesModel> {
     console.log(dateTimeLogger() + ' add capabilities for ' + did + ' for request type ' + requestType);
     return new Promise(function (resolve: Function, reject: Function) {
       Capabilities.updateOne(
