@@ -77,7 +77,10 @@ export const handleResponseFromMessageQueue = (message: any) => {
   // blockchain node has accepted the transaction, we can go ahead and commit the data
   if (jsonResponseMsg.msgType === 'eth') {
     updateProjectStatusProcessor.handleAsyncEthResponse(jsonResponseMsg);
-  } else {
+  } else if (jsonResponseMsg.msgType === 'error') {
+    transactionLogService.updateTransactionLogForError(jsonResponseMsg.txHash, jsonResponseMsg.data);
+  }
+  else {
     //update transaction log with blockchain response data
     var blockResponseCode = jsonResponseMsg.data.code != undefined ? jsonResponseMsg.data.code : undefined;
     blockResponseCode = jsonResponseMsg.data.check_tx != undefined ? jsonResponseMsg.data.check_tx.code : blockResponseCode;
