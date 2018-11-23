@@ -26,7 +26,8 @@ export var TransactionSchema: Schema = new Schema({
   capability: String,
   blockHeight: String,
   blockHash: String,
-  blockResponseCode: Number
+  blockResponseCode: Number,
+  blockError: String
 });
 
 TransactionSchema.pre('save', function (next) {
