@@ -3,7 +3,7 @@ FROM node:latest
 RUN mkdir /usr/src/app
 WORKDIR /usr/src/app
 COPY package*.json ./
-COPY config*.json ./
+#COPY config*.json ./
 COPY dist ./dist
 RUN npm install
 EXPOSE 5000

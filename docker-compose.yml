@@ -16,6 +16,7 @@ services:
       - ASYM_KEY=trustlab.tech
       - VALIDISSUERS=did:sov:123456789
       - NODEDID=
+
     ports:
       - "5000:5000"      
     restart: always
