@@ -1,6 +1,5 @@
 require('dotenv').config();
 import * as http from 'http';
-import * as logger from './logger/Logger';
 import cache from './Cache';
 import mq from './MessageQ';
 import App from './App';
@@ -32,7 +31,7 @@ App.set('port', port);
 const server = http.createServer(App);
 
 mongoose.connect(process.env.MONGODB_URI || '',
-  { useNewUrlParser: true, reconnectTries: Number.MAX_VALUE, reconnectInterval: 1000, connectTimeoutMS: 2000, keepAlive: 1 })
+  { useCreateIndex: true, useNewUrlParser: true, reconnectTries: Number.MAX_VALUE, reconnectInterval: 1000, connectTimeoutMS: 2000, keepAlive: 1 })
   .catch(() => { });
 
 cache.connect();

@@ -1,7 +1,5 @@
 import { EventEmitter } from 'events';
-import { IWalletModel, Wallet } from '../model/project/Wallet';
-import { IWallet } from '../model/project/IWallet';
-import { DocumentQuery } from 'mongoose';
+import { IWalletModel, Wallet } from '../model/Wallet';
 
 declare var Promise: any;
 
@@ -30,12 +28,6 @@ export class WalletService {
             resolve(newTransaction);
           }
         });
-    });
-  }
-
-  getLatestWallet(): Promise<IWalletModel> {
-    return new Promise(function (resolve: Function, reject: Function) {
-      resolve (Wallet.findOne().sort({$natural:-1}));
     });
   }
 

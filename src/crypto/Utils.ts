@@ -1,40 +1,39 @@
-import { createHash, randomBytes} from 'crypto';
+import { createHash, randomBytes } from 'crypto';
 import * as logger from '../logger/Logger';
 import * as nacl from 'tweetnacl';
 import * as bs58 from 'bs58';
+import { dateTimeLogger } from '../logger/Logger';
 
 var ethUtil = require('ethereumjs-util');
 var ethereumWallet = require('ethereumjs-wallet');
 
+export class CryptoUtils {
 
-export class CryptoUtils { 
-  
-  createNonce(size = 64){
+  createNonce(size = 64) {
     return randomBytes(Math.floor(size / 2)).toString('hex');
   }
 
-  validateSignature(data: String, type: String, signature: String, publicKey: String): Boolean{
-    switch (type)
-    {
-      case "ECDSA": 
+  validateSignature(data: String, type: String, signature: String, publicKey: String): Boolean {
+    switch (type) {
+      case "ECDSA":
         return this.validateECDSASignature(data, signature, publicKey);
       case "ed25519-sha-256":
         return this.validateEd25519Signature(data, signature, publicKey);
-        
-      default: 
+
+      default:
         throw Error("Signature: '" + type + "' not supported");
-      }
+    }
 
   }
 
-  validateEd25519Signature(data: String, signature: String, publicKey: String): Boolean{
-    console.log(new Date().getUTCMilliseconds() + ' validate ed25519 signature with  ' + publicKey);
+  validateEd25519Signature(data: String, signature: String, publicKey: String): Boolean {
+    console.log(dateTimeLogger() + ' validate ed25519 signature with  ' + publicKey);
     var decodedKey = new Uint8Array(bs58.decode(this.remove0x(publicKey).toString()));
-    var signatureBuffer = new Uint8Array(new Buffer(this.remove0x(signature).toString(),'hex'))
-    return nacl.sign.detached.verify(new Uint8Array(new Buffer(data.toString())), signatureBuffer, decodedKey)
+    var signatureBuffer = new Uint8Array(Buffer.from(this.remove0x(signature).toString(), 'base64'))
+    return nacl.sign.detached.verify(new Uint8Array(Buffer.from(data.toString())), signatureBuffer, decodedKey)
   }
 
-  validateECDSASignature(data: String, signature: String, publicKey: String): Boolean{
+  validateECDSASignature(data: String, signature: String, publicKey: String): Boolean {
     // Same data as before
     var message = ethUtil.toBuffer(data);
     var msgHash = ethUtil.hashPersonalMessage(message);
@@ -43,12 +42,9 @@ export class CryptoUtils {
     var sigParams = ethUtil.fromRpcSig(signatureBuffer);
 
     var recoveredPublicKey = ethUtil.ecrecover(msgHash, sigParams.v, sigParams.r, sigParams.s);
-    
+
     var sender = ethUtil.publicToAddress(recoveredPublicKey);
     var recoveredAddress = ethUtil.bufferToHex(sender);
-    if((recoveredAddress != publicKey)){
-      logger.base.debug("Signature failed - in: " + publicKey + " out: " + recoveredAddress);
-    }
 
     return (recoveredAddress == publicKey);
   }
@@ -60,14 +56,14 @@ export class CryptoUtils {
   }
 
   remove0x(key: String): String {
-    if(key.indexOf("0x") == 0){
+    if (key.indexOf("0x") == 0) {
       return key.substring(2);
-    }else{
+    } else {
       return key;
     }
   }
 
-  generateWalletAndKeys(): any{
+  generateWalletAndKeys(): any {
     var wallet = ethereumWallet.generate();
     return {
       address: wallet.getAddressString(),
@@ -76,7 +72,7 @@ export class CryptoUtils {
     }
   }
 
-  signECDSA(data: String, privateKey: String) : String{
+  signECDSA(data: String, privateKey: String): String {
     var sig = ethUtil.ecsign(ethUtil.hashPersonalMessage(ethUtil.toBuffer(data)), ethUtil.toBuffer(privateKey));
     return ethUtil.bufferToHex(Buffer.concat([sig.r, sig.s, ethUtil.toBuffer(sig.v - 27)]))
   }

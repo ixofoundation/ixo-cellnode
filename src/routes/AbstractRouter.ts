@@ -1,8 +1,5 @@
-import { Router, Response, NextFunction } from 'express';
-import * as logger from '../logger/Logger';
+import { Router } from 'express';
 import { Promise } from 'mongoose';
-import {Request} from "../handlers/Request";
-
 
 const jayson = require('jayson/promise');
 
@@ -31,7 +28,6 @@ export abstract class AbstractRouter {
                 handlerFunction(args)
                     .then((data: any) => resolve(data))
                     .catch((err: Error) => {
-                        logger.base.error(err.message, err);
                         reject(jayson.server().error(null, err.message))
                     });
             });

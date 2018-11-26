@@ -1,8 +1,8 @@
 import { Document, Schema, Model, model } from "mongoose";
 import { ITransaction } from "./ITransaction";
-import transactionLog from '../../service/TransactionLogService'
+import transactionLog from '../service/TransactionLogService'
 
-import CryptoUtils from '../../crypto/Utils'
+import CryptoUtils from '../crypto/Utils'
 
 var cryptoUtils = new CryptoUtils();
 
@@ -23,13 +23,15 @@ export var TransactionSchema: Schema = new Schema({
   signatureValue: String,
   publicKey: String,
   timestamp: Date,
-  capability: String
+  capability: String,
+  blockHeight: String,
+  blockHash: String,
+  blockResponseCode: Number,
+  blockError: String
 });
 
-export const Transaction: Model<ITransactionModel> = model<ITransactionModel>("Transaction", TransactionSchema);
-
 TransactionSchema.pre('save', function (next) {
-  var inst : any;
+  var inst: any;
   inst = this;
   transactionLog.findPreviousTransaction()
     .then((prevTxn: ITransactionModel[]) => {
@@ -41,3 +43,4 @@ TransactionSchema.pre('save', function (next) {
     });
 });
 
+export const Transaction: Model<ITransactionModel> = model<ITransactionModel>("Transaction", TransactionSchema);

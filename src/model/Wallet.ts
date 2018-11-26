@@ -4,10 +4,11 @@ import { createCipher, createDecipher } from 'crypto';
 
 export interface IWalletModel extends IWallet, Document { }
 
-var crypto = require('crypto');
+const ASYM_CYPHER = (process.env.ASYM_CYPHER || 'aes-256-cbc');
+const ASYM_KEY = (process.env.ASYM_KEY || 'trustlab.tech');
 
 function encrypt(text: string) {
-    var cipher = createCipher('aes-256-cbc', "trustlab.tech");
+    var cipher = createCipher(ASYM_CYPHER, ASYM_KEY);
     var crypted = cipher.update(text, 'utf8', 'hex');
     crypted += cipher.final('hex');
     return crypted;
@@ -15,7 +16,7 @@ function encrypt(text: string) {
 
 function decrypt(text: string) {
     if (text === null || typeof text === 'undefined') { return text; };
-    var decipher = createDecipher('aes-256-cbc', "trustlab.tech");
+    var decipher = createDecipher(ASYM_CYPHER, ASYM_KEY);
     var dec = decipher.update(text, 'hex', 'utf8');
     dec += decipher.final('utf8');
     return dec;
@@ -33,8 +34,8 @@ export var WalletSchema: Schema = new Schema({
 
 }, { strict: false });
 
-export const Wallet: Model<IWalletModel> = model<IWalletModel>("Wallet", WalletSchema);
-
 WalletSchema.pre("save", function (next) {
     next();
 });
+
+export const Wallet: Model<IWalletModel> = model<IWalletModel>("Wallet", WalletSchema);

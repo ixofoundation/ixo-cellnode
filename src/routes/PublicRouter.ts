@@ -1,4 +1,3 @@
-import {Router} from 'express';
 import {AbstractRouter} from './AbstractRouter';
 import {PublicHandler} from '../handlers/PublicHandler'
 

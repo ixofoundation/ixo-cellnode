@@ -2,6 +2,7 @@ import { CryptoUtils } from '../crypto/Utils';
 import { RequestValidator } from '../templates/RequestValidator';
 import Cache from '../Cache';
 import axios from 'axios';
+import { dateTimeLogger } from '../logger/Logger';
 
 var cryptoUtils = new CryptoUtils();
 
@@ -43,15 +44,11 @@ export class Request {
 
   verifyCapability = (allow: any): RequestValidator => {
     var validator = new RequestValidator();
-    var inst = this;
-    validator.valid = false;
-    validator.addError('Capability not allowed for did ' + inst.signature.creator);
-    for (let index = 0; index < allow.length; index++) {
-      const element = allow[index];
-      if (inst.signature.creator.match(new RegExp(element))) {
-        validator.valid = true;
-        break;
-      }
+    if (allow.filter((e: string) => this.signature.creator.match(new RegExp(e))).length > 0) {
+      validator.valid = true;
+    } else {
+      validator.valid = false;
+      validator.addError('Capability not allowed for did ' + this.signature.creator );
     }
     return validator;
   }
@@ -70,7 +67,7 @@ export class Request {
 
           if (didDoc) {
             //cache-hit
-            console.log(new Date().getUTCMilliseconds() + ' got cache record for key ' + this.signature.creator);
+            console.log(dateTimeLogger() + ' got cache record for key ' + this.signature.creator);
             if (validateKyc) {
               if (!preVerifyDidSignature(didDoc, this, capability)) {
                 validator.addError("Signature failed pre verification " + this.signature.creator);
@@ -91,8 +88,8 @@ export class Request {
             resolve(validator);
           } else {
             //cache-miss
-            console.log(new Date().getUTCMilliseconds() + ' retrieve pubkey from blockchain');
-            axios.get(BLOCKCHAIN_URI_REST + this.signature.creator)
+            console.log(dateTimeLogger() + ' retrieve pubkey from blockchain');
+            axios.get(BLOCKCHAIN_URI_REST + 'did/getByDid/' + this.signature.creator)
               .then((response) => {
                 if (response.status == 200 && response.data.did != null) {
                   //valid response from blockchain
@@ -108,7 +105,7 @@ export class Request {
                       validator.addError("Signature did not validate '" + JSON.stringify(this.data));
                       validator.valid = false;
                     } else {
-                      Cache.set(this.signature.creator, response.data, 60);
+                      Cache.set(this.signature.creator, response.data, 60 * 60);
                     }
                   } catch (error) {
                     validator.addError("Error processing signature " + error);
@@ -132,9 +129,9 @@ export class Request {
         })
         .catch((reason) => {
           // could not connect to cache, read from blockchain
-          console.log(new Date().getUTCMilliseconds() + ' cache unavailable ' + reason);
-          console.log(new Date().getUTCMilliseconds() + ' retrieve pubkey from blockchain');
-          axios.get(BLOCKCHAIN_URI_REST + this.signature.creator)
+          console.log(dateTimeLogger() + ' cache unavailable ' + reason);
+          console.log(dateTimeLogger() + ' retrieve pubkey from blockchain');
+          axios.get(BLOCKCHAIN_URI_REST + 'did/getByDid/' + this.signature.creator)
             .then((response) => {
               if (response.status == 200) {
                 //valid response from blockchain

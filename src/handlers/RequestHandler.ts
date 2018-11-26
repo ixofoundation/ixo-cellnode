@@ -1,512 +1,120 @@
-import { Document, Schema, Model, model } from "mongoose";
-import { AbstractHandler } from './AbstractHandler';
-import { Request } from "../handlers/Request";
-import InitHandler from './InitHandler';
+import updateProjectStatusProcessor from '../ixo/processor/UpdateProjectStatusProcessor';
+import createProjectProcessor from '../ixo/processor/CreateProjectProcessor';
+import createAgentProcessor from '../ixo/processor/CreateAgentProcessor';
+import evaluateClaimsProcessor from '../ixo/processor/EvaluateClaimsProcessor';
+import listAgentsProcessor from '../ixo/processor/ListAgentsProcessor';
+import listClaimProcessor from '../ixo/processor/ListClaimsProcessor';
+import submitClaimProcessor from '../ixo/processor/SubmitClaimProcessor';
+import updateAgentStatusProcessor from '../ixo/processor/UpdateAgentStatusProcessor';
+import transactionLogService from '../service/TransactionLogService';
+import { dateTimeLogger } from '../logger/Logger';
 
+import mq from '../MessageQ';
 
-/////////////////////////////////////////////////
-//  PROJECT MODEL                              //
-/////////////////////////////////////////////////
+export const RequestLookupHandler: any = {
+  'createProject': (args: any) => {
+    return new Promise((resolve: Function, reject: Function) => {
+      resolve(createProjectProcessor.process(args));
+    });
+  },
 
-export interface IProjectModel extends Document {
-  autoApprove: [string],
-  evaluatorPayPerClaim: number
+  'createAgent': (args: any) => {
+    return new Promise((resolve: Function, reject: Function) => {
+      resolve(createAgentProcessor.process(args));
+    });
+  },
+
+  'evaluateClaim': (args: any) => {
+    return new Promise((resolve: Function, reject: Function) => {
+      resolve(evaluateClaimsProcessor.process(args));
+    });
+  },
+
+  'listAgents': (args: any) => {
+    return new Promise((resolve: Function, reject: Function) => {
+      resolve(listAgentsProcessor.process(args));
+    });
+  },
+
+  'listClaims': (args: any) => {
+    return new Promise((resolve: Function, reject: Function) => {
+      resolve(listClaimProcessor.process(args));
+    });
+  },
+
+  'submitClaim': (args: any) => {
+    return new Promise((resolve: Function, reject: Function) => {
+      resolve(submitClaimProcessor.process(args));
+    });
+  },
+
+  'updateAgentStatus': (args: any) => {
+    return new Promise((resolve: Function, reject: Function) => {
+      resolve(updateAgentStatusProcessor.process(args));
+    });
+  },
+
+  'updateProjectStatus': (args: any) => {
+    return new Promise((resolve: Function, reject: Function) => {
+      resolve(updateProjectStatusProcessor.process(args));
+    });
+  }
 }
 
-var ProjectSchema: Schema = new Schema({
-  autoApprove: [],
-  evaluatorPayPerClaim: Number
-}, { strict: false });
+const lookupProcessor: any = {
+  'project/CreateProject': (jsonResponseMsg: any) => { createProjectProcessor.handleAsyncCreateProjectResponse(jsonResponseMsg) },
+  'project/UpdateProjectStatus': (jsonResponseMsg: any) => { updateProjectStatusProcessor.handleAsyncProjectStatusResponse(jsonResponseMsg) },
+  'project/CreateAgent': (jsonResponseMsg: any) => { createAgentProcessor.handleAsyncCreateAgentResponse(jsonResponseMsg) },
+  'project/UpdateAgent': (jsonResponseMsg: any) => { updateAgentStatusProcessor.handleAsyncUpdateAgentStatusResponse(jsonResponseMsg) },
+  'project/CreateClaim': (jsonResponseMsg: any) => { submitClaimProcessor.handleAsyncSubmitClaimResponse(jsonResponseMsg) },
+  'project/CreateEvaluation': (jsonResponseMsg: any) => { evaluateClaimsProcessor.handleAsyncEvaluateClaimResponse(jsonResponseMsg) },
+  'project/UpdateProjectStatus/rollback': (jsonResponseMsg: any) => { updateProjectStatusProcessor.handleRollbackProjectStatus(jsonResponseMsg) }
+}
 
-ProjectSchema.pre("save", function (next) {
-  next();
-});
+export const handleResponseFromMessageQueue = (message: any) => {
+  let jsonResponseMsg = JSON.parse(message);
 
-export const Project: Model<IProjectModel> = model<IProjectModel>("Project", ProjectSchema);
+  // blockchain node has accepted the transaction, we can go ahead and commit the data
+  if (jsonResponseMsg.msgType === 'eth') {
+    updateProjectStatusProcessor.handleAsyncEthResponse(jsonResponseMsg);
+  } else if (jsonResponseMsg.msgType === 'error') {
+    transactionLogService.updateTransactionLogForError(jsonResponseMsg.txHash, jsonResponseMsg.data);
+  }
+  else {
+    //update transaction log with blockchain response data
+    var blockResponseCode = jsonResponseMsg.data.code != undefined ? jsonResponseMsg.data.code : undefined;
+    blockResponseCode = jsonResponseMsg.data.check_tx != undefined ? jsonResponseMsg.data.check_tx.code : blockResponseCode;
+    blockResponseCode = jsonResponseMsg.data.deliver_tx != undefined ? jsonResponseMsg.data.deliver_tx.code : blockResponseCode;
+    blockResponseCode = jsonResponseMsg.data.tx_result != undefined ? jsonResponseMsg.data.tx_result.code : blockResponseCode;
+    blockResponseCode = blockResponseCode == undefined ? 0 : blockResponseCode;
 
-
-/////////////////////////////////////////////////
-//   AGENT MODEL                               //
-/////////////////////////////////////////////////
-export interface IAgentModel extends Document { role: string }
-
-var AgentSchema: Schema = new Schema({
-  role: String
-}, { strict: false });
-
-AgentSchema.pre("save", function (next) {
-  next();
-});
-
-export const Agent: Model<IAgentModel> = model<IAgentModel>("Agent", AgentSchema);
-
-Agent.on("postCommit", function (obj) {
-  Project.findOne({
-    projectDid: obj.projectDid
-  }).then((project) => {
-    if (project) {
-      let status = (project.autoApprove.some(function (element) { return (obj.role === element) })) ? "1" : "0";
-      let requestHandler = new RequestHandler();
-      var data: any = {
-        projectDid: obj.projectDid,
-        status: status,
-        agentDid: obj.agentDid,
-        role: obj.role
-      }
-      requestHandler.selfSignMessage(data, obj.projectDid)
-        .then((signature: any) => {
-          var statusRequest: any = {
-            payload: {
-              template: {
-                name: "agent_status"
-              },
-              data: data
-            },
-            signature: {
-              type: "ed25519-sha-256",
-              created: new Date().toISOString(),
-              creator: obj.projectDid,
-              signatureValue: signature
-            }
+    transactionLogService.updateTransactionLogForHash(jsonResponseMsg.txHash, jsonResponseMsg.data.hash, jsonResponseMsg.data.height, blockResponseCode)
+      .then((result: any) => {
+        console.log(dateTimeLogger() + ' transaction log updated with block information for txHash %s %s', jsonResponseMsg.txHash, blockResponseCode);
+        if (blockResponseCode >= 1) {
+          //here we handle specific rollback tasks if required
+          var rollbackProcessor = jsonResponseMsg.msgType + '/rollback';
+          if (lookupProcessor[rollbackProcessor] !== undefined) {
+            lookupProcessor[rollbackProcessor](jsonResponseMsg);
           }
-          requestHandler.updateAgentStatus(statusRequest);
-        });
-    }
-  });
-});
+          console.log(dateTimeLogger() + ' blockchain failed for message %s with code %s', jsonResponseMsg.msgType, blockResponseCode);
+        } else {
+          console.log(dateTimeLogger() + ' process blockchain response for %s hash %s ', jsonResponseMsg.msgType, jsonResponseMsg.txHash);
+          lookupProcessor[jsonResponseMsg.msgType](jsonResponseMsg);
 
-/////////////////////////////////////////////////
-//   AGENT STATUS MODEL                        //
-/////////////////////////////////////////////////
+        }
+      })
+      .catch(() => {
+        console.log(dateTimeLogger() + ' transaction log failed to update for txHash ' + jsonResponseMsg.txHash);
+      });
+  }
+}
 
-export interface IAgentStatusModel extends Document { }
-
-var AgentStatusSchema: Schema = new Schema({}, { strict: false });
-
-AgentStatusSchema.pre("save", function (next) {
-  next();
-});
-
-export const AgentStatus: Model<IAgentStatusModel> = model<IAgentStatusModel>("AgentStatus", AgentStatusSchema);
-
-/////////////////////////////////////////////////
-//   CLAIM MODEL                               //
-/////////////////////////////////////////////////
-export interface IClaimModel extends Document { }
-
-var ClaimSchema: Schema = new Schema({}, { strict: false });
-
-ClaimSchema.pre("save", function (next) {
-  next();
-});
-
-export const Claim: Model<IClaimModel> = model<IClaimModel>("Claim", ClaimSchema);
-
-/////////////////////////////////////////////////
-//   EVALUATE CLAIM MODEL                      //
-/////////////////////////////////////////////////
-export interface IEvaluateClaimModel extends Document { }
-
-var EvaluateClaimSchema: Schema = new Schema({}, { strict: false });
-
-EvaluateClaimSchema.pre("save", function (next) {
-  next();
-});
-
-export const EvaluateClaim: Model<IEvaluateClaimModel> = model<IEvaluateClaimModel>("EvaluateClaim", EvaluateClaimSchema);
-
-export class RequestHandler extends AbstractHandler {
-
+export class RequestHandler {
   constructor() {
-    super();
-  }
-
-  updateCapabilities(request: Request, methodCall: string) {
-    switch (methodCall) {
-      case 'UpdateAgentStatus': {
-        if (request.data.role === 'SA' && request.data.status === '1') this.addCapabilities(request.projectDid, request.data.agentDid, 'SubmitClaim');
-        if (request.data.role === 'EA' && request.data.status === '1') this.addCapabilities(request.projectDid, request.data.agentDid, 'EvaluateClaim');
-        if (request.data.status === '1') this.addCapabilities(request.projectDid, request.data.agentDid, 'ListClaims');
-        if (request.data.role === 'SA' && request.data.status === '2') this.removeCapabilities(request.projectDid, request.data.agentDid, 'SubmitClaim');
-        if (request.data.role === 'EA' && request.data.status === '2') this.removeCapabilities(request.projectDid, request.data.agentDid, 'EvaluateClaim');
-        if (request.data.status === '2') this.removeCapabilities(request.projectDid, request.data.agentDid, 'ListClaims');
-        break;
-      }
-      case 'CreateProject': {
-        this.addCapabilities(request.projectDid, 'did:sov:*', 'CreateAgent');
-        this.addCapabilities(request.projectDid, request.signature.creator, 'UpdateAgentStatus');
-        this.addCapabilities(request.projectDid, request.projectDid, 'UpdateAgentStatus');
-        this.addCapabilities(request.projectDid, request.signature.creator, 'ListAgents');
-        this.addCapabilities(request.projectDid, request.signature.creator, 'ListClaims');
-        break;
-      }
-      default: {
-        break;
-      }
-    }
-  }
-
-  msgToPublish(obj: any, request: Request, methodCall: string): any {
-    return new Promise((resolve: Function, reject: Function) => {
-      var blockChainPayload: any;
-      var txHash = obj.txHash;
-      delete obj.version;
-      delete obj.txHash;
-      delete obj._creator;
-      delete obj._created;
-      switch (methodCall) {
-        case 'CreateProject': {
-          delete obj.autoApprove;
-          blockChainPayload = {
-            payload: [16, {
-              data: {
-                ...obj,
-                createdOn: request.signature.created,
-                createdBy: request.signature.creator
-              },
-              txHash: txHash,
-              senderDid: request.signature.creator,
-              projectDid: request.projectDid,
-              pubKey: this.getWallet().verifyKey
-            }]
-          }
-          break;
-        }
-        case 'CreateAgent': {
-          blockChainPayload = {
-            payload: [17, {
-              data: {
-                did: obj.agentDid,
-                role: obj.role,
-              },
-              txHash: txHash,
-              senderDid: request.signature.creator,
-              projectDid: request.projectDid
-            }]
-          }
-          break;
-        }
-        case 'UpdateAgentStatus': {
-          blockChainPayload = {
-            payload: [18, {
-              data: {
-                did: obj.agentDid,
-                status: obj.status,
-                role: obj.role
-              },
-              txHash: txHash,
-              senderDid: request.signature.creator,
-              projectDid: request.projectDid
-            }]
-          }
-
-          break;
-        }
-        case 'SubmitClaim': {
-          blockChainPayload = {
-            payload: [19, {
-              data: {
-                claimID: txHash
-              },
-              txHash: txHash,
-              senderDid: request.signature.creator,
-              projectDid: request.projectDid
-            }]
-          }
-          break;
-        }
-        case 'EvaluateClaim': {
-          blockChainPayload = {
-            payload: [20, {
-              data: {
-                claimID: obj.claimId,
-                status: obj.status
-              },
-              txHash: txHash,
-              senderDid: request.signature.creator,
-              projectDid: request.projectDid
-            }]
-          }
-
-          break;
-        }
-        default: {
-          reject('Capability does not exist')
-          break;
-        }
-      }
-      resolve(this.signMessageForBlockchain(blockChainPayload, request.projectDid));
-    });
-  }
-
-  checkKycCredentials = (didDoc: any): boolean  => {
-    console.log(new Date().getUTCMilliseconds() + ' validate kyc credentials ' + JSON.stringify(didDoc));
-    let isKYCValidated: boolean = false;
-
-    if (process.env.VALIDISSUERS != undefined) {
-      let validIssuers: string[] = (process.env.VALIDISSUERS.split(' '));
-      if (didDoc.credentials) {
-        didDoc.credentials.forEach((element: any) => {
-          if (element.claim.KYCValidated && validIssuers.some(issuer => issuer === element.issuer)){
-            isKYCValidated = true;
-          }
-        });
-      }
-    }
-    return isKYCValidated;
-  }
-
-  preVerifyDidSignature(didDoc: any, request: Request, capability: string): boolean {
-    if (capability === 'CreateProject') {
-      return this.checkKycCredentials(didDoc);
-    }
-
-    if (capability === 'CreateAgent') {
-      if (request.data.role != 'SA') {
-        return this.checkKycCredentials(didDoc);
-      }
-    }
-    return true;
-  }
-
-  /////////////////////////////////////////////////
-  //  HANDLE CREATE PROJECT                      //
-  /////////////////////////////////////////////////
-
-  createProject = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
-    return this.generateProjectWallet()
-      .then((did: any) => {
-        return InitHandler.initialise(did)
-          .then((response: any) => {
-            return this.createTransaction(args, 'CreateProject', Project, undefined, did);
-          });
-      });
-  }
-
-  /////////////////////////////////////////////////
-  //  HANDLE AGENT REQUESTS                      //
-  /////////////////////////////////////////////////
-
-  createAgent = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
-    return this.createTransaction(args, 'CreateAgent', Agent, function (request: any): Promise<boolean> {
-      return new Promise(function (resolve: Function, reject: Function) {
-        Agent.find(
-          {
-            projectDid: request.data.projectDid,
-            agentDid: request.data.agentDid
-          },
-          function (error: Error, results: IAgentModel[]) {
-            if (error) {
-              reject(error);
-            } else {
-              results.forEach(element => {
-                if (element.role === request.data.role) resolve(true);
-                if (element.role === 'EA' && request.data.role === 'SA') resolve(true);
-                if (element.role === 'SA' && request.data.role === 'EA') resolve(true);
-              });
-              resolve(false);
-            }
-          });
-      });
-    });
-  }
-
-
-  updateAgentStatus = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
-    return this.createTransaction(args, 'UpdateAgentStatus', AgentStatus, function (request: any): Promise<boolean> {
-      let newVersion = request.version + 1;
-      return new Promise(function (resolve: Function, reject: Function) {
-        AgentStatus.findOne(
-          {
-            projectDid: request.data.projectDid,
-            agentDid: request.data.agentDid,
-            version: newVersion
-          },
-          function (error: Error, result: IAgentStatusModel) {
-            if (error) {
-              reject(error);
-            } else {
-              if (result) {
-                resolve(true);
-              }
-              resolve(false);
-            }
-          }).limit(1);
-      });
-    })
-  }
-
-  listAgents = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
-    return this.queryTransaction(args, 'ListAgents', function (filter: any): Promise<any[]> {
-      return new Promise(function (resolve: Function, reject: Function) {
-        Agent.aggregate([
-          {
-            $match: filter
-          },
-          {
-            $lookup: {
-              "from": "agentstatuses",
-              let: {
-                "agentDid": "$agentDid",
-                "projectDid": "$projectDid"
-              },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: {
-                      $and: [
-                        {
-                          $eq: [
-                            "$agentDid",
-                            "$$agentDid"
-                          ]
-                        },
-                        {
-                          $eq: [
-                            "$projectDid",
-                            "$$projectDid"
-                          ]
-                        }
-                      ]
-                    }
-                  }
-                }
-              ],
-              as: "currentStatus"
-            }
-          },
-          { $unwind: { path: "$currentStatus", preserveNullAndEmptyArrays: true } },
-          { $sort: { "currentStatus.version": -1 } },
-          {
-            $group: {
-              "_id": "$_id",
-              "name": { $first: "$name" },
-              "agentDid": { $first: "$agentDid" },
-              "projectDid": { $first: "$projectDid" },
-              "role": { $first: "$role" },
-              "email": { $first: "$email" },
-              "currentStatus": { $first: "$currentStatus" }
-            }
-          }
-        ],
-          function (error: Error, result: any[]) {
-            if (error) {
-              reject(error);
-            } else {
-              resolve(result);
-            }
-          });
-      });
-    });
-  }
-
-  /////////////////////////////////////////////////
-  //  HANDLE CLAIM REQUESTS                      //
-  /////////////////////////////////////////////////
-
-  submitClaim = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
-    return this.createTransaction(args, 'SubmitClaim', Claim);
-  }
-
-  checkForFunds(projectDid: string): Promise<boolean> {
-    return new Promise((resolve: Function, reject: Function) => {
-      console.log(new Date().getUTCMilliseconds() + ' confirm funds exists');
-      resolve(true);
-      // axios.get(BLOCKCHAIN_URI_REST + 'projectAccounts/' + projectDid)
-      //   .then((response) => {
-      //     if (response.status == 200) {
-      //       response.data.forEach((element: any) => {
-      //         if (element.did == projectDid) {
-      //           Project.findOne({
-      //             projectDid: projectDid
-      //           })
-      //             .then((project) => {
-      //               if (project) {
-      //                 resolve(element.balance - project.evaluatorPayPerClaim >= 0);
-      //               }
-      //               console.log(new Date().getUTCMilliseconds() + ' check for funds no project found for projectDid ' + projectDid);
-      //               resolve(false);
-      //             })
-      //             .catch((err) => {
-      //               console.log(new Date().getUTCMilliseconds() + ' error processing check for funds ' + err)
-      //               resolve(false);
-      //             });
-      //         }
-      //       })
-      //     }
-      //     console.log(new Date().getUTCMilliseconds() + ' no valid response check for funds from blockchain ' + response.statusText);
-      //     resolve(false);
-      //   })
-      //   .catch((reason) => {
-      //     console.log(new Date().getUTCMilliseconds() + ' check for funds could not connect to blockchain ' + reason);
-      //     resolve(false);
-      //   });
-    });
-  };
-
-  evaluateClaim = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
-    return this.checkForFunds(new Request(args).projectDid)
-      .then((resp: boolean) => {
-        if (resp) {
-          return this.createTransaction(args, 'EvaluateClaim', EvaluateClaim, function (request: any): Promise<boolean> {
-            let newVersion = request.version + 1;
-            return new Promise(function (resolve: Function, reject: Function) {
-              EvaluateClaim.findOne(
-                {
-                  projectDid: request.data.projectDid,
-                  claimId: request.data.claimId,
-                  version: newVersion
-                },
-                function (error: Error, result: IEvaluateClaimModel) {
-                  if (error) {
-                    reject(error);
-                  } else {
-                    if (result) {
-                      resolve(true);
-                    }
-                    resolve(false);
-                  }
-                }).limit(1);
-            });
-          });
-        }
-        console.log(new Date().getUTCMilliseconds() + ' insufficient funds available');
-        return 'Insufficient funds available';
-      });
-  }
-
-  listClaims = (args: any) => {
-    console.log(new Date().getUTCMilliseconds() + ' start new transaction ' + JSON.stringify(args));
-    return this.queryTransaction(args, 'ListClaims', function (filter: any): Promise<any[]> {
-      return new Promise(function (resolve: Function, reject: Function) {
-        Claim.aggregate([
-          {
-            $match: filter
-          },
-          {
-            $lookup: {
-              "from": "evaluateclaims",
-              "localField": "txHash",
-              "foreignField": "claimId",
-              "as": "evaluations"
-            }
-          },
-          { $sort: { "evaluations.version": -1 } }
-        ],
-          function (error: Error, result: any[]) {
-            if (error) {
-              reject(error);
-            } else {
-              resolve(result);
-            }
-          });
-      });
-    });
+    setInterval(() => {
+      mq.subscribe()
+        .catch(() => { console.log(dateTimeLogger() + ' exception caught for handleResponseFromMessageQueue') });
+    }, 500)
   }
 }

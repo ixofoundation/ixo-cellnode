@@ -1,10 +1,14 @@
 import { TransactionError } from "./error/TransactionError";
+import { dateTimeLogger } from './logger/Logger';
+import Cache from './Cache';
+import { handleResponseFromMessageQueue } from './handlers/RequestHandler';
 
 var amqplib = require('amqplib');
 
 export class MessageQ {
 
     connection: any;
+    channel: any;
 
     private queue: string;
     host: string;
@@ -32,9 +36,10 @@ export class MessageQ {
                         inst.connect();
                     });
                     console.log('RabbitMQ connected');
+                    conn.createChannel().then((ch: any) => { inst.channel = ch });
                     resolve(conn);
                 }, () => {
-                    setTimeout(function () {
+                    setTimeout(() => {
                         console.error("RabbitMQ reconnecting");
                         inst.connect()
                     }, 5000);
@@ -43,32 +48,58 @@ export class MessageQ {
     }
 
     async publish(content: any) {
-        try {
-            const channel = await this.connection.createChannel();
-            channel.assertExchange("pds.ex", "direct", { durable: true });
-            channel.assertExchange("pds.dlx", "fanout", { durable: true });
-            channel.assertQueue(this.queue, {
-                durable: true,
-                deadLetterExchange: "pds.dlx",
-                deadLetterRoutingKey: "dlx.rk"
-            })
+        var inst: any;
+        inst = this;
+        return new Promise(function (resolve: Function, reject: Function) {
+            inst.channel.assertExchange("pds.ex", "direct", { durable: true });
+            inst.channel.assertQueue(inst.queue, { durable: true })
                 .then(() => {
-                    channel.bindQueue(this.queue, 'pds.ex');
-                    //channel.bindQueue(this.queue, 'pds.dlx');
+                    inst.channel.bindQueue(inst.queue, 'pds.ex');
                 })
                 .then(() => {
                     let jsonContent = JSON.stringify(content);
-                    console.log(new Date().getUTCMilliseconds() + ' send to queue');
-                    channel.sendToQueue(this.queue, Buffer.from(jsonContent), {
-                        persistent: true,
+                    console.log(dateTimeLogger() + ' cache object ' + content.txHash);
+                    Cache.set(content.txHash, content.request);
+                    inst.channel.sendToQueue(inst.queue, Buffer.from(jsonContent), {
+                        persistent: false,
                         contentType: 'application/json'
                     });
                     return true;
+                })
+                .catch(() => {
+                    throw new TransactionError('Exception connecting to mq');
                 });
+        })
 
-        } catch (error) {
-            throw new TransactionError(error.message);
-        }
+    }
+
+    public subscribe(): Promise<any> {
+        var inst: any;
+        inst = this;
+
+        return new Promise(function (resolve: Function, reject: Function) {
+            inst.channel.assertQueue('pds.res', { durable: true })
+                .then(() => {
+                    inst.channel.bindQueue('pds.res', 'pds.ex');
+                })
+                .then(() => {
+                    inst.channel.prefetch(50);
+                    inst.channel.consume('pds.res', (messageData: any) => {
+                        if (messageData === null) {
+                            return;
+                        }
+                        var JSONcontent = JSON.parse(messageData.content.toString());
+                        console.log(dateTimeLogger() + " received response for %s with hash %s", JSONcontent.msgType, JSONcontent.txHash);
+
+                        handleResponseFromMessageQueue(messageData.content)
+                        inst.channel.ack(messageData);
+                    });
+                })
+                .catch(() => {
+                    throw new TransactionError('Exception connecting to mq');
+                });
+        })
+
     }
 }
 

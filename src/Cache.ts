@@ -1,5 +1,6 @@
 var Memcached = require('memcached');
-
+import { dateTimeLogger } from './logger/Logger';
+import { TransactionError } from "./error/TransactionError";
 var cache: any;
 
 export class Cache {
@@ -14,7 +15,7 @@ export class Cache {
         cache.connect(this.host, function (err: any, conn: any) {
             cache.on('failure', function (details: any) { console.log("Server " + details.server + "went down due to: " + details.messages.join('')) });
             cache.on('reconnecting', function (details: any) { console.log("Attempting reconnect to Memcache") });
-            if (err) throw new Error(err);
+            if (err) throw new TransactionError(err);
             console.log('Memcache connected');            
         });
     }
@@ -29,9 +30,10 @@ export class Cache {
     }
 
     set(key: string, value: any, ttl: number = 0) {
-
+        var inst: any;
+        inst = this;
         cache.set(key, value, ttl, function (err: any) {
-            if (err) console.log(new Date().getUTCMilliseconds() + ' Memcache could not set value for key ' + key);
+            if (err) console.log(dateTimeLogger() + ' Memcache could not set value for key ' + key);
         });
     }
 
