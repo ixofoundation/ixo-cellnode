@@ -3,7 +3,7 @@ services:
   app:
     environment:
       - BLOCKCHAIN_URI_REST=https://explorer_qa.ixo.world/api/
-      - ETHEREUM_API=https://ropsten.infura.io/
+      - ETHEREUM_API=https://ropsten.infura.io/sq19XM5Eu2ANGAzwZ4yk
       - NODEDID=
       
   db:
