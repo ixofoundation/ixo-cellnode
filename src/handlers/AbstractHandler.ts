@@ -113,13 +113,11 @@ export abstract class AbstractHandler {
   }
 
   public queryTransaction(args: any, method: string, query: Function) {
-
     var request = new Request(args);
     return new Promise((resolve: Function, reject: Function) => {
       capabilitiesService.findCapabilitiesForProject(request.projectDid)
         .then((result: ICapabilitiesModel) => {
           var capabilityMap: any;
-          console.log('################ ' + JSON.stringify(result))
           capabilityMap = result.capabilities.filter(element => element.capability == method)[0];
           console.log(dateTimeLogger() + ' have capability ' + capabilityMap.capability);
           TemplateUtils.getTemplateFromCache(capabilityMap.template, request.template)
@@ -155,8 +153,8 @@ export abstract class AbstractHandler {
               reject(new TransactionError('Cannot connect to template registry'));
             });
         })
-        .catch((err) => {
-          console.log(dateTimeLogger() + 'capabilities not found for project' + request.projectDid + ' ' + err);
+        .catch(() => {
+          console.log(dateTimeLogger() + ' capabilities not found for project ' + request.projectDid);
           reject(new TransactionError('Capabilities not found for project'));
         });
     });

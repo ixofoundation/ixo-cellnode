@@ -120,15 +120,15 @@ To secure the Mongo DB:
 docker exec -ti db /bin/bash
 mongod
 use admin
-db.createUser({user: "admin", pwd: "d@s$E0rp", roles: [ { role: "userAdminAnyDatabase", db: "admin" } ]})
+db.createUser({user: "<admin username>", pwd: "<admin password>", roles: [ { role: "userAdminAnyDatabase", db: "admin" } ]})
 
 use admin
-db.auth("admin", "d@s$E0rp" )
+db.auth("<admin username>", "<admin password>" )
 
-mongo --port 27017 -u "admin" -p "d@s$E0rp" --authenticationDatabase "admin"
+mongo --port 27017 -u "<admin username>" -p "<admin password>" --authenticationDatabase "admin"
 
 use elysian
-db.createUser({user: "trustlab", pwd: "d@s$E0rp", roles: [{role: "readWrite", db: "elysian"}]})
+db.createUser({user: "<username>", pwd: "<password>", roles: [{role: "readWrite", db: "elysian"}]})
 
 API documents can be found at https://github.com/ixofoundation/mkdocs/blob/master/docs/api.md
 
