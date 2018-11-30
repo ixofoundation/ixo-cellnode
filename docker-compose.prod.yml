@@ -28,6 +28,7 @@ services:
       - BLOCKCHAIN_URI_SYNC=http://blockchain.ixo.world:46657/broadcast_tx_sync?tx=0x
       - BLOCKCHAIN_URI_COMMIT=http://blockchain.ixo.world:46657/broadcast_tx_commit?tx=0x
       - BLOCKCHAIN_URI_VALIDATE=http://blockchain.ixo.world:46657/tx?hash=0x
+      - ETHEREUM_API=https://mainnet.infura.io/
 
   cli:
     environment:

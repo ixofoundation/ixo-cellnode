@@ -97,6 +97,7 @@ export abstract class AbstractHandler {
                   reject(new ValidationError(capValid.errors[0]));
                 }
               } else {
+                console.log(dateTimeLogger() + ' template validation failed');
                 reject(new ValidationError(validator.errors[0].message));
               };
             })
