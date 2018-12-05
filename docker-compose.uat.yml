@@ -12,9 +12,9 @@ services:
   db:
     ports:
       - "27017:27017"
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=${ROOT}
-      - MONGO_INITDB_ROOT_PASSWORD=${ROOTPASS}
+    # environment:
+    #   - MONGO_INITDB_ROOT_USERNAME=${ROOT}
+    #   - MONGO_INITDB_ROOT_PASSWORD=${ROOTPASS}
 
   cache:
     ports:
