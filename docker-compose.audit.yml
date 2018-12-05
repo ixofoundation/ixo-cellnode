@@ -1,0 +1,29 @@
+version: "2"
+services:
+  app:
+    environment:
+      - BLOCKCHAIN_URI_REST=https://explorer_audit.ixo.world/api/
+      - ETHEREUM_API=https://ropsten.infura.io/sq19XM5Eu2ANGAzwZ4yk
+      - NODEDID=
+      
+  db:
+    ports:
+      - "27017:27017"
+
+  cache:
+    ports:
+      - "11211:11211"
+
+  mq:
+    ports:
+      - "5672:5672"
+
+  pol:
+    environment:
+      - BLOCKCHAIN_URI_SYNC=http://blockchain_audit.ixo.world:46657/broadcast_tx_sync?tx=0x
+      - BLOCKCHAIN_URI_COMMIT=http://blockchain_audit.ixo.world:46657/broadcast_tx_commit?tx=0x
+      - BLOCKCHAIN_URI_VALIDATE=http://blockchain_audit.ixo.world:46657/tx?hash=0x
+
+  cli:
+    environment:
+      - BLOCKCHAIN_URI_REST=https://explorer_audit.ixo.world/api/did/getByDid/
