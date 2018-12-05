@@ -67,11 +67,17 @@ docker-compose start cache
 # attempting to wait for mongodb to be ready
 $ROOT_DIR/bin/wait-for-service.sh db 'waiting for connections on port' 10
 
-docker exec db mongo admin /data/db/create-admin-user.js
-docker exec db rm /data/db/create-admin-user.js
+if [ -f "$ROOT_DIR/db/create-admin-user.js" ]
+then
+  docker exec db mongo admin /data/db/create-admin-user.js
+  docker exec db rm /data/db/create-admin-user.js
+fi
 
-docker exec db mongo elysian /data/db/create-elysian-user.js
-docker exec db rm /data/db/create-elysian-user.js
+if [ -f "$ROOT_DIR/db/create-elysian-user.js" ]
+then
+  docker exec db mongo elysian /data/db/create-elysian-user.js
+  docker exec db rm /data/db/create-elysian-user.js
+fi
 
 # attempting to wait for rabbitmq to be ready
 $ROOT_DIR/bin/wait-for-service.sh mq 'Server startup complete;' 10
