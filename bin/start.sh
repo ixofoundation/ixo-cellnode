@@ -83,6 +83,7 @@ fi
 $ROOT_DIR/bin/wait-for-service.sh mq 'Server startup complete;' 10
 docker-compose start pol
 docker-compose start app
+docker-compose start cli
 
 echo -n "Starting Elysian ..."
 sleep 5

@@ -10,11 +10,6 @@ services:
       - ASYM_KEY=${ASYMKEY}
       - NODEDID=
 
-  db:
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=${ROOT}
-      - MONGO_INITDB_ROOT_PASSWORD=${ROOTPASS}
-
   mq:
     ports:
       - "5672:5672"
