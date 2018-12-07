@@ -1,1 +1,1 @@
-db.createUser({user: "%%USER%%", pwd: "%%PASSWORD%%", roles: [ { role: "userAdminAnyDatabase", db: "admin" } ]})
+db.createUser({user: "%%ROOT%%", pwd: "%%PASSWORD%%", roles: [ { role: "userAdminAnyDatabase", db: "admin" } ]})
