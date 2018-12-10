@@ -60,7 +60,6 @@ export class CreateProjectProcessor extends AbstractHandler {
     msgToPublish = (txHash: any, request: Request) => {
         return new Promise((resolve: Function, reject: Function) => {
             var blockChainPayload: any;
-            //delete request.data.autoApprove;
             walletService.getWallet(request.projectDid)
                 .then((wallet) => {
                     let data = {
