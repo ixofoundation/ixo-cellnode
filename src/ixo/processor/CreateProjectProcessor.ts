@@ -50,6 +50,7 @@ export class CreateProjectProcessor extends AbstractHandler {
     }
 
     updateCapabilities = (request: Request) => {
+        this.addCapabilities(request.projectDid, [request.projectDid, request.signature.creator], 'FundProject');
         this.addCapabilities(request.projectDid, [request.projectDid, request.signature.creator], 'UpdateProjectStatus');
         this.addCapabilities(request.projectDid, [request.projectDid, request.signature.creator], 'UpdateAgentStatus');
         this.addCapabilities(request.projectDid, ['did:sov:*'], 'CreateAgent');

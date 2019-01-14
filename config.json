@@ -34,6 +34,10 @@
 		{
 			"capability": "UpdateProjectStatus",
 			"template": "projects" 
+		},
+		{
+			"capability": "FundProject",
+			"template": "projects" 
 		}
 	]
 }
