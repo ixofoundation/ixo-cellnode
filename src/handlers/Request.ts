@@ -86,9 +86,12 @@ export class Request {
               console.log(dateTimeLogger() + ' retrieve pubkey from blockchain ' + BLOCKCHAIN_URI_REST + 'did/getByDid/' + this.signature.creator);
               axios.get(BLOCKCHAIN_URI_REST + 'did/getByDid/' + this.signature.creator)
                 .then((response) => {
+                  console.log('WE ARE HERE 1')
                   if (response.status == 200 && response.data.did != null) {
+                    console.log('WE ARE HERE 2')
                     //valid response from blockchain
                     if (validateKyc) {
+                      console.log('WE ARE HERE 3')
                       if (!preVerifyDidSignature(response.data, this, capability)) {
                         validator.addError("Signature failed pre verification " + this.signature.creator);
                         validator.valid = false;
@@ -96,6 +99,7 @@ export class Request {
                       }
                     }
                     try {
+                      console.log('WE ARE HERE 4')
                       if (!cryptoUtils.validateSignature(JSON.stringify(this.data), this.signature.type, this.signature.signatureValue, response.data.publicKey)) {
                         validator.addError("Signature did not validate '" + JSON.stringify(this.data));
                         validator.valid = false;
