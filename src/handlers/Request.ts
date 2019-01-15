@@ -83,7 +83,7 @@ export class Request {
               resolve(validator);
             } else {
               //cache-miss
-              console.log(dateTimeLogger() + ' retrieve pubkey from blockchain');
+              console.log(dateTimeLogger() + ' retrieve pubkey from blockchain ' + BLOCKCHAIN_URI_REST + 'did/getByDid/' + this.signature.creator);
               axios.get(BLOCKCHAIN_URI_REST + 'did/getByDid/' + this.signature.creator)
                 .then((response) => {
                   if (response.status == 200 && response.data.did != null) {
