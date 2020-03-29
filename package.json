@@ -39,7 +39,7 @@
     "jsonschema": "^1.2.4",
     "lodash": "^4.17.11",
     "memcached": "^2.2.2",
-    "mongoose": "^5.3.12",
+    "mongoose": "^5.7.5",
     "node": "^11.1.0",
     "node-fetch": "^2.3.0",
     "sovrin-did": "^1.4.0",
