@@ -1,6 +1,7 @@
-# Elysian
+# Cell Node (Elysian Release)
 
-The project to setup Elysian.  It runs Node.js app using [Express 4](http://expressjs.com/) in a dockerized container.
+Instructions to set up the Elysian release of the Cell Node.  
+This runs a Node.js app using [Express 4](http://expressjs.com/) in a dockerized container.
 
 ## Running Elysian
 
