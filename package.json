@@ -37,7 +37,7 @@
     "five-bells-condition": "^5.0.1",
     "jayson": "^2.1.0",
     "jsonschema": "^1.2.4",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.13",
     "memcached": "^2.2.2",
     "mongoose": "^5.3.12",
     "node": "^11.1.0",
