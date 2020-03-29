@@ -22,7 +22,7 @@
     "@types/mongoose": "^5.3.1",
     "@types/node": "^10.12.9",
     "amqplib": "^0.5.2",
-    "axios": "^0.18.0",
+    "axios": "^0.18.1",
     "base-64": "^0.1.0",
     "bip39": "^2.5.0",
     "body-parser": "^1.18.3",
