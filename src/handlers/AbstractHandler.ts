@@ -1,28 +1,27 @@
-import { Model, connection } from "mongoose";
-import { ITransactionModel } from '../model/Transaction';
-import { ICapabilitiesModel } from '../model/Capabilities';
+import {connection, Model} from "mongoose";
+import {ITransactionModel} from '../model/Transaction';
+import {ICapabilitiesModel} from '../model/Capabilities';
 
 import transactionService from '../service/TransactionLogService';
 import capabilitiesService from '../service/CapabilitiesService';
 import walletService from '../service/WalletService';
 
-import { RequestValidator } from '../templates/RequestValidator';
-import { validateJson } from '../templates/JsonValidator';
-import { ValidatorResult } from 'jsonschema';
-import { ValidationError } from '../error/ValidationError';
-import { TransactionError } from '../error/TransactionError';
+import {RequestValidator} from '../templates/RequestValidator';
+import {validateJson} from '../templates/JsonValidator';
+import {ValidatorResult} from 'jsonschema';
+import {ValidationError} from '../error/ValidationError';
+import {TransactionError} from '../error/TransactionError';
 
-import { Request } from "../handlers/Request";
+import {Request} from "../handlers/Request";
 import TemplateUtils from '../templates/TemplateUtils';
-import { SovrinUtils } from '../crypto/SovrinUtils';
+import {SovrinUtils} from '../crypto/SovrinUtils';
 import mq from '../MessageQ';
-import { IWalletModel } from "../model/Wallet";
-import { AxiosResponse } from "axios";
+import {IWalletModel} from "../model/Wallet";
+import {AxiosResponse} from "axios";
 import Cache from '../Cache';
 
-import { dateTimeLogger } from '../logger/Logger';
-import { BlockchainURI } from "../ixo/common/shared";
-import { json } from "body-parser";
+import {dateTimeLogger} from '../logger/Logger';
+import {BlockchainURI} from "../ixo/common/shared";
 
 export abstract class AbstractHandler {
 
@@ -99,7 +98,7 @@ export abstract class AbstractHandler {
               } else {
                 console.log(dateTimeLogger() + ' template validation failed');
                 reject(new ValidationError(validator.errors[0].message));
-              };
+              }
             })
             .catch((reason) => {
               console.log(dateTimeLogger() + ' template registry failed' + reason);
@@ -147,7 +146,7 @@ export abstract class AbstractHandler {
                 }
               } else {
                 reject(new ValidationError(validator.errors[0].message));
-              };
+              }
             })
             .catch((reason) => {
               console.log(dateTimeLogger() + ' template registry failed' + reason);
@@ -161,36 +160,9 @@ export abstract class AbstractHandler {
     });
   }
 
-  private publishAndRespond(hash: string, request: Request) {
-    return new Promise((resolve: Function, reject: Function) => {
-      this.msgToPublish(hash, request)
-        .then((msg: any) => {
-          console.log(dateTimeLogger() + ' message to be published ' + msg.msgType);
-          var cacheMsg = {
-            data: msg,
-            request: request,
-            txHash: hash
-          }
-          mq.publish(cacheMsg);
-        });
-      resolve(hash);
-    });
-  }
-
-  private createTransactionLog(request: Request, capabilityMap: any) {
-    return new Promise((resolve: Function, reject: Function) => {
-      transactionService.createTransaction(request.body, request.signature.type,
-        request.signature.signatureValue, request.projectDid, capabilityMap.capability)
-        .then((transaction: ITransactionModel) => {
-          console.log(dateTimeLogger() + ' write transaction to log ' + transaction.hash)
-          resolve(transaction);
-        });
-    });
-  }
-
   preVerifyDidSignature = (didResponse: AxiosResponse, data: Request, capability: string): boolean => {
     return true;
-  }
+  };
 
   addCapabilities(projectDid: string, did: string[], requestType: string) {
     capabilitiesService.addCapabilities(projectDid, did, requestType);
@@ -211,22 +183,24 @@ export abstract class AbstractHandler {
       var did = String("did:ixo:" + sovrinWallet.did);
       walletService.createWallet(did, sovrinWallet.secret.signKey, sovrinWallet.verifyKey)
         .then((wallet: IWalletModel) => {
-          Cache.set(wallet.did, { publicKey: wallet.verifyKey });
+          Cache.set(wallet.did, {publicKey: wallet.verifyKey});
           console.log(dateTimeLogger() + ' project wallet created');
           resolve(wallet.did);
         });
     });
   }
 
-  abstract updateCapabilities = (request: Request): void => { };
+  abstract updateCapabilities = (request: Request): void => {
+  };
 
-  abstract msgToPublish = (hash: any, request: Request): any => { };
+  abstract msgToPublish = (hash: any, request: Request): any => {
+  };
 
   messageForBlockchain(msgToSign: any, projectDid: string, msgType?: string, blockchainUri?: string) {
     return new Promise((resolve: Function, reject: Function) => {
       walletService.getWallet(projectDid)
         .then((wallet: IWalletModel) => {
-          Cache.set(wallet.did, { publicKey: wallet.verifyKey });
+          Cache.set(wallet.did, {publicKey: wallet.verifyKey});
           var sovrinUtils = new SovrinUtils();
           var signedMsg = {
             ...msgToSign,
@@ -234,13 +208,13 @@ export abstract class AbstractHandler {
               signatureValue: sovrinUtils.signDocumentNoEncoding(wallet.signKey, wallet.verifyKey, wallet.did, msgToSign.payload[0].value),
               created: new Date()
             }]
-          }
+          };
           let message = {
             msgType: (msgType || 'blockchain'),
             projectDid: wallet.did,
             uri: (blockchainUri || BlockchainURI.sync),
             data: Buffer.from(JSON.stringify(signedMsg)).toString('hex')
-          }
+          };
           resolve(message);
         });
     });
@@ -250,7 +224,7 @@ export abstract class AbstractHandler {
     return new Promise((resolve: Function, reject: Function) => {
       walletService.getWallet(projectDid)
         .then((wallet: IWalletModel) => {
-          Cache.set(wallet.did, { publicKey: wallet.verifyKey });
+          Cache.set(wallet.did, {publicKey: wallet.verifyKey});
           var sovrinUtils = new SovrinUtils();
           resolve(sovrinUtils.signDocumentNoEncoding(wallet.signKey, wallet.verifyKey, wallet.did, msgToSign));
         })
@@ -270,6 +244,33 @@ export abstract class AbstractHandler {
   subscribeToMessageQueue() {
     return new Promise((resolve: Function, reject: Function) => {
       resolve(mq.subscribe());
+    });
+  }
+
+  private publishAndRespond(hash: string, request: Request) {
+    return new Promise((resolve: Function, reject: Function) => {
+      this.msgToPublish(hash, request)
+        .then((msg: any) => {
+          console.log(dateTimeLogger() + ' message to be published ' + msg.msgType);
+          var cacheMsg = {
+            data: msg,
+            request: request,
+            txHash: hash
+          };
+          mq.publish(cacheMsg);
+        });
+      resolve(hash);
+    });
+  }
+
+  private createTransactionLog(request: Request, capabilityMap: any) {
+    return new Promise((resolve: Function, reject: Function) => {
+      transactionService.createTransaction(request.body, request.signature.type,
+        request.signature.signatureValue, request.projectDid, capabilityMap.capability)
+        .then((transaction: ITransactionModel) => {
+          console.log(dateTimeLogger() + ' write transaction to log ' + transaction.hash);
+          resolve(transaction);
+        });
     });
   }
 }

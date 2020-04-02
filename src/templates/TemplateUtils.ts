@@ -1,11 +1,11 @@
-import { GitUtils } from './GitUtils';
-import { Validator } from 'jsonschema';
+import {GitUtils} from './GitUtils';
+import {Validator} from 'jsonschema';
 import Cache from '../Cache';
-import { dateTimeLogger } from '../logger/Logger';
+import {dateTimeLogger} from '../logger/Logger';
 
 export class TemplateUtils {
 
-  gitUtils: GitUtils
+  gitUtils: GitUtils;
 
   constructor() {
     this.gitUtils = new GitUtils();
@@ -43,7 +43,6 @@ export class TemplateUtils {
         return res;
       });
   }
-
 
 
   getCacheKey(templateType: string, name: string): string {

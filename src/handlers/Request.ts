@@ -1,8 +1,8 @@
-import { CryptoUtils } from '../crypto/Utils';
-import { RequestValidator } from '../templates/RequestValidator';
+import {CryptoUtils} from '../crypto/Utils';
+import {RequestValidator} from '../templates/RequestValidator';
 import Cache from '../Cache';
 import axios from 'axios';
-import { dateTimeLogger } from '../logger/Logger';
+import {dateTimeLogger} from '../logger/Logger';
 
 var cryptoUtils = new CryptoUtils();
 
@@ -40,7 +40,7 @@ export class Request {
 
   hasSignature = (): boolean => {
     return (this.signature != undefined);
-  }
+  };
 
   verifyCapability = (allow: any): RequestValidator => {
     var validator = new RequestValidator();
@@ -48,10 +48,10 @@ export class Request {
       validator.valid = true;
     } else {
       validator.valid = false;
-      validator.addError('Capability not allowed for did ' + this.signature.creator );
+      validator.addError('Capability not allowed for did ' + this.signature.creator);
     }
     return validator;
-  }
+  };
 
   verifySignature = (preVerifyDidSignature: Function, validateKyc: boolean, capability: string): Promise<RequestValidator> => {
 

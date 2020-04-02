@@ -1,7 +1,7 @@
-import { Document, Schema, Model, model } from "mongoose";
+import {Document, Model, model, Schema} from "mongoose";
 import updateProjectStatusProcessor from "../processor/UpdateProjectStatusProcessor";
-import { Status } from '../common/shared';
-import { dateTimeLogger } from '../../logger/Logger';
+import {Status} from '../common/shared';
+import {dateTimeLogger} from '../../logger/Logger';
 
 export interface IProjectModel extends Document {
   autoApprove: [string],
@@ -11,7 +11,7 @@ export interface IProjectModel extends Document {
 var ProjectSchema: Schema = new Schema({
   autoApprove: [],
   evaluatorPayPerClaim: Number
-}, { strict: false });
+}, {strict: false});
 
 ProjectSchema.pre("save", function (next) {
   next();
@@ -24,7 +24,7 @@ Project.on("postCommit", function (obj, projectDid) {
   var data: any = {
     projectDid: projectDid,
     status: Status.created
-  }
+  };
   updateProjectStatusProcessor.selfSignMessage(data, projectDid)
     .then((signature: any) => {
       var projectStatusRequest: any = {
@@ -40,7 +40,7 @@ Project.on("postCommit", function (obj, projectDid) {
           creator: projectDid,
           signatureValue: signature
         }
-      }
+      };
       updateProjectStatusProcessor.process(projectStatusRequest)
         .catch((err) => {
           console.log(dateTimeLogger() + ' update project status CREATED processor failed for project %s %s', projectDid, err);

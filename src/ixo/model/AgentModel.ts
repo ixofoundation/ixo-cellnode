@@ -1,12 +1,14 @@
-import { Document, Schema, Model, model } from "mongoose";
-import { Project } from "./ProjectModel"
+import {Document, Model, model, Schema} from "mongoose";
+import {Project} from "./ProjectModel"
 import updateAgentStatusProcessor from "../processor/UpdateAgentStatusProcessor";
 
-export interface IAgentModel extends Document { role: string }
+export interface IAgentModel extends Document {
+  role: string
+}
 
 var AgentSchema: Schema = new Schema({
   role: String
-}, { strict: false });
+}, {strict: false});
 
 AgentSchema.pre("save", function (next) {
   next();
@@ -19,13 +21,15 @@ Agent.on("postCommit", function (obj, projectDid) {
     projectDid: obj.projectDid
   }).then((project) => {
     if (project) {
-      let status = (project.autoApprove.some(function (element) { return (obj.role === element) })) ? "1" : "0";
+      let status = (project.autoApprove.some(function (element) {
+        return (obj.role === element)
+      })) ? "1" : "0";
       var data: any = {
         projectDid: projectDid,
         status: status,
         agentDid: obj.agentDid,
         role: obj.role
-      }
+      };
       updateAgentStatusProcessor.selfSignMessage(data, projectDid)
         .then((signature: any) => {
           var statusRequest: any = {
@@ -41,7 +45,7 @@ Agent.on("postCommit", function (obj, projectDid) {
               creator: projectDid,
               signatureValue: signature
             }
-          }
+          };
           updateAgentStatusProcessor.process(statusRequest);
         });
     }

@@ -1,4 +1,4 @@
 export interface IPublic {
-    data: Buffer;
-    contentType: string;
+  data: Buffer;
+  contentType: string;
 }

@@ -1,7 +1,7 @@
-import { Document, Schema, Model, model } from "mongoose";
-import { UpdateProjectStatusProcessor } from "../processor/UpdateProjectStatusProcessor";
-import { Status } from '../common/shared';
-import { dateTimeLogger } from '../../logger/Logger';
+import {Document, Model, model, Schema} from "mongoose";
+import {UpdateProjectStatusProcessor} from "../processor/UpdateProjectStatusProcessor";
+import {Status} from '../common/shared';
+import {dateTimeLogger} from '../../logger/Logger';
 
 
 export interface IProjectStatusModel extends Document {
@@ -10,7 +10,7 @@ export interface IProjectStatusModel extends Document {
 
 var ProjectStatusSchema: Schema = new Schema({
   status: String
-}, { strict: false });
+}, {strict: false});
 
 ProjectStatusSchema.pre("save", function (next) {
   next();
@@ -28,10 +28,11 @@ ProjectStatus.on("postCommit", function (obj, projectDid) {
       },
       request: {projectDid: projectDid},
       txHash: obj.txnID
-    }
+    };
     processor.publishMessageToQueue(message)
-    .catch((err) => {
-      console.log(dateTimeLogger() + ' update project status call to ethereum failed for %s %s', projectDid, err);
-    });;
+      .catch((err) => {
+        console.log(dateTimeLogger() + ' update project status call to ethereum failed for %s %s', projectDid, err);
+      });
+
   }
 });

@@ -1,8 +1,7 @@
-import { createHash, randomBytes } from 'crypto';
-import * as logger from '../logger/Logger';
+import {createHash, randomBytes} from 'crypto';
+import {dateTimeLogger} from '../logger/Logger';
 import * as nacl from 'tweetnacl';
 import * as bs58 from 'bs58';
-import { dateTimeLogger } from '../logger/Logger';
 
 var ethUtil = require('ethereumjs-util');
 var ethereumWallet = require('ethereumjs-wallet');
@@ -29,7 +28,7 @@ export class CryptoUtils {
   validateEd25519Signature(data: String, signature: String, publicKey: String): Boolean {
     console.log(dateTimeLogger() + ' validate ed25519 signature with  ' + publicKey);
     var decodedKey = new Uint8Array(bs58.decode(this.remove0x(publicKey).toString()));
-    var signatureBuffer = new Uint8Array(Buffer.from(this.remove0x(signature).toString(), 'base64'))
+    var signatureBuffer = new Uint8Array(Buffer.from(this.remove0x(signature).toString(), 'base64'));
     return nacl.sign.detached.verify(new Uint8Array(Buffer.from(data.toString())), signatureBuffer, decodedKey)
   }
 

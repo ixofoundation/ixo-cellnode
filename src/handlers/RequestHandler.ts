@@ -7,7 +7,7 @@ import listClaimProcessor from '../ixo/processor/ListClaimsProcessor';
 import submitClaimProcessor from '../ixo/processor/SubmitClaimProcessor';
 import updateAgentStatusProcessor from '../ixo/processor/UpdateAgentStatusProcessor';
 import transactionLogService from '../service/TransactionLogService';
-import { dateTimeLogger } from '../logger/Logger';
+import {dateTimeLogger} from '../logger/Logger';
 
 import mq from '../MessageQ';
 
@@ -59,17 +59,31 @@ export const RequestLookupHandler: any = {
       resolve(updateProjectStatusProcessor.process(args));
     });
   }
-}
+};
 
 const lookupProcessor: any = {
-  'project/CreateProject': (jsonResponseMsg: any) => { createProjectProcessor.handleAsyncCreateProjectResponse(jsonResponseMsg) },
-  'project/UpdateProjectStatus': (jsonResponseMsg: any) => { updateProjectStatusProcessor.handleAsyncProjectStatusResponse(jsonResponseMsg) },
-  'project/CreateAgent': (jsonResponseMsg: any) => { createAgentProcessor.handleAsyncCreateAgentResponse(jsonResponseMsg) },
-  'project/UpdateAgent': (jsonResponseMsg: any) => { updateAgentStatusProcessor.handleAsyncUpdateAgentStatusResponse(jsonResponseMsg) },
-  'project/CreateClaim': (jsonResponseMsg: any) => { submitClaimProcessor.handleAsyncSubmitClaimResponse(jsonResponseMsg) },
-  'project/CreateEvaluation': (jsonResponseMsg: any) => { evaluateClaimsProcessor.handleAsyncEvaluateClaimResponse(jsonResponseMsg) },
-  'project/UpdateProjectStatus/rollback': (jsonResponseMsg: any) => { updateProjectStatusProcessor.handleRollbackProjectStatus(jsonResponseMsg) }
-}
+  'project/CreateProject': (jsonResponseMsg: any) => {
+    createProjectProcessor.handleAsyncCreateProjectResponse(jsonResponseMsg)
+  },
+  'project/UpdateProjectStatus': (jsonResponseMsg: any) => {
+    updateProjectStatusProcessor.handleAsyncProjectStatusResponse(jsonResponseMsg)
+  },
+  'project/CreateAgent': (jsonResponseMsg: any) => {
+    createAgentProcessor.handleAsyncCreateAgentResponse(jsonResponseMsg)
+  },
+  'project/UpdateAgent': (jsonResponseMsg: any) => {
+    updateAgentStatusProcessor.handleAsyncUpdateAgentStatusResponse(jsonResponseMsg)
+  },
+  'project/CreateClaim': (jsonResponseMsg: any) => {
+    submitClaimProcessor.handleAsyncSubmitClaimResponse(jsonResponseMsg)
+  },
+  'project/CreateEvaluation': (jsonResponseMsg: any) => {
+    evaluateClaimsProcessor.handleAsyncEvaluateClaimResponse(jsonResponseMsg)
+  },
+  'project/UpdateProjectStatus/rollback': (jsonResponseMsg: any) => {
+    updateProjectStatusProcessor.handleRollbackProjectStatus(jsonResponseMsg)
+  }
+};
 
 export const handleResponseFromMessageQueue = (message: any) => {
   let jsonResponseMsg = JSON.parse(message);
@@ -79,8 +93,7 @@ export const handleResponseFromMessageQueue = (message: any) => {
     updateProjectStatusProcessor.handleAsyncEthResponse(jsonResponseMsg);
   } else if (jsonResponseMsg.msgType === 'error') {
     transactionLogService.updateTransactionLogForError(jsonResponseMsg.txHash, jsonResponseMsg.data);
-  }
-  else {
+  } else {
     //update transaction log with blockchain response data
     var blockResponseCode = jsonResponseMsg.data.code != undefined ? jsonResponseMsg.data.code : undefined;
     blockResponseCode = jsonResponseMsg.data.check_tx != undefined ? jsonResponseMsg.data.check_tx.code : blockResponseCode;
@@ -108,13 +121,15 @@ export const handleResponseFromMessageQueue = (message: any) => {
         console.log(dateTimeLogger() + ' transaction log failed to update for txHash ' + jsonResponseMsg.txHash);
       });
   }
-}
+};
 
 export class RequestHandler {
   constructor() {
     setInterval(() => {
       mq.subscribe()
-        .catch(() => { console.log(dateTimeLogger() + ' exception caught for handleResponseFromMessageQueue') });
+        .catch(() => {
+          console.log(dateTimeLogger() + ' exception caught for handleResponseFromMessageQueue')
+        });
     }, 500)
   }
 }

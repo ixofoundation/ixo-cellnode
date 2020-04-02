@@ -1,7 +1,8 @@
 {
   "name": "ixo-elysian",
   "version": "0.0.1",
-  "description": "ixo service to create a project data store",
+  "description": "ixo service to create a project data store and more",
+  "repository": "https://github.com/ixofoundation/ixo-cellnode",
   "main": "App.ts",
   "directories": {
     "test": "test"
@@ -22,7 +23,7 @@
     "@types/mongoose": "^5.3.1",
     "@types/node": "^10.12.9",
     "amqplib": "^0.5.2",
-    "axios": "^0.18.0",
+    "axios": "^0.18.1",
     "base-64": "^0.1.0",
     "bip39": "^2.5.0",
     "body-parser": "^1.18.3",
@@ -37,9 +38,9 @@
     "five-bells-condition": "^5.0.1",
     "jayson": "^2.1.0",
     "jsonschema": "^1.2.4",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.15",
     "memcached": "^2.2.2",
-    "mongoose": "^5.3.12",
+    "mongoose": "^5.9.7",
     "node": "^11.1.0",
     "node-fetch": "^2.3.0",
     "sovrin-did": "^1.4.0",
