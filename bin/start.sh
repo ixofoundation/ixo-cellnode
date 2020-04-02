@@ -43,7 +43,7 @@ if [ -d "${dbadmin}" ]
 then
   echo "YES"
 
-  sed -i "s|%%USER%%|$DB_USER|" "$dbadmin/create-admin-user.js"
+  sed -i "s|%%ROOT%%|$ROOT|" "$dbadmin/create-admin-user.js"
   sed -i "s|%%PASSWORD%%|$DB_PASSWORD|" "$dbadmin/create-admin-user.js"
   sudo mv $dbadmin/create-admin-user.js $ROOT_DIR/db/
 
