@@ -1,9 +1,10 @@
-export interface ICapabilities{
+export interface ICapabilities {
 
-    projectDid: string,
-    capabilities: [{capability: string,
-                    template: string,
-                    allow: [string],
-                    validateKYC: boolean
-                    }]
+  projectDid: string,
+  capabilities: [{
+    capability: string,
+    template: string,
+    allow: [string],
+    validateKYC: boolean
+  }]
 }

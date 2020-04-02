@@ -1,5 +1,5 @@
-import { EventEmitter } from 'events';
-import { ITransactionModel, Transaction } from '../model/Transaction';
+import {EventEmitter} from 'events';
+import {ITransactionModel, Transaction} from '../model/Transaction';
 
 declare var Promise: any;
 
@@ -35,7 +35,7 @@ export class TransactionLogService {
 
   findPreviousTransaction(): Promise<ITransactionModel[]> {
     return new Promise(function (resolve: Function, reject: Function) {
-      resolve(Transaction.find().limit(1).sort({ $natural: -1 }));
+      resolve(Transaction.find().limit(1).sort({$natural: -1}));
     });
   }
 
@@ -47,8 +47,8 @@ export class TransactionLogService {
   updateTransactionLogForHash(txHash: String, blockHash: string, blockHeight: string, blockResponseCode: number): Promise<ITransactionModel> {
     return new Promise(function (resolve: Function, reject: Function) {
       Transaction.updateOne(
-        { hash: txHash },
-        { $set: { blockHash: blockHash, blockHeight: blockHeight, blockResponseCode: blockResponseCode } },
+        {hash: txHash},
+        {$set: {blockHash: blockHash, blockHeight: blockHeight, blockResponseCode: blockResponseCode}},
         function (error: Error, result: ITransactionModel) {
           if (error) {
             reject(error);
@@ -62,8 +62,8 @@ export class TransactionLogService {
   updateTransactionLogForError(txHash: String, blockError: string): Promise<ITransactionModel> {
     return new Promise(function (resolve: Function, reject: Function) {
       Transaction.updateOne(
-        { hash: txHash },
-        { $set: { blockError: blockError } },
+        {hash: txHash},
+        {$set: {blockError: blockError}},
         function (error: Error, result: ITransactionModel) {
           if (error) {
             reject(error);

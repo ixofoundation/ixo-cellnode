@@ -1,5 +1,5 @@
-import { EventEmitter } from 'events';
-import { IWalletModel, Wallet } from '../model/Wallet';
+import {EventEmitter} from 'events';
+import {IWalletModel, Wallet} from '../model/Wallet';
 
 declare var Promise: any;
 
@@ -19,7 +19,7 @@ export class WalletService {
           "did": did,
           "signKey": signKey,
           "verifyKey": verifyKey
-                            
+
         }, function (error: Error, newTransaction: IWalletModel) {
           if (error) {
             console.log("Error is " + error);
@@ -33,7 +33,7 @@ export class WalletService {
 
   getWallet(projectDid: string): Promise<IWalletModel> {
     return new Promise(function (resolve: Function, reject: Function) {
-      resolve (Wallet.findOne({
+      resolve(Wallet.findOne({
         did: projectDid
       }));
     });

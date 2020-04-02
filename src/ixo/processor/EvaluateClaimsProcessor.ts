@@ -1,12 +1,12 @@
-import { AbstractHandler } from '../../handlers/AbstractHandler';
-import { EvaluateClaim } from '../model/EvaluateClaimModel';
-import { ProjectStatus, IProjectStatusModel } from '../model/ProjectStatusModel';
-import { UpdateProjectStatusProcessor } from "./UpdateProjectStatusProcessor";
-import { Project } from '../model/ProjectModel';
-import { Request } from "../../handlers/Request";
+import {AbstractHandler} from '../../handlers/AbstractHandler';
+import {EvaluateClaim} from '../model/EvaluateClaimModel';
+import {IProjectStatusModel, ProjectStatus} from '../model/ProjectStatusModel';
+import {UpdateProjectStatusProcessor} from "./UpdateProjectStatusProcessor";
+import {Project} from '../model/ProjectModel';
+import {Request} from "../../handlers/Request";
 import axios from 'axios';
-import { dateTimeLogger } from '../../logger/Logger';
-import { Status, BlockchainURI } from '../../ixo/common/shared';
+import {dateTimeLogger} from '../../logger/Logger';
+import {BlockchainURI, Status} from '../../ixo/common/shared';
 import Cache from '../../Cache';
 import xss from "../../Xss";
 
@@ -29,31 +29,32 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
             version: cached.version >= 0 ? cached.version + 1 : 0
           };
           var sanitizedData = xss.sanitize(obj);
-          EvaluateClaim.create({ ...sanitizedData, projectDid: cached.projectDid });
+          EvaluateClaim.create({...sanitizedData, projectDid: cached.projectDid});
           console.log(dateTimeLogger() + ' evaluate claim transaction completed successfully');
         } else {
           var retry: number = retries || 0;
           if (retry <= 3) {
-            retry++
+            retry++;
             setTimeout(() => {
               console.log(dateTimeLogger() + ' retry cached evaluate claim transaction for %s ', jsonResponseMsg.txHash);
               this.handleAsyncEvaluateClaimResponse(jsonResponseMsg, retry)
             }, 2000)
           } else {
-            //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to 
+            //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to
             //force the data into the DB
             console.log(dateTimeLogger() + ' cached evaluate claim not found for transaction %s ', jsonResponseMsg.txHash);
           }
         }
       })
       .catch(() => {
-        //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to 
+        //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to
         //force the data into the DB
         console.log(dateTimeLogger() + ' exception for cached transaction for %s not found ', jsonResponseMsg.txHash);
       });
-  }
+  };
 
-  updateCapabilities = (request: Request) => { }
+  updateCapabilities = (request: Request) => {
+  };
 
   msgToPublish = (txHash: any, request: Request) => {
     return new Promise((resolve: Function, reject: Function) => {
@@ -66,11 +67,11 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
         txHash: txHash,
         senderDid: request.signature.creator,
         projectDid: request.projectDid
-      }
+      };
       var sanitizedData = xss.sanitize(data);
       blockChainPayload = {
-        payload: [{ type: "project/CreateEvaluation", value: sanitizedData }]
-      }
+        payload: [{type: "project/CreateEvaluation", value: sanitizedData}]
+      };
       resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, "project/CreateEvaluation", BlockchainURI.commit));
     });
   };
@@ -95,11 +96,10 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
                 }
               })
               .catch((err) => {
-                console.log(dateTimeLogger() + ' error processing check for funds ' + err)
+                console.log(dateTimeLogger() + ' error processing check for funds ' + err);
                 reject('error processing check for funds');
               });
-          }
-          else {
+          } else {
             console.log(dateTimeLogger() + ' no valid response check for funds from blockchain ' + response.statusText);
             reject('No valid response check for funds from blockchain');
           }
@@ -148,7 +148,7 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
                         }
                         reject("Invalid Project Status. Valid statuses are " + validStatus.toString());
                       }
-                    }).limit(1).sort({ $natural: -1 })
+                    }).limit(1).sort({$natural: -1})
                 })
             });
           });
@@ -160,7 +160,7 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
           var data: any = {
             projectDid: projectDid,
             status: Status.stopped
-          }
+          };
           updateProjectStatusProcessor.selfSignMessage(data, projectDid)
             .then((signature: any) => {
               var projectStatusRequest: any = {
@@ -176,7 +176,7 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
                   creator: projectDid,
                   signatureValue: signature
                 }
-              }
+              };
               updateProjectStatusProcessor.process(projectStatusRequest);
             });
           reject(Error('Insufficient funds available, project stopped'));

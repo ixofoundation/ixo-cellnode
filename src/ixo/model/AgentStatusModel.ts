@@ -1,8 +1,9 @@
-import { Document, Schema, Model, model } from "mongoose";
+import {Document, Model, model, Schema} from "mongoose";
 
-export interface IAgentStatusModel extends Document { }
+export interface IAgentStatusModel extends Document {
+}
 
-var AgentStatusSchema: Schema = new Schema({}, { strict: false });
+var AgentStatusSchema: Schema = new Schema({}, {strict: false});
 
 AgentStatusSchema.pre("save", function (next) {
   next();

@@ -1,10 +1,10 @@
-import { AbstractHandler } from '../../handlers/AbstractHandler';
-import { Claim } from '../model/ClaimModel';
-import { ProjectStatus, IProjectStatusModel } from '../model/ProjectStatusModel';
-import { Request } from "../../handlers/Request";
-import { dateTimeLogger } from '../../logger/Logger';
+import {AbstractHandler} from '../../handlers/AbstractHandler';
+import {Claim} from '../model/ClaimModel';
+import {IProjectStatusModel, ProjectStatus} from '../model/ProjectStatusModel';
+import {Request} from "../../handlers/Request";
+import {dateTimeLogger} from '../../logger/Logger';
 import Cache from '../../Cache';
-import { BlockchainURI } from '../common/shared';
+import {BlockchainURI} from '../common/shared';
 import xss from "../../Xss";
 
 export class SubmitClaimProcessor extends AbstractHandler {
@@ -23,31 +23,32 @@ export class SubmitClaimProcessor extends AbstractHandler {
             _created: cached.signature.created
           };
           var sanitizedData = xss.sanitize(obj);
-          Claim.create({ ...sanitizedData, projectDid: cached.projectDid });
+          Claim.create({...sanitizedData, projectDid: cached.projectDid});
           console.log(dateTimeLogger() + ' submit claim transaction completed successfully');
         } else {
           var retry: number = retries || 0;
           if (retry <= 3) {
-            retry++
+            retry++;
             setTimeout(() => {
               console.log(dateTimeLogger() + ' retry cached submit claim transaction for %s ', jsonResponseMsg.txHash);
               this.handleAsyncSubmitClaimResponse(jsonResponseMsg, retry)
             }, 2000)
           } else {
-            //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to 
+            //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to
             //force the data into the DB
             console.log(dateTimeLogger() + ' cached submit claim not found for transaction %s ', jsonResponseMsg.txHash);
           }
         }
       })
       .catch(() => {
-        //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to 
+        //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to
         //force the data into the DB
         console.log(dateTimeLogger() + ' exception for cached transaction for %s not found ', jsonResponseMsg.txHash);
       });
-  }
+  };
 
-  updateCapabilities = (request: Request) => { }
+  updateCapabilities = (request: Request) => {
+  };
 
   msgToPublish = (txHash: any, request: Request) => {
     return new Promise((resolve: Function, reject: Function) => {
@@ -59,11 +60,11 @@ export class SubmitClaimProcessor extends AbstractHandler {
         txHash: txHash,
         senderDid: request.signature.creator,
         projectDid: request.projectDid
-      }
+      };
       var sanitizedData = xss.sanitize(data);
       blockChainPayload = {
-        payload: [{ type: "project/CreateClaim", value: sanitizedData }]
-      }
+        payload: [{type: "project/CreateClaim", value: sanitizedData}]
+      };
       resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, "project/CreateClaim", BlockchainURI.commit));
     });
   };
@@ -72,7 +73,7 @@ export class SubmitClaimProcessor extends AbstractHandler {
     console.log(dateTimeLogger() + ' start new Submit Claim transaction ');
     return this.createTransaction(args, 'SubmitClaim', Claim, (request: any): Promise<boolean> => {
       return new Promise((resolve: Function, reject: Function) => {
-        // check to see that the project status is in a state that allows us to Submit Claims 
+        // check to see that the project status is in a state that allows us to Submit Claims
         const validStatus = ["STARTED"];
         ProjectStatus.find(
           {
@@ -87,7 +88,7 @@ export class SubmitClaimProcessor extends AbstractHandler {
               }
               reject("Invalid Project Status. Valid statuses are " + validStatus.toString());
             }
-          }).limit(1).sort({ $natural: -1 })
+          }).limit(1).sort({$natural: -1})
       });
     });
   }
