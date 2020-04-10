@@ -9,8 +9,9 @@ Make sure you have [Docker](https://docker.com/) installed.
 
 ```sh
 git clone https://github.com/ixofoundation/ixo_pds.git # or clone your own fork
-cd ixo-pds/bin
-install npm packages
+cd ixo-cellnode/
+npm install
+cd bin
 ./start.sh
 
 ***********************************

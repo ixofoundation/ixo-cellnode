@@ -135,7 +135,7 @@ export abstract class AbstractHandler {
                     .then((sigValid: RequestValidator) => {
                       if (sigValid.valid) {
                         console.log(dateTimeLogger() + ' query Elysian');
-                        resolve(query(request.data));
+                        resolve(query(request));
                       } else {
                         reject(new ValidationError(sigValid.errors[0]));
                       }

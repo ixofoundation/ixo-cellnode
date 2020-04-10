@@ -6,6 +6,7 @@ import listAgentsProcessor from '../ixo/processor/ListAgentsProcessor';
 import listClaimProcessor from '../ixo/processor/ListClaimsProcessor';
 import submitClaimProcessor from '../ixo/processor/SubmitClaimProcessor';
 import updateAgentStatusProcessor from '../ixo/processor/UpdateAgentStatusProcessor';
+import fundProjectProcessor from '../ixo/processor/FundProjectProcessor';
 import transactionLogService from '../service/TransactionLogService';
 import {dateTimeLogger} from '../logger/Logger';
 
@@ -57,6 +58,12 @@ export const RequestLookupHandler: any = {
   'updateProjectStatus': (args: any) => {
     return new Promise((resolve: Function, reject: Function) => {
       resolve(updateProjectStatusProcessor.process(args));
+    });
+  },
+
+  'fundProject': (args: any) => {
+    return new Promise((resolve: Function, reject: Function) => {
+      resolve(fundProjectProcessor.process(args));
     });
   }
 };

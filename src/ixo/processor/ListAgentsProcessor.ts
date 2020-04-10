@@ -17,7 +17,7 @@ export class ListAgentsProcessor extends AbstractHandler {
       return new Promise((resolve: Function, reject: Function) => {
         Agent.aggregate([
             {
-              $match: filter
+              $match: filter.data
             },
             {
               $lookup: {
