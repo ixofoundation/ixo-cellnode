@@ -1,12 +1,13 @@
-import { Document, Schema, Model, model } from "mongoose";
-import { ITransaction } from "./ITransaction";
+import {Document, Model, model, Schema} from "mongoose";
+import {ITransaction} from "./ITransaction";
 import transactionLog from '../service/TransactionLogService'
 
 import CryptoUtils from '../crypto/Utils'
 
 var cryptoUtils = new CryptoUtils();
 
-export interface ITransactionModel extends ITransaction, Document { }
+export interface ITransactionModel extends ITransaction, Document {
+}
 
 
 export var TransactionSchema: Schema = new Schema({
@@ -15,7 +16,7 @@ export var TransactionSchema: Schema = new Schema({
   hash: {
     type: String,
     index: true,
-    unique: true // Unique index. 
+    unique: true // Unique index.
   },
   nonce: String,
   type: String,

@@ -1,8 +1,8 @@
-import { CryptoUtils } from '../crypto/Utils';
-import { RequestValidator } from '../templates/RequestValidator';
+import {CryptoUtils} from '../crypto/Utils';
+import {RequestValidator} from '../templates/RequestValidator';
 import Cache from '../Cache';
 import axios from 'axios';
-import { dateTimeLogger } from '../logger/Logger';
+import {dateTimeLogger} from '../logger/Logger';
 
 var cryptoUtils = new CryptoUtils();
 

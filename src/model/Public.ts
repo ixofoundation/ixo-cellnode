@@ -1,17 +1,18 @@
-import { Document, Schema, Model, model } from "mongoose";
-import { IPublic } from "./IPublic";
+import {Document, Model, model, Schema} from "mongoose";
+import {IPublic} from "./IPublic";
 
-export interface IPublicModel extends IPublic, Document { }
+export interface IPublicModel extends IPublic, Document {
+}
 
 export var PublicSchema: Schema = new Schema({
 
-    data: Buffer,
-    contentType: String
+  data: Buffer,
+  contentType: String
 
-}, { strict: false });
+}, {strict: false});
 
 PublicSchema.pre("save", function (next) {
-    next();
+  next();
 });
 
 export const Public: Model<IPublicModel> = model<IPublicModel>("Public", PublicSchema);

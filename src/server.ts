@@ -13,7 +13,8 @@ try {
     if (err) {
       console.error(err);
       return;
-    };
+    }
+
     console.log("Elysian identifier " + fileContent);
   });
 }
@@ -31,11 +32,20 @@ App.set('port', port);
 const server = http.createServer(App);
 
 mongoose.connect(process.env.MONGODB_URI || '',
-  { useCreateIndex: true, useNewUrlParser: true, reconnectTries: Number.MAX_VALUE, reconnectInterval: 1000, connectTimeoutMS: 2000, keepAlive: 1 })
-  .catch(() => { });
+  {
+    useCreateIndex: true,
+    useNewUrlParser: true,
+    reconnectTries: Number.MAX_VALUE,
+    reconnectInterval: 1000,
+    connectTimeoutMS: 2000,
+    keepAlive: 1
+  })
+  .catch(() => {
+  });
 
 cache.connect();
-mq.connect().catch(() => { });
+mq.connect().catch(() => {
+});
 
 var db = mongoose.connection;
 db.on('error', function (err: any) {
@@ -43,7 +53,8 @@ db.on('error', function (err: any) {
     console.log(new Date(), String(err));
     setTimeout(function () {
       console.log("Retrying first connect...");
-      db.openUri(process.env.MONGODB_URI || '').catch(() => { });
+      db.openUri(process.env.MONGODB_URI || '').catch(() => {
+      });
     }, 5 * 1000);
   } else {
     console.error(new Date(), String(err));

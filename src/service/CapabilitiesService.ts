@@ -1,6 +1,6 @@
-import { EventEmitter } from 'events';
-import { ICapabilitiesModel, Capabilities } from '../model/Capabilities';
-import { dateTimeLogger } from '../logger/Logger';
+import {EventEmitter} from 'events';
+import {Capabilities, ICapabilitiesModel} from '../model/Capabilities';
+import {dateTimeLogger} from '../logger/Logger';
 
 declare var Promise: any;
 
@@ -71,7 +71,7 @@ export class CapabilitiesService {
           'projectDid': projectDid,
           'capabilities.capability': requestType,
         },
-        { $addToSet: { "capabilities.$.allow": did } },
+        {$addToSet: {"capabilities.$.allow": did}},
         function (error: Error, result: ICapabilitiesModel) {
           if (error) {
             reject(error);
@@ -90,7 +90,7 @@ export class CapabilitiesService {
           'projectDid': projectDid,
           'capabilities.capability': requestType,
         },
-        { $pull: { "capabilities.$.allow": did } },
+        {$pull: {"capabilities.$.allow": did}},
         function (error: Error, result: ICapabilitiesModel) {
           if (error) {
             reject(error);

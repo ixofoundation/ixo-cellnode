@@ -1,5 +1,5 @@
-import { EventEmitter } from 'events';
-import { IPublicModel, Public } from '../model/Public';
+import {EventEmitter} from 'events';
+import {IPublicModel, Public} from '../model/Public';
 
 declare var Promise: any;
 
@@ -34,7 +34,7 @@ export class PublicService {
 
   findForKey(key: String): Promise<IPublicModel> {
     return new Promise(function (resolve: Function, reject: Function) {
-        resolve (Public.findOne({ key: key }));
+      resolve(Public.findOne({key: key}));
     });
   }
 }

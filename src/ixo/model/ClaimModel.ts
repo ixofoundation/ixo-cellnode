@@ -1,8 +1,9 @@
-import { Document, Schema, Model, model } from "mongoose";
+import {Document, Model, model, Schema} from "mongoose";
 
-export interface IClaimModel extends Document { }
+export interface IClaimModel extends Document {
+}
 
-var ClaimSchema: Schema = new Schema({}, { strict: false });
+var ClaimSchema: Schema = new Schema({}, {strict: false});
 
 ClaimSchema.pre("save", function (next) {
   next();

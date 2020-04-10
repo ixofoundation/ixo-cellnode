@@ -1,22 +1,23 @@
-import { Document, Schema, Model, model } from "mongoose";
-import { ICapabilities } from "./ICapabilities";
+import {Document, Model, model, Schema} from "mongoose";
+import {ICapabilities} from "./ICapabilities";
 
-export interface ICapabilitiesModel extends ICapabilities, Document { }
+export interface ICapabilitiesModel extends ICapabilities, Document {
+}
 
 export var CapabilitiesSchema: Schema = new Schema({
 
-    projectDid: String,
-    capabilities: [{
-        capability: String,
-        template: String,
-        allow: [String],
-        validateKYC: Boolean
-    }]
+  projectDid: String,
+  capabilities: [{
+    capability: String,
+    template: String,
+    allow: [String],
+    validateKYC: Boolean
+  }]
 
-}, { strict: false });
+}, {strict: false});
 
 CapabilitiesSchema.pre("save", function (next) {
-    next();
+  next();
 });
 
 export const Capabilities: Model<ICapabilitiesModel> = model<ICapabilitiesModel>("Capabilities", CapabilitiesSchema);
