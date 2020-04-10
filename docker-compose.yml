@@ -18,7 +18,7 @@ services:
       - NODEDID=
 
     ports:
-      - "5000:5000"      
+      - "5000:5000"
     restart: always
     links:
       - db
@@ -33,7 +33,7 @@ services:
         max-file: "1"
     volumes:
       - ./config.json:/usr/src/app/config.json
-      
+
   db:
     container_name: db
     image: mongo
