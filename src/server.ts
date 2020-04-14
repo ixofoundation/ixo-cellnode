@@ -23,6 +23,9 @@ const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
 console.log('Connecting to blockchain on: ' + BLOCKCHAIN_URI_REST);
 
 var mongoose = require('mongoose');
+mongoose.set('useNewUrlParser', true);
+mongoose.set('useCreateIndex', true);
+mongoose.set('useUnifiedTopology', true);
 
 require('mongoose').Promise = global.Promise;
 
@@ -35,8 +38,6 @@ mongoose.connect(process.env.MONGODB_URI || '',
   {
     useCreateIndex: true,
     useNewUrlParser: true,
-    reconnectTries: Number.MAX_VALUE,
-    reconnectInterval: 1000,
     connectTimeoutMS: 2000,
     keepAlive: 1
   })
