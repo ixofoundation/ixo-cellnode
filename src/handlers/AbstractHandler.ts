@@ -106,7 +106,7 @@ export abstract class AbstractHandler {
             });
         })
         .catch(() => {
-          console.log(dateTimeLogger() + ' capabilities not found for project' + request.projectDid);
+          console.log(dateTimeLogger() + ' capabilities not found for project ' + request.projectDid);
           reject(new TransactionError('Capabilities not found for project'));
         });
     });
