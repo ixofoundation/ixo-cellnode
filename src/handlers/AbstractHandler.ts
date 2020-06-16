@@ -17,7 +17,7 @@ import TemplateUtils from '../templates/TemplateUtils';
 import {SovrinUtils} from '../crypto/SovrinUtils';
 import mq from '../MessageQ';
 import {IWalletModel} from "../model/Wallet";
-import {AxiosResponse} from "axios";
+import axios, {AxiosResponse} from "axios";
 import Cache from '../Cache';
 
 import {dateTimeLogger} from '../logger/Logger';
@@ -196,27 +196,48 @@ export abstract class AbstractHandler {
   abstract msgToPublish = (hash: any, request: Request): any => {
   };
 
-  messageForBlockchain(msgToSign: any, projectDid: string, msgType?: string, blockchainUri?: string) {
+  messageForBlockchain(msgToSign: any, projectDid: string, msgType: string, blockchainUri?: string) {
     return new Promise((resolve: Function, reject: Function) => {
       walletService.getWallet(projectDid)
         .then((wallet: IWalletModel) => {
           Cache.set(wallet.did, {publicKey: wallet.verifyKey});
-          var sovrinUtils = new SovrinUtils();
-          var signedMsg = {
-            ...msgToSign,
-            signatures: [{
-              signatureValue: sovrinUtils.signDocumentNoEncoding(wallet.signKey, wallet.verifyKey, wallet.did, msgToSign.payload[0].value),
-              created: new Date()
-            }]
-          };
-          let message = {
-            msgType: (msgType || 'blockchain'),
-            projectDid: wallet.did,
-            uri: (blockchainUri || BlockchainURI.sync),
-            data: Buffer.from(JSON.stringify(signedMsg)).toString('hex')
-          };
-          resolve(message);
-        });
+          const msgJson = JSON.stringify({type: msgType, value: msgToSign.payload[0].value})
+          const msgUppercaseHex = new Buffer(msgJson).toString('hex').toUpperCase();
+          axios.get('http://localhost:1317/sign_data/0x' + msgUppercaseHex)
+            .then((response: any) => {
+              console.log(response.status)
+              console.log(response.data.sign_bytes)
+              if (response.status == 200 && response.data.sign_bytes) {
+                const signData = response.data
+                console.log(signData)
+                var sovrinUtils = new SovrinUtils();
+                var signedMsg = {
+                  ...msgToSign,
+                  signatures: [{
+                    signatureValue: sovrinUtils.signDocumentNoEncoding(wallet.signKey, wallet.verifyKey, wallet.did, signData.sign_bytes),
+                    created: new Date()
+                  }]
+                };
+                signedMsg.fee = signData.fee;
+                let message = {
+                  msgType: (msgType || 'blockchain'),
+                  projectDid: wallet.did,
+                  uri: (blockchainUri || BlockchainURI.sync),
+                  data: Buffer.from(JSON.stringify(signedMsg)).toString('hex')
+                };
+                resolve(message);
+              } else {
+                console.log(dateTimeLogger() + ' error when requesting sign data from blockchain ' + response.statusText);
+                reject('Error when requesting sign data from blockchain');
+              }
+            })
+            .catch((err: any) => {
+              throw err
+            });
+        })
+        .catch((err: any) => {
+          throw err
+        })
     });
   }
 
