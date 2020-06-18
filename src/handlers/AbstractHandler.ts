@@ -23,6 +23,8 @@ import Cache from '../Cache';
 import {dateTimeLogger} from '../logger/Logger';
 import {BlockchainURI} from "../ixo/common/shared";
 
+const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
+
 export abstract class AbstractHandler {
 
   public createTransaction(args: any, method: string, model: Model<any>, verifyData?: Function, projectDid?: string) {
@@ -203,13 +205,10 @@ export abstract class AbstractHandler {
           Cache.set(wallet.did, {publicKey: wallet.verifyKey});
           const msgJson = JSON.stringify({type: msgType, value: msgToSign.payload[0].value})
           const msgUppercaseHex = new Buffer(msgJson).toString('hex').toUpperCase();
-          axios.get('http://localhost:1317/sign_data/0x' + msgUppercaseHex)
+          axios.get(BLOCKCHAIN_URI_REST + 'sign_data/' + msgUppercaseHex)
             .then((response: any) => {
-              console.log(response.status)
-              console.log(response.data.sign_bytes)
               if (response.status == 200 && response.data.sign_bytes) {
                 const signData = response.data
-                console.log(signData)
                 var sovrinUtils = new SovrinUtils();
                 var signedMsg = {
                   ...msgToSign,
