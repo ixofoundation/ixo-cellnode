@@ -121,7 +121,6 @@ export const handleResponseFromMessageQueue = (message: any) => {
         } else {
           console.log(dateTimeLogger() + ' process blockchain response for %s hash %s ', jsonResponseMsg.msgType, jsonResponseMsg.txHash);
           lookupProcessor[jsonResponseMsg.msgType](jsonResponseMsg);
-
         }
       })
       .catch(() => {
