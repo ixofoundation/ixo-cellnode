@@ -8,7 +8,7 @@ export interface IProjectStatusModel extends Document {
   status: string
 }
 
-var ProjectStatusSchema: Schema = new Schema({
+const ProjectStatusSchema: Schema = new Schema({
   status: String
 }, {strict: false});
 
@@ -33,6 +33,5 @@ ProjectStatus.on("postCommit", function (obj, projectDid) {
       .catch((err) => {
         console.log(dateTimeLogger() + ' update project status call to ethereum failed for %s %s', projectDid, err);
       });
-
   }
 });

@@ -1,14 +1,14 @@
 import {createHash} from 'crypto';
 
-var dateFormat = require('dateformat');
-var base58 = require('bs58');
-var cc = require('five-bells-condition');
-var sovrin = require("sovrin-did");
+require('dateformat');
+require('five-bells-condition');
+const base58 = require('bs58');
+const sovrin = require("sovrin-did");
 
 export class SovrinUtils {
 
   generateBip39Mnemonic() {
-    var bip39 = require('bip39');
+    const bip39 = require('bip39');
     return bip39.generateMnemonic();
   }
 
@@ -33,12 +33,12 @@ export class SovrinUtils {
 
   //Signs a document using signKey from generated SDID and returns the signature
   signDocumentNoEncoding(signKey: string, verifyKey: string, did: string, input: any) {
-    var toSign = input;
+    let toSign = input;
     // Stringify the input if it is an object
     if (typeof input == 'object') {
       toSign = JSON.stringify(input)
     }
-    var signedMsg = sovrin.signMessage(toSign, signKey, verifyKey);
+    const signedMsg = sovrin.signMessage(toSign, signKey, verifyKey);
     return Buffer.from(signedMsg.slice(0, 64)).toString('base64');
   }
 }

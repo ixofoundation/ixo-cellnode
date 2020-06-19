@@ -24,13 +24,13 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
               // check if previous status exists
               if (currentStatus.length > 0 && currentStatus[0].status === Status.pending) {
                 console.log(dateTimeLogger() + ' blockchain failed update project status, rollback to ' + Status.created);
-                var data: any = {
+                const data: any = {
                   projectDid: cached.projectDid,
                   status: Status.created
                 };
                 this.selfSignMessage(data, cached.projectDid)
                   .then((signature: any) => {
-                    var projectStatusRequest: any = {
+                    const projectStatusRequest: any = {
                       payload: {
                         template: {
                           name: "project_status"
@@ -63,18 +63,18 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
           console.log(dateTimeLogger() + ' updating the project status capabilities');
           this.updateCapabilities(cached);
           console.log(dateTimeLogger() + ' commit project status to Elysian');
-          var obj = {
+          const obj = {
             ...cached.data,
             txHash: jsonResponseMsg.txHash,
             _creator: cached.signature.creator,
             _created: cached.signature.created
           };
-          var sanitizedData = xss.sanitize(obj);
+          const sanitizedData = xss.sanitize(obj);
           ProjectStatus.create({...sanitizedData, projectDid: cached.projectDid});
           ProjectStatus.emit('postCommit', obj, cached.projectDid);
           console.log(dateTimeLogger() + ' Update project status transaction completed successfully');
         } else {
-          var retry: number = retries || 0;
+          let retry: number = retries || 0;
           if (retry <= 3) {
             retry++;
             setTimeout(() => {
@@ -100,7 +100,7 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
     //check ethereum if block height mined and then send project funded status
     Cache.get(jsonResponseMsg.txHash)
       .then((cached) => {
-        var projectDid = cached.projectDid;
+        const projectDid = cached.projectDid;
         axios({
           method: 'post',
           url: ETHEREUM_API,
@@ -108,14 +108,14 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
         })
           .then((response) => {
             if (parseInt(response.data.result, 16) - parseInt(jsonResponseMsg.data.blockNumber, 16) > blockheight) {
-              var data: any = {
+              const data: any = {
                 projectDid: projectDid,
                 status: Status.funded,
                 txnID: jsonResponseMsg.data.hash
               };
               this.selfSignMessage(data, projectDid)
                 .then((signature: any) => {
-                  var projectStatusRequest: any = {
+                  const projectStatusRequest: any = {
                     payload: {
                       template: {
                         name: "project_status"
@@ -154,9 +154,8 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
   };
 
   msgToPublish = (txHash: any, request: Request) => {
-    var blockChainPayload: any;
     return new Promise((resolve: Function, reject: Function) => {
-      let data = {
+      const data = {
         data: {
           status: request.data.status,
           ethFundingTxnID: request.data.txnID
@@ -165,8 +164,8 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
         senderDid: request.signature.creator,
         projectDid: request.projectDid
       };
-      var sanitizedData = xss.sanitize(data);
-      blockChainPayload = {
+      const sanitizedData = xss.sanitize(data);
+      const blockChainPayload = {
         payload: [{type: "project/UpdateProjectStatus", value: sanitizedData}]
       };
       resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, 'project/UpdateProjectStatus', BlockchainURI.commit));

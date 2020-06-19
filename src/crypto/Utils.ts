@@ -3,8 +3,8 @@ import {dateTimeLogger} from '../logger/Logger';
 import * as nacl from 'tweetnacl';
 import * as bs58 from 'bs58';
 
-var ethUtil = require('ethereumjs-util');
-var ethereumWallet = require('ethereumjs-wallet');
+const ethUtil = require('ethereumjs-util');
+const ethereumWallet = require('ethereumjs-wallet');
 
 export class CryptoUtils {
 
@@ -34,16 +34,16 @@ export class CryptoUtils {
 
   validateECDSASignature(data: String, signature: String, publicKey: String): Boolean {
     // Same data as before
-    var message = ethUtil.toBuffer(data);
-    var msgHash = ethUtil.hashPersonalMessage(message);
+    const message = ethUtil.toBuffer(data);
+    const msgHash = ethUtil.hashPersonalMessage(message);
 
-    var signatureBuffer = ethUtil.toBuffer(signature);
-    var sigParams = ethUtil.fromRpcSig(signatureBuffer);
+    const signatureBuffer = ethUtil.toBuffer(signature);
+    const sigParams = ethUtil.fromRpcSig(signatureBuffer);
 
-    var recoveredPublicKey = ethUtil.ecrecover(msgHash, sigParams.v, sigParams.r, sigParams.s);
+    const recoveredPublicKey = ethUtil.ecrecover(msgHash, sigParams.v, sigParams.r, sigParams.s);
 
-    var sender = ethUtil.publicToAddress(recoveredPublicKey);
-    var recoveredAddress = ethUtil.bufferToHex(sender);
+    const sender = ethUtil.publicToAddress(recoveredPublicKey);
+    const recoveredAddress = ethUtil.bufferToHex(sender);
 
     return (recoveredAddress == publicKey);
   }
@@ -72,7 +72,7 @@ export class CryptoUtils {
   }
 
   signECDSA(data: String, privateKey: String): String {
-    var sig = ethUtil.ecsign(ethUtil.hashPersonalMessage(ethUtil.toBuffer(data)), ethUtil.toBuffer(privateKey));
+    const sig = ethUtil.ecsign(ethUtil.hashPersonalMessage(ethUtil.toBuffer(data)), ethUtil.toBuffer(privateKey));
     return ethUtil.bufferToHex(Buffer.concat([sig.r, sig.s, ethUtil.toBuffer(sig.v - 27)]))
   }
 

@@ -24,7 +24,7 @@ Agent.on("postCommit", function (obj, projectDid) {
       let status = (project.autoApprove.some(function (element) {
         return (obj.role === element)
       })) ? "1" : "0";
-      var data: any = {
+      const data: any = {
         projectDid: projectDid,
         status: status,
         agentDid: obj.agentDid,

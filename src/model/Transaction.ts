@@ -4,7 +4,7 @@ import transactionLog from '../service/TransactionLogService'
 
 import CryptoUtils from '../crypto/Utils'
 
-var cryptoUtils = new CryptoUtils();
+const cryptoUtils = new CryptoUtils();
 
 export interface ITransactionModel extends ITransaction, Document {
 }

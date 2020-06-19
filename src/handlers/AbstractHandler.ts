@@ -12,7 +12,7 @@ import {ValidatorResult} from 'jsonschema';
 import {ValidationError} from '../error/ValidationError';
 import {TransactionError} from '../error/TransactionError';
 
-import {Request} from "../handlers/Request";
+import {Request} from "./Request";
 import TemplateUtils from '../templates/TemplateUtils';
 import {SovrinUtils} from '../crypto/SovrinUtils';
 import mq from '../MessageQ';
@@ -27,10 +27,9 @@ const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
 
 export abstract class AbstractHandler {
 
-  public createTransaction(args: any, method: string, model: Model<any>, verifyData?: Function, projectDid?: string) {
-
-    var request = new Request(args);
-
+  public createTransaction(args: any, method: string, model: Model<any>,
+                           verifyData?: Function, projectDid?: string) {
+    const request = new Request(args);
     return new Promise((resolve: Function, reject: Function) => {
       if (connection.readyState != 1) {
         throw new TransactionError('Elysian not available');
@@ -38,18 +37,15 @@ export abstract class AbstractHandler {
       if (!request.projectDid) request.projectDid = (projectDid || "");
       capabilitiesService.findCapabilitiesForProject(request.projectDid)
         .then((result: ICapabilitiesModel) => {
-          var capabilityMap: any;
-          capabilityMap = result.capabilities.filter(element => element.capability == method)[0];
+          const capabilityMap = result.capabilities.filter(element => element.capability == method)[0];
           console.log(dateTimeLogger() + ' have capability ' + capabilityMap.capability);
           TemplateUtils.getTemplateFromCache(capabilityMap.template, request.template)
             .then((schema: any) => {
               console.log(dateTimeLogger() + ' validate the template');
-              var validator: ValidatorResult;
-              validator = validateJson(schema, args);
+              const validator: ValidatorResult = validateJson(schema, args);
               if (validator.valid) {
                 console.log(dateTimeLogger() + ' validate the capability');
-                var capValid: RequestValidator;
-                capValid = request.verifyCapability(capabilityMap.allow);
+                const capValid: RequestValidator = request.verifyCapability(capabilityMap.allow);
                 if (capValid.valid) {
                   console.log(dateTimeLogger() + ' verify the signature');
                   request.verifySignature(this.preVerifyDidSignature.bind(this), capabilityMap.validateKYC, capabilityMap.capability)
@@ -115,22 +111,19 @@ export abstract class AbstractHandler {
   }
 
   public queryTransaction(args: any, method: string, query: Function) {
-    var request = new Request(args);
+    const request = new Request(args);
     return new Promise((resolve: Function, reject: Function) => {
       capabilitiesService.findCapabilitiesForProject(request.projectDid)
         .then((result: ICapabilitiesModel) => {
-          var capabilityMap: any;
-          capabilityMap = result.capabilities.filter(element => element.capability == method)[0];
+          const capabilityMap: any = result.capabilities.filter(element => element.capability == method)[0];
           console.log(dateTimeLogger() + ' have capability ' + capabilityMap.capability);
           TemplateUtils.getTemplateFromCache(capabilityMap.template, request.template)
             .then((schema: any) => {
               console.log(dateTimeLogger() + ' validate the template');
-              var validator: ValidatorResult;
-              validator = validateJson(schema, args);
+              const validator: ValidatorResult = validateJson(schema, args);
               if (validator.valid) {
                 console.log(dateTimeLogger() + ' validate the capability');
-                var capValid: RequestValidator;
-                capValid = request.verifyCapability(capabilityMap.allow);
+                const capValid: RequestValidator = request.verifyCapability(capabilityMap.allow);
                 if (capValid.valid) {
                   console.log(dateTimeLogger() + ' verify the signature');
                   request.verifySignature(this.preVerifyDidSignature.bind(this), capabilityMap.validateKYC, capabilityMap.capability)
@@ -179,10 +172,10 @@ export abstract class AbstractHandler {
       if (connection.readyState != 1) {
         throw new TransactionError('Elysian not available');
       }
-      var sovrinUtils = new SovrinUtils();
-      var mnemonic = sovrinUtils.generateBip39Mnemonic();
-      var sovrinWallet = sovrinUtils.generateSdidFromMnemonic(mnemonic);
-      var did = String("did:ixo:" + sovrinWallet.did);
+      const sovrinUtils = new SovrinUtils();
+      const mnemonic = sovrinUtils.generateBip39Mnemonic();
+      const sovrinWallet = sovrinUtils.generateSdidFromMnemonic(mnemonic);
+      const did = String("did:ixo:" + sovrinWallet.did);
       walletService.createWallet(did, sovrinWallet.secret.signKey, sovrinWallet.verifyKey)
         .then((wallet: IWalletModel) => {
           Cache.set(wallet.did, {publicKey: wallet.verifyKey});
@@ -209,16 +202,17 @@ export abstract class AbstractHandler {
             .then((response: any) => {
               if (response.status == 200 && response.data.sign_bytes) {
                 const signData = response.data
-                var sovrinUtils = new SovrinUtils();
-                var signedMsg = {
+                const sovrinUtils = new SovrinUtils();
+                const signedMsg = {
                   ...msgToSign,
                   signatures: [{
-                    signatureValue: sovrinUtils.signDocumentNoEncoding(wallet.signKey, wallet.verifyKey, wallet.did, signData.sign_bytes),
+                    signatureValue: sovrinUtils.signDocumentNoEncoding(
+                      wallet.signKey, wallet.verifyKey, wallet.did, signData.sign_bytes),
                     created: new Date()
                   }]
                 };
                 signedMsg.fee = signData.fee;
-                let message = {
+                const message = {
                   msgType: (msgType || 'blockchain'),
                   projectDid: wallet.did,
                   uri: (blockchainUri || BlockchainURI.sync),
@@ -245,7 +239,7 @@ export abstract class AbstractHandler {
       walletService.getWallet(projectDid)
         .then((wallet: IWalletModel) => {
           Cache.set(wallet.did, {publicKey: wallet.verifyKey});
-          var sovrinUtils = new SovrinUtils();
+          const sovrinUtils = new SovrinUtils();
           resolve(sovrinUtils.signDocumentNoEncoding(wallet.signKey, wallet.verifyKey, wallet.did, msgToSign));
         })
         .catch(() => {
@@ -272,7 +266,7 @@ export abstract class AbstractHandler {
       this.msgToPublish(hash, request)
         .then((msg: any) => {
           console.log(dateTimeLogger() + ' message to be published ' + msg.msgType);
-          var cacheMsg = {
+          const cacheMsg = {
             data: msg,
             request: request,
             txHash: hash

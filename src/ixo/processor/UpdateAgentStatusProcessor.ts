@@ -16,19 +16,19 @@ export class UpdateAgentStatusProcessor extends AbstractHandler {
           console.log(dateTimeLogger() + ' updating the agent status update capabilities');
           this.updateCapabilities(cached);
           console.log(dateTimeLogger() + ' commit agent status update to Elysian');
-          var obj = {
+          const obj = {
             ...cached.data,
             txHash: jsonResponseMsg.txHash,
             _creator: cached.signature.creator,
             _created: cached.signature.created,
             version: cached.version >= 0 ? cached.version + 1 : 0
           };
-          var sanitizedData = xss.sanitize(obj);
+          const sanitizedData = xss.sanitize(obj);
           AgentStatus.create({...sanitizedData, projectDid: cached.projectDid});
           AgentStatus.emit('postCommit', obj, cached.projectDid);
           console.log(dateTimeLogger() + ' update agent status transaction completed successfully');
         } else {
-          var retry: number = retries || 0;
+          let retry: number = retries || 0;
           if (retry <= 3) {
             retry++;
             setTimeout(() => {
@@ -60,8 +60,7 @@ export class UpdateAgentStatusProcessor extends AbstractHandler {
 
   msgToPublish = (txHash: any, request: Request) => {
     return new Promise((resolve: Function, reject: Function) => {
-      var blockChainPayload: any;
-      let data = {
+      const data = {
         data: {
           did: request.data.agentDid,
           status: request.data.status,
@@ -71,8 +70,8 @@ export class UpdateAgentStatusProcessor extends AbstractHandler {
         senderDid: request.signature.creator,
         projectDid: request.projectDid
       };
-      var sanitizedData = xss.sanitize(data);
-      blockChainPayload = {
+      const sanitizedData = xss.sanitize(data);
+      const blockChainPayload = {
         payload: [{type: "project/UpdateAgent", value: sanitizedData}]
       };
       resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, "project/UpdateAgent"));

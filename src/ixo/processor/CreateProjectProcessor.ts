@@ -17,18 +17,18 @@ export class CreateProjectProcessor extends AbstractHandler {
           console.log(dateTimeLogger() + ' updating the create project capabilities');
           this.updateCapabilities(cached);
           console.log(dateTimeLogger() + ' commit create project to Elysian');
-          var obj = {
+          const obj = {
             ...cached.data,
             txHash: jsonResponseMsg.txHash,
             _creator: cached.signature.creator,
             _created: cached.signature.created
           };
-          var sanitizedData = xss.sanitize(obj);
+          const sanitizedData = xss.sanitize(obj);
           Project.create({...sanitizedData, projectDid: cached.projectDid});
           Project.emit('postCommit', obj, cached.projectDid);
           console.log(dateTimeLogger() + ' create project transaction completed successfully');
         } else {
-          var retry: number = retries || 0;
+          let retry: number = retries || 0;
           if (retry <= 3) {
             retry++;
             setTimeout(() => {
@@ -60,10 +60,9 @@ export class CreateProjectProcessor extends AbstractHandler {
 
   msgToPublish = (txHash: any, request: Request) => {
     return new Promise((resolve: Function, reject: Function) => {
-      var blockChainPayload: any;
       walletService.getWallet(request.projectDid)
         .then((wallet) => {
-          let data = {
+          const data = {
             data: {
               ...request.data,
               createdOn: request.signature.created,
@@ -75,8 +74,8 @@ export class CreateProjectProcessor extends AbstractHandler {
             projectDid: request.projectDid,
             pubKey: wallet.verifyKey
           };
-          var sanitizedData = xss.sanitize(data);
-          blockChainPayload = {
+          const sanitizedData = xss.sanitize(data);
+          const blockChainPayload = {
             payload: [{type: "project/CreateProject", value: sanitizedData}]
           };
           resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, 'project/CreateProject', BlockchainURI.commit));
@@ -113,7 +112,6 @@ export class CreateProjectProcessor extends AbstractHandler {
           });
       });
   }
-
 }
 
 export default new CreateProjectProcessor();

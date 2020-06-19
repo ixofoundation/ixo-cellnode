@@ -1,5 +1,4 @@
 export interface ICapabilities {
-
   projectDid: string,
   capabilities: [{
     capability: string,
