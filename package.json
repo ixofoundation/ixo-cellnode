@@ -8,8 +8,8 @@
     "test": "test"
   },
   "scripts": {
-    "start": "node dist/server.js",
-    "dropdb": "node dist/dropdb.js",
+    "start": "tsc && node dist/server.js",
+    "dropdb": "tsc && node dist/dropdb.js",
     "build": "tsc",
     "test": "we are live"
   },
