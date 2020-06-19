@@ -109,6 +109,7 @@ export const handleResponseFromMessageQueue = (message: any) => {
       .then((result: any) => {
         console.log(dateTimeLogger() + ' transaction log updated with block information for txHash %s %s', jsonResponseMsg.txHash, blockResponseCode);
         if (blockResponseCode >= 1) {
+          transactionLogService.updateTransactionLogForError(jsonResponseMsg.txHash, JSON.stringify(jsonResponseMsg.data));
           console.log(dateTimeLogger() + ' blockchain failed for message %s with code %s', jsonResponseMsg.msgType, blockResponseCode);
         } else {
           console.log(dateTimeLogger() + ' process blockchain response for %s hash %s ', jsonResponseMsg.msgType, jsonResponseMsg.txHash);
