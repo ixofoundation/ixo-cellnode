@@ -86,9 +86,6 @@ const lookupProcessor: any = {
   },
   'project/CreateEvaluation': (jsonResponseMsg: any) => {
     evaluateClaimsProcessor.handleAsyncEvaluateClaimResponse(jsonResponseMsg)
-  },
-  'project/UpdateProjectStatus/rollback': (jsonResponseMsg: any) => {
-    updateProjectStatusProcessor.handleRollbackProjectStatus(jsonResponseMsg)
   }
 };
 
@@ -112,11 +109,6 @@ export const handleResponseFromMessageQueue = (message: any) => {
       .then((result: any) => {
         console.log(dateTimeLogger() + ' transaction log updated with block information for txHash %s %s', jsonResponseMsg.txHash, blockResponseCode);
         if (blockResponseCode >= 1) {
-          //here we handle specific rollback tasks if required
-          const rollbackProcessor = jsonResponseMsg.msgType + '/rollback';
-          if (lookupProcessor[rollbackProcessor] !== undefined) {
-            lookupProcessor[rollbackProcessor](jsonResponseMsg);
-          }
           console.log(dateTimeLogger() + ' blockchain failed for message %s with code %s', jsonResponseMsg.msgType, blockResponseCode);
         } else {
           console.log(dateTimeLogger() + ' process blockchain response for %s hash %s ', jsonResponseMsg.msgType, jsonResponseMsg.txHash);

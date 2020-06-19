@@ -15,46 +15,6 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
   updateCapabilities = (request: Request) => {
   };
 
-  handleRollbackProjectStatus = (jsonResponseMsg: any, retries?: number) => {
-    Cache.get(jsonResponseMsg.txHash)
-      .then((cached) => {
-        if (cached != undefined) {
-          return this.getLatestProjectStatus(cached.projectDid)
-            .then((currentStatus: IProjectStatusModel[]) => {
-              // check if previous status exists
-              if (currentStatus.length > 0 && currentStatus[0].status === Status.pending) {
-                console.log(dateTimeLogger() + ' blockchain failed update project status, rollback to ' + Status.created);
-                const data: any = {
-                  projectDid: cached.projectDid,
-                  status: Status.created
-                };
-                this.selfSignMessage(data, cached.projectDid)
-                  .then((signature: any) => {
-                    const projectStatusRequest: any = {
-                      payload: {
-                        template: {
-                          name: "project_status"
-                        },
-                        data: data
-                      },
-                      signature: {
-                        type: "ed25519-sha-256",
-                        created: new Date().toISOString(),
-                        creator: cached.projectDid,
-                        signatureValue: signature
-                      }
-                    };
-                    this.process(projectStatusRequest);
-                  });
-              }
-            })
-        }
-      })
-      .catch(() => {
-        console.log(dateTimeLogger() + ' exception caught for handleRollbackProjectStatus');
-      });
-  };
-
   handleAsyncProjectStatusResponse = (jsonResponseMsg: any, retries?: number) => {
     //successfull status response
     Cache.get(jsonResponseMsg.txHash)
