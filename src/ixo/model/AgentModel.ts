@@ -6,7 +6,7 @@ export interface IAgentModel extends Document {
   role: string
 }
 
-var AgentSchema: Schema = new Schema({
+const AgentSchema: Schema = new Schema({
   role: String
 }, {strict: false});
 
@@ -32,7 +32,7 @@ Agent.on("postCommit", function (obj, projectDid) {
       };
       updateAgentStatusProcessor.selfSignMessage(data, projectDid)
         .then((signature: any) => {
-          var statusRequest: any = {
+          const statusRequest: any = {
             payload: {
               template: {
                 name: "agent_status"

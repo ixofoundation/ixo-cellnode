@@ -32,7 +32,7 @@ export var TransactionSchema: Schema = new Schema({
 });
 
 TransactionSchema.pre('save', function (next) {
-  var inst: any;
+  let inst: any;
   inst = this;
   transactionLog.findPreviousTransaction()
     .then((prevTxn: ITransactionModel[]) => {

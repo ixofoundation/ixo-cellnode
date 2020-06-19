@@ -1,5 +1,5 @@
-var xssFilters = require('xss-filters');
-var _ = require('lodash');
+const xssFilters = require('xss-filters');
+const _ = require('lodash');
 
 export class xss {
 
@@ -8,13 +8,13 @@ export class xss {
   };
 
   sanitize = (obj: any) => {
-    var self = this;
+    const self = this;
 
     if (_.isString(obj)) {
       return this.sanitizeString(obj);
     }
     if (_.isPlainObject(obj)) {
-      var ret: any = {};
+      const ret: any = {};
 
       Object.keys(obj).forEach(key => {
         ret[key] = self.sanitize(obj[key]);

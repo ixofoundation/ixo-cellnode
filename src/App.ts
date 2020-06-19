@@ -34,8 +34,8 @@ class App {
   // Configure API endpoints.
   private routes(): void {
     this.express.get('/', (req, res, next) => {
-      var fileSystem = require('fs');
-      var data = fileSystem.readFileSync("/usr/src/app/pds.txt", 'utf8');
+      const fileSystem = require('fs');
+      const data = fileSystem.readFileSync("/usr/src/app/pds.txt", 'utf8');
       res.send('API is running with ID ' + data);
     });
     this.express.get('/public/:key', new PublicHandler().getPublic);

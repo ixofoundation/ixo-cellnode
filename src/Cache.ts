@@ -1,6 +1,7 @@
-var Memcached = require('memcached');
 import {dateTimeLogger} from './logger/Logger';
 import {TransactionError} from "./error/TransactionError";
+
+const Memcached = require('memcached');
 
 let cache: any;
 

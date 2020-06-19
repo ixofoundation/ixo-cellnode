@@ -8,7 +8,7 @@ export interface IProjectModel extends Document {
   evaluatorPayPerClaim: number
 }
 
-var ProjectSchema: Schema = new Schema({
+const ProjectSchema: Schema = new Schema({
   autoApprove: [],
   evaluatorPayPerClaim: Number
 }, {strict: false});
