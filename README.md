@@ -42,7 +42,7 @@ app      | register handler.listAgents
 app      | (node:17) [DEP0010] DeprecationWarning: crypto.createCredentials is deprecated. Use tls.createSecureContext instead.
 app      | (node:17) [DEP0011] DeprecationWarning: crypto.Credentials is deprecated. Use tls.SecureContext instead.
 app      | Memcache connected
-app      | MongDB connected
+app      | MongoDB connected
 app      | App listening on port 5000
 app      | RabbitMQ connected
 

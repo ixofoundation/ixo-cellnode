@@ -63,7 +63,7 @@ db.on('error', function (err: any) {
 });
 
 db.once('open', function () {
-  console.log('MongDB connected');
+  console.log('MongoDB connected');
 
   // Once connected listen on server
   server.listen(port);
