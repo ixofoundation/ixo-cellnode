@@ -15,18 +15,18 @@ export class CreateAgentProcessor extends AbstractHandler {
           console.log(dateTimeLogger() + ' updating the create agent capabilities');
           this.updateCapabilities(cached);
           console.log(dateTimeLogger() + ' commit create agent to Elysian');
-          var obj = {
+          const obj = {
             ...cached.data,
             txHash: jsonResponseMsg.txHash,
             _creator: cached.signature.creator,
             _created: cached.signature.created
           };
-          var sanitizedData = xss.sanitize(obj);
+          const sanitizedData = xss.sanitize(obj);
           Agent.create({...sanitizedData, projectDid: cached.projectDid});
           Agent.emit('postCommit', obj, cached.projectDid);
           console.log(dateTimeLogger() + ' create agent transaction completed successfully');
         } else {
-          var retry: number = retries || 0;
+          let retry: number = retries || 0;
           if (retry <= 3) {
             retry++;
             setTimeout(() => {
@@ -52,8 +52,7 @@ export class CreateAgentProcessor extends AbstractHandler {
 
   msgToPublish = (txHash: any, request: Request) => {
     return new Promise((resolve: Function, reject: Function) => {
-      var blockChainPayload: any;
-      let data = {
+      const data = {
         data: {
           did: request.data.agentDid,
           role: request.data.role,
@@ -63,8 +62,8 @@ export class CreateAgentProcessor extends AbstractHandler {
         projectDid: request.projectDid
       };
 
-      var sanitizedData = xss.sanitize(data);
-      blockChainPayload = {
+      const sanitizedData = xss.sanitize(data);
+      const blockChainPayload = {
         payload: [{type: "project/CreateAgent", value: sanitizedData}]
       };
       resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, "project/CreateAgent"));
@@ -74,7 +73,7 @@ export class CreateAgentProcessor extends AbstractHandler {
   checkLatestKycCredential = (didDoc: any): boolean => {
     let isKYCValidated: boolean = false;
     if (process.env.VALIDISSUERS != undefined) {
-      let validIssuers: string[] = (process.env.VALIDISSUERS.split(' '));
+      const validIssuers: string[] = (process.env.VALIDISSUERS.split(' '));
       if (didDoc.credentials) {
         didDoc.credentials.forEach((element: any) => {
           if (validIssuers.some(issuers => issuers === element.issuer)) {

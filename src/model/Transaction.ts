@@ -4,7 +4,7 @@ import transactionLog from '../service/TransactionLogService'
 
 import CryptoUtils from '../crypto/Utils'
 
-var cryptoUtils = new CryptoUtils();
+const cryptoUtils = new CryptoUtils();
 
 export interface ITransactionModel extends ITransaction, Document {
 }
@@ -32,7 +32,7 @@ export var TransactionSchema: Schema = new Schema({
 });
 
 TransactionSchema.pre('save', function (next) {
-  var inst: any;
+  let inst: any;
   inst = this;
   transactionLog.findPreviousTransaction()
     .then((prevTxn: ITransactionModel[]) => {

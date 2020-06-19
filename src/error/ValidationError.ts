@@ -3,5 +3,4 @@ export class ValidationError extends Error {
     super(message);
     super.stack = "";
   }
-
 }

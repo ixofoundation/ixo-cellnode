@@ -60,7 +60,10 @@ Handlers are registered according to the capability loaded from the configuratio
 		{
 			"capability": "CreateProject",
 			"template": "projects",
-			"allow":["did:sov:*"]
+			"allow": [
+				"did:sov:*",
+				"did:ixo:*"
+			],
 		},
 		{
 			"capability": "CreateAgent",

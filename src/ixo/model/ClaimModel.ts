@@ -3,7 +3,7 @@ import {Document, Model, model, Schema} from "mongoose";
 export interface IClaimModel extends Document {
 }
 
-var ClaimSchema: Schema = new Schema({}, {strict: false});
+const ClaimSchema: Schema = new Schema({}, {strict: false});
 
 ClaimSchema.pre("save", function (next) {
   next();

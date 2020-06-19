@@ -8,15 +8,15 @@ export class RequestRouter extends AbstractRouter {
   }
 
   setup() {
-    var fileSystem = require('fs');
+    const fileSystem = require('fs');
 
     let config = {};
 
-    var data = JSON.parse(fileSystem.readFileSync(process.env.CONFIG, 'utf8'));
-    var inst: any = this;
+    const data = JSON.parse(fileSystem.readFileSync(process.env.CONFIG, 'utf8'));
+    const inst: any = this;
     new RequestHandler();
     data.configuration.forEach((obj: any) => {
-        var capabilityMethod = obj.capability.charAt(0).toLowerCase() + obj.capability.slice(1);
+        const capabilityMethod = obj.capability.charAt(0).toLowerCase() + obj.capability.slice(1);
         console.log('register ' + capabilityMethod);
         inst.register(config, capabilityMethod, RequestLookupHandler[capabilityMethod]);
       }

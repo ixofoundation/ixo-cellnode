@@ -3,7 +3,7 @@ import {IPublicModel} from '../model/Public';
 import {dateTimeLogger} from '../logger/Logger';
 import {TransactionError} from '../error/TransactionError';
 
-var validator = require('validator');
+const validator = require('validator');
 
 declare var Promise: any;
 
@@ -50,7 +50,7 @@ export class PublicHandler {
   getPublic = (req: any, res: any) => {
     return this.fetchPublic(req.params)
       .then((obj: any) => {
-        let img = Buffer.from(obj.data, 'base64');
+        const img = Buffer.from(obj.data, 'base64');
         let maxAge = 0;
         if (obj.contentType.indexOf('image/') == 0) {
           maxAge = MAX_AGE;
