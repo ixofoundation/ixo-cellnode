@@ -197,7 +197,7 @@ export abstract class AbstractHandler {
         .then((wallet: IWalletModel) => {
           Cache.set(wallet.did, {publicKey: wallet.verifyKey});
           const msgJson = JSON.stringify({type: msgType, value: msgToSign.payload[0].value})
-          const msgUppercaseHex = new Buffer(msgJson).toString('hex').toUpperCase();
+          const msgUppercaseHex = Buffer.from(msgJson).toString('hex').toUpperCase();
           axios.get(BLOCKCHAIN_URI_REST + 'sign_data/' + msgUppercaseHex)
             .then((response: any) => {
               if (response.status == 200 && response.data.sign_bytes) {
@@ -225,11 +225,13 @@ export abstract class AbstractHandler {
               }
             })
             .catch((err: any) => {
-              throw err
+              console.log(dateTimeLogger() + ' get sign data failed ' + err);
+              reject(err)
             });
         })
         .catch((err: any) => {
-          throw err
+          console.log(dateTimeLogger() + ' get wallet failed ' + err);
+          reject(err)
         })
     });
   }
