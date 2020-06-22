@@ -7,7 +7,8 @@ import App from './App';
 const fs = require("fs");
 const fileContent = Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36);
 try {
-  fs.readFileSync("/usr/src/app/pds.txt", 'utf8');
+  const pdsFile = process.env.PDS_FILE || "/usr/src/app/pds.txt"
+  fs.readFileSync(pdsFile, 'utf8');
 } catch (error) {
   fs.writeFile("./pds.txt", fileContent, (err: any) => {
     if (err) {

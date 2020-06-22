@@ -35,7 +35,8 @@ class App {
   private routes(): void {
     this.express.get('/', (req, res, next) => {
       const fileSystem = require('fs');
-      const data = fileSystem.readFileSync("/usr/src/app/pds.txt", 'utf8');
+      const pdsFile = process.env.PDS_FILE || "/usr/src/app/pds.txt"
+      const data = fileSystem.readFileSync(pdsFile, 'utf8');
       res.send('API is running with ID ' + data);
     });
     this.express.get('/public/:key', new PublicHandler().getPublic);
