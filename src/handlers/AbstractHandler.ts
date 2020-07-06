@@ -12,23 +12,24 @@ import {ValidatorResult} from 'jsonschema';
 import {ValidationError} from '../error/ValidationError';
 import {TransactionError} from '../error/TransactionError';
 
-import {Request} from "../handlers/Request";
+import {Request} from "./Request";
 import TemplateUtils from '../templates/TemplateUtils';
 import {SovrinUtils} from '../crypto/SovrinUtils';
 import mq from '../MessageQ';
 import {IWalletModel} from "../model/Wallet";
-import {AxiosResponse} from "axios";
+import axios, {AxiosResponse} from "axios";
 import Cache from '../Cache';
 
 import {dateTimeLogger} from '../logger/Logger';
 import {BlockchainURI} from "../ixo/common/shared";
 
+const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
+
 export abstract class AbstractHandler {
 
-  public createTransaction(args: any, method: string, model: Model<any>, verifyData?: Function, projectDid?: string) {
-
-    var request = new Request(args);
-
+  public createTransaction(args: any, method: string, model: Model<any>,
+                           verifyData?: Function, projectDid?: string) {
+    const request = new Request(args);
     return new Promise((resolve: Function, reject: Function) => {
       if (connection.readyState != 1) {
         throw new TransactionError('Elysian not available');
@@ -36,18 +37,15 @@ export abstract class AbstractHandler {
       if (!request.projectDid) request.projectDid = (projectDid || "");
       capabilitiesService.findCapabilitiesForProject(request.projectDid)
         .then((result: ICapabilitiesModel) => {
-          var capabilityMap: any;
-          capabilityMap = result.capabilities.filter(element => element.capability == method)[0];
+          const capabilityMap = result.capabilities.filter(element => element.capability == method)[0];
           console.log(dateTimeLogger() + ' have capability ' + capabilityMap.capability);
           TemplateUtils.getTemplateFromCache(capabilityMap.template, request.template)
             .then((schema: any) => {
               console.log(dateTimeLogger() + ' validate the template');
-              var validator: ValidatorResult;
-              validator = validateJson(schema, args);
+              const validator: ValidatorResult = validateJson(schema, args);
               if (validator.valid) {
                 console.log(dateTimeLogger() + ' validate the capability');
-                var capValid: RequestValidator;
-                capValid = request.verifyCapability(capabilityMap.allow);
+                const capValid: RequestValidator = request.verifyCapability(capabilityMap.allow);
                 if (capValid.valid) {
                   console.log(dateTimeLogger() + ' verify the signature');
                   request.verifySignature(this.preVerifyDidSignature.bind(this), capabilityMap.validateKYC, capabilityMap.capability)
@@ -106,29 +104,26 @@ export abstract class AbstractHandler {
             });
         })
         .catch(() => {
-          console.log(dateTimeLogger() + ' capabilities not found for project' + request.projectDid);
+          console.log(dateTimeLogger() + ' capabilities not found for project ' + request.projectDid);
           reject(new TransactionError('Capabilities not found for project'));
         });
     });
   }
 
   public queryTransaction(args: any, method: string, query: Function) {
-    var request = new Request(args);
+    const request = new Request(args);
     return new Promise((resolve: Function, reject: Function) => {
       capabilitiesService.findCapabilitiesForProject(request.projectDid)
         .then((result: ICapabilitiesModel) => {
-          var capabilityMap: any;
-          capabilityMap = result.capabilities.filter(element => element.capability == method)[0];
+          const capabilityMap: any = result.capabilities.filter(element => element.capability == method)[0];
           console.log(dateTimeLogger() + ' have capability ' + capabilityMap.capability);
           TemplateUtils.getTemplateFromCache(capabilityMap.template, request.template)
             .then((schema: any) => {
               console.log(dateTimeLogger() + ' validate the template');
-              var validator: ValidatorResult;
-              validator = validateJson(schema, args);
+              const validator: ValidatorResult = validateJson(schema, args);
               if (validator.valid) {
                 console.log(dateTimeLogger() + ' validate the capability');
-                var capValid: RequestValidator;
-                capValid = request.verifyCapability(capabilityMap.allow);
+                const capValid: RequestValidator = request.verifyCapability(capabilityMap.allow);
                 if (capValid.valid) {
                   console.log(dateTimeLogger() + ' verify the signature');
                   request.verifySignature(this.preVerifyDidSignature.bind(this), capabilityMap.validateKYC, capabilityMap.capability)
@@ -177,10 +172,10 @@ export abstract class AbstractHandler {
       if (connection.readyState != 1) {
         throw new TransactionError('Elysian not available');
       }
-      var sovrinUtils = new SovrinUtils();
-      var mnemonic = sovrinUtils.generateBip39Mnemonic();
-      var sovrinWallet = sovrinUtils.generateSdidFromMnemonic(mnemonic);
-      var did = String("did:ixo:" + sovrinWallet.did);
+      const sovrinUtils = new SovrinUtils();
+      const mnemonic = sovrinUtils.generateBip39Mnemonic();
+      const sovrinWallet = sovrinUtils.generateSdidFromMnemonic(mnemonic);
+      const did = String("did:ixo:" + sovrinWallet.did);
       walletService.createWallet(did, sovrinWallet.secret.signKey, sovrinWallet.verifyKey)
         .then((wallet: IWalletModel) => {
           Cache.set(wallet.did, {publicKey: wallet.verifyKey});
@@ -196,27 +191,48 @@ export abstract class AbstractHandler {
   abstract msgToPublish = (hash: any, request: Request): any => {
   };
 
-  messageForBlockchain(msgToSign: any, projectDid: string, msgType?: string, blockchainUri?: string) {
+  messageForBlockchain(msgToSign: any, projectDid: string, msgType: string, blockchainUri?: string) {
     return new Promise((resolve: Function, reject: Function) => {
       walletService.getWallet(projectDid)
         .then((wallet: IWalletModel) => {
           Cache.set(wallet.did, {publicKey: wallet.verifyKey});
-          var sovrinUtils = new SovrinUtils();
-          var signedMsg = {
-            ...msgToSign,
-            signatures: [{
-              signatureValue: sovrinUtils.signDocumentNoEncoding(wallet.signKey, wallet.verifyKey, wallet.did, msgToSign.payload[0].value),
-              created: new Date()
-            }]
-          };
-          let message = {
-            msgType: (msgType || 'blockchain'),
-            projectDid: wallet.did,
-            uri: (blockchainUri || BlockchainURI.sync),
-            data: Buffer.from(JSON.stringify(signedMsg)).toString('hex')
-          };
-          resolve(message);
-        });
+          const msgJson = JSON.stringify({type: msgType, value: msgToSign.payload[0].value})
+          const msgUppercaseHex = Buffer.from(msgJson).toString('hex').toUpperCase();
+          axios.post(BLOCKCHAIN_URI_REST + 'sign_data/', {msg: msgUppercaseHex, pub_key: wallet.verifyKey})
+            .then((response: any) => {
+              if (response.status == 200 && response.data.sign_bytes) {
+                const signData = response.data
+                const sovrinUtils = new SovrinUtils();
+                const signedMsg = {
+                  ...msgToSign,
+                  signatures: [{
+                    signatureValue: sovrinUtils.signDocumentNoEncoding(
+                      wallet.signKey, wallet.verifyKey, wallet.did, signData.sign_bytes),
+                    created: new Date()
+                  }]
+                };
+                signedMsg.fee = signData.fee;
+                const message = {
+                  msgType: (msgType || 'blockchain'),
+                  projectDid: wallet.did,
+                  uri: (blockchainUri || BlockchainURI.sync),
+                  data: Buffer.from(JSON.stringify(signedMsg)).toString('hex')
+                };
+                resolve(message);
+              } else {
+                console.log(dateTimeLogger() + ' error when requesting sign data from blockchain ' + response.statusText);
+                reject('Error when requesting sign data from blockchain');
+              }
+            })
+            .catch((err: any) => {
+              console.log(dateTimeLogger() + ' get sign data failed ' + err);
+              reject(err)
+            });
+        })
+        .catch((err: any) => {
+          console.log(dateTimeLogger() + ' get wallet failed ' + err);
+          reject(err)
+        })
     });
   }
 
@@ -225,7 +241,7 @@ export abstract class AbstractHandler {
       walletService.getWallet(projectDid)
         .then((wallet: IWalletModel) => {
           Cache.set(wallet.did, {publicKey: wallet.verifyKey});
-          var sovrinUtils = new SovrinUtils();
+          const sovrinUtils = new SovrinUtils();
           resolve(sovrinUtils.signDocumentNoEncoding(wallet.signKey, wallet.verifyKey, wallet.did, msgToSign));
         })
         .catch(() => {
@@ -252,7 +268,7 @@ export abstract class AbstractHandler {
       this.msgToPublish(hash, request)
         .then((msg: any) => {
           console.log(dateTimeLogger() + ' message to be published ' + msg.msgType);
-          var cacheMsg = {
+          const cacheMsg = {
             data: msg,
             request: request,
             txHash: hash

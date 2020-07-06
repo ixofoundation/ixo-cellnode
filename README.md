@@ -42,7 +42,7 @@ app      | register handler.listAgents
 app      | (node:17) [DEP0010] DeprecationWarning: crypto.createCredentials is deprecated. Use tls.createSecureContext instead.
 app      | (node:17) [DEP0011] DeprecationWarning: crypto.Credentials is deprecated. Use tls.SecureContext instead.
 app      | Memcache connected
-app      | MongDB connected
+app      | MongoDB connected
 app      | App listening on port 5000
 app      | RabbitMQ connected
 
@@ -60,7 +60,10 @@ Handlers are registered according to the capability loaded from the configuratio
 		{
 			"capability": "CreateProject",
 			"template": "projects",
-			"allow":["did:sov:*"]
+			"allow": [
+				"did:sov:*",
+				"did:ixo:*"
+			],
 		},
 		{
 			"capability": "CreateAgent",
@@ -119,6 +122,7 @@ Removing db    ... done
 ```
 
 To secure the Mongo DB:
+```
 docker exec -ti db /bin/bash
 mongod
 use admin
@@ -131,8 +135,9 @@ mongo --port 27017 -u "<admin username>" -p "<admin password>" --authenticationD
 
 use elysian
 db.createUser({user: "<username>", pwd: "<password>", roles: [{role: "readWrite", db: "elysian"}]})
+```
 
-API documents can be found at https://github.com/ixofoundation/mkdocs/blob/master/docs/api.md
+API documents can be found at https://github.com/ixofoundation/mkdocs/blob/master/docs/api.md```
 
 ## License
 

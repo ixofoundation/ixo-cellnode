@@ -86,14 +86,11 @@ const lookupProcessor: any = {
   },
   'project/CreateEvaluation': (jsonResponseMsg: any) => {
     evaluateClaimsProcessor.handleAsyncEvaluateClaimResponse(jsonResponseMsg)
-  },
-  'project/UpdateProjectStatus/rollback': (jsonResponseMsg: any) => {
-    updateProjectStatusProcessor.handleRollbackProjectStatus(jsonResponseMsg)
   }
 };
 
 export const handleResponseFromMessageQueue = (message: any) => {
-  let jsonResponseMsg = JSON.parse(message);
+  const jsonResponseMsg = JSON.parse(message);
 
   // blockchain node has accepted the transaction, we can go ahead and commit the data
   if (jsonResponseMsg.msgType === 'eth') {
@@ -102,7 +99,7 @@ export const handleResponseFromMessageQueue = (message: any) => {
     transactionLogService.updateTransactionLogForError(jsonResponseMsg.txHash, jsonResponseMsg.data);
   } else {
     //update transaction log with blockchain response data
-    var blockResponseCode = jsonResponseMsg.data.code != undefined ? jsonResponseMsg.data.code : undefined;
+    let blockResponseCode = jsonResponseMsg.data.code != undefined ? jsonResponseMsg.data.code : undefined;
     blockResponseCode = jsonResponseMsg.data.check_tx != undefined ? jsonResponseMsg.data.check_tx.code : blockResponseCode;
     blockResponseCode = jsonResponseMsg.data.deliver_tx != undefined ? jsonResponseMsg.data.deliver_tx.code : blockResponseCode;
     blockResponseCode = jsonResponseMsg.data.tx_result != undefined ? jsonResponseMsg.data.tx_result.code : blockResponseCode;
@@ -112,16 +109,11 @@ export const handleResponseFromMessageQueue = (message: any) => {
       .then((result: any) => {
         console.log(dateTimeLogger() + ' transaction log updated with block information for txHash %s %s', jsonResponseMsg.txHash, blockResponseCode);
         if (blockResponseCode >= 1) {
-          //here we handle specific rollback tasks if required
-          var rollbackProcessor = jsonResponseMsg.msgType + '/rollback';
-          if (lookupProcessor[rollbackProcessor] !== undefined) {
-            lookupProcessor[rollbackProcessor](jsonResponseMsg);
-          }
+          transactionLogService.updateTransactionLogForError(jsonResponseMsg.txHash, JSON.stringify(jsonResponseMsg.data));
           console.log(dateTimeLogger() + ' blockchain failed for message %s with code %s', jsonResponseMsg.msgType, blockResponseCode);
         } else {
           console.log(dateTimeLogger() + ' process blockchain response for %s hash %s ', jsonResponseMsg.msgType, jsonResponseMsg.txHash);
           lookupProcessor[jsonResponseMsg.msgType](jsonResponseMsg);
-
         }
       })
       .catch(() => {

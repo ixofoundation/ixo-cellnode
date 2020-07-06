@@ -3,8 +3,8 @@ import {dateTimeLogger} from '../logger/Logger';
 import * as nacl from 'tweetnacl';
 import * as bs58 from 'bs58';
 
-var ethUtil = require('ethereumjs-util');
-var ethereumWallet = require('ethereumjs-wallet');
+const ethUtil = require('ethereumjs-util');
+const ethereumWallet = require('ethereumjs-wallet');
 
 export class CryptoUtils {
 
@@ -27,23 +27,23 @@ export class CryptoUtils {
 
   validateEd25519Signature(data: String, signature: String, publicKey: String): Boolean {
     console.log(dateTimeLogger() + ' validate ed25519 signature with  ' + publicKey);
-    var decodedKey = new Uint8Array(bs58.decode(this.remove0x(publicKey).toString()));
-    var signatureBuffer = new Uint8Array(Buffer.from(this.remove0x(signature).toString(), 'base64'));
+    const decodedKey = new Uint8Array(bs58.decode(this.remove0x(publicKey).toString()));
+    const signatureBuffer = new Uint8Array(Buffer.from(this.remove0x(signature).toString(), 'base64'));
     return nacl.sign.detached.verify(new Uint8Array(Buffer.from(data.toString())), signatureBuffer, decodedKey)
   }
 
   validateECDSASignature(data: String, signature: String, publicKey: String): Boolean {
     // Same data as before
-    var message = ethUtil.toBuffer(data);
-    var msgHash = ethUtil.hashPersonalMessage(message);
+    const message = ethUtil.toBuffer(data);
+    const msgHash = ethUtil.hashPersonalMessage(message);
 
-    var signatureBuffer = ethUtil.toBuffer(signature);
-    var sigParams = ethUtil.fromRpcSig(signatureBuffer);
+    const signatureBuffer = ethUtil.toBuffer(signature);
+    const sigParams = ethUtil.fromRpcSig(signatureBuffer);
 
-    var recoveredPublicKey = ethUtil.ecrecover(msgHash, sigParams.v, sigParams.r, sigParams.s);
+    const recoveredPublicKey = ethUtil.ecrecover(msgHash, sigParams.v, sigParams.r, sigParams.s);
 
-    var sender = ethUtil.publicToAddress(recoveredPublicKey);
-    var recoveredAddress = ethUtil.bufferToHex(sender);
+    const sender = ethUtil.publicToAddress(recoveredPublicKey);
+    const recoveredAddress = ethUtil.bufferToHex(sender);
 
     return (recoveredAddress == publicKey);
   }
@@ -63,7 +63,7 @@ export class CryptoUtils {
   }
 
   generateWalletAndKeys(): any {
-    var wallet = ethereumWallet.generate();
+    const wallet = ethereumWallet.generate();
     return {
       address: wallet.getAddressString(),
       privateKey: wallet.getPrivateKeyString(),
@@ -72,7 +72,7 @@ export class CryptoUtils {
   }
 
   signECDSA(data: String, privateKey: String): String {
-    var sig = ethUtil.ecsign(ethUtil.hashPersonalMessage(ethUtil.toBuffer(data)), ethUtil.toBuffer(privateKey));
+    const sig = ethUtil.ecsign(ethUtil.hashPersonalMessage(ethUtil.toBuffer(data)), ethUtil.toBuffer(privateKey));
     return ethUtil.bufferToHex(Buffer.concat([sig.r, sig.s, ethUtil.toBuffer(sig.v - 27)]))
   }
 

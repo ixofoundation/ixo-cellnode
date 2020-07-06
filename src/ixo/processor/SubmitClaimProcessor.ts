@@ -16,17 +16,17 @@ export class SubmitClaimProcessor extends AbstractHandler {
           console.log(dateTimeLogger() + ' updating the submit claim capabilities');
           this.updateCapabilities(cached);
           console.log(dateTimeLogger() + ' commit submit claim to Elysian');
-          var obj = {
+          const obj = {
             ...cached.data,
             txHash: jsonResponseMsg.txHash,
             _creator: cached.signature.creator,
             _created: cached.signature.created
           };
-          var sanitizedData = xss.sanitize(obj);
+          const sanitizedData = xss.sanitize(obj);
           Claim.create({...sanitizedData, projectDid: cached.projectDid});
           console.log(dateTimeLogger() + ' submit claim transaction completed successfully');
         } else {
-          var retry: number = retries || 0;
+          let retry: number = retries || 0;
           if (retry <= 3) {
             retry++;
             setTimeout(() => {
@@ -52,8 +52,7 @@ export class SubmitClaimProcessor extends AbstractHandler {
 
   msgToPublish = (txHash: any, request: Request) => {
     return new Promise((resolve: Function, reject: Function) => {
-      var blockChainPayload: any;
-      let data = {
+      const data = {
         data: {
           claimID: txHash
         },
@@ -61,8 +60,8 @@ export class SubmitClaimProcessor extends AbstractHandler {
         senderDid: request.signature.creator,
         projectDid: request.projectDid
       };
-      var sanitizedData = xss.sanitize(data);
-      blockChainPayload = {
+      const sanitizedData = xss.sanitize(data);
+      const blockChainPayload = {
         payload: [{type: "project/CreateClaim", value: sanitizedData}]
       };
       resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, "project/CreateClaim", BlockchainURI.commit));
@@ -92,7 +91,6 @@ export class SubmitClaimProcessor extends AbstractHandler {
       });
     });
   }
-
 }
 
 export default new SubmitClaimProcessor();

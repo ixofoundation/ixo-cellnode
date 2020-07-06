@@ -9,10 +9,8 @@ const ASYM_CYPHER = (process.env.ASYM_CYPHER || 'aes-256-cbc');
 const ASYM_KEY = (process.env.ASYM_KEY || 'trustlab.tech');
 
 function encrypt(text: string) {
-  var cipher = createCipher(ASYM_CYPHER, ASYM_KEY);
-  var crypted = cipher.update(text, 'utf8', 'hex');
-  crypted += cipher.final('hex');
-  return crypted;
+  const cipher = createCipher(ASYM_CYPHER, ASYM_KEY);
+  return cipher.update(text, 'utf8', 'hex') + cipher.final('hex');
 }
 
 function decrypt(text: string) {
@@ -20,10 +18,8 @@ function decrypt(text: string) {
     return text;
   }
 
-  var decipher = createDecipher(ASYM_CYPHER, ASYM_KEY);
-  var dec = decipher.update(text, 'hex', 'utf8');
-  dec += decipher.final('utf8');
-  return dec;
+  const decipher = createDecipher(ASYM_CYPHER, ASYM_KEY);
+  return decipher.update(text, 'hex', 'utf8') + decipher.final('utf8');
 }
 
 export var WalletSchema: Schema = new Schema({

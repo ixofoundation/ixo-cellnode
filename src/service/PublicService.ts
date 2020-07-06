@@ -11,10 +11,9 @@ export class PublicService {
     this.emitter = new EventEmitter();
   }
 
-
   createPublic(data: Buffer, contentType: String, emit = true): Promise<IPublicModel> {
     return new Promise(function (resolve: Function, reject: Function) {
-      var key = Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36);
+      const key = Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36);
       Public.create(
         {
           "key": key,

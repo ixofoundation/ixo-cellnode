@@ -8,7 +8,7 @@ export interface IProjectModel extends Document {
   evaluatorPayPerClaim: number
 }
 
-var ProjectSchema: Schema = new Schema({
+const ProjectSchema: Schema = new Schema({
   autoApprove: [],
   evaluatorPayPerClaim: Number
 }, {strict: false});
@@ -21,13 +21,13 @@ export const Project: Model<IProjectModel> = model<IProjectModel>("Project", Pro
 
 Project.on("postCommit", function (obj, projectDid) {
   //update project status to created once project ledgered
-  var data: any = {
+  const data: any = {
     projectDid: projectDid,
     status: Status.created
   };
   updateProjectStatusProcessor.selfSignMessage(data, projectDid)
     .then((signature: any) => {
-      var projectStatusRequest: any = {
+      const projectStatusRequest: any = {
         payload: {
           template: {
             name: "project_status"

@@ -3,7 +3,7 @@ import {dateTimeLogger} from './logger/Logger';
 import Cache from './Cache';
 import {handleResponseFromMessageQueue} from './handlers/RequestHandler';
 
-var amqplib = require('amqplib');
+const amqplib = require('amqplib');
 
 export class MessageQ {
 
@@ -18,9 +18,7 @@ export class MessageQ {
   }
 
   connect(): Promise<any> {
-    var inst: any;
-    inst = this;
-
+    let inst = this;
     return new Promise(function (resolve: Function, reject: Function) {
       amqplib.connect(process.env.RABITMQ_URI || '')
         .then((conn: any) => {
@@ -49,8 +47,7 @@ export class MessageQ {
   }
 
   async publish(content: any) {
-    var inst: any;
-    inst = this;
+    let inst = this;
     return new Promise(function (resolve: Function, reject: Function) {
       inst.channel.assertExchange("pds.ex", "direct", {durable: true});
       inst.channel.assertQueue(inst.queue, {durable: true})
@@ -75,9 +72,7 @@ export class MessageQ {
   }
 
   public subscribe(): Promise<any> {
-    var inst: any;
-    inst = this;
-
+    let inst = this;
     return new Promise(function (resolve: Function, reject: Function) {
       inst.channel.assertQueue('pds.res', {durable: true})
         .then(() => {
@@ -89,7 +84,7 @@ export class MessageQ {
             if (messageData === null) {
               return;
             }
-            var JSONcontent = JSON.parse(messageData.content.toString());
+            const JSONcontent = JSON.parse(messageData.content.toString());
             console.log(dateTimeLogger() + " received response for %s with hash %s", JSONcontent.msgType, JSONcontent.txHash);
 
             handleResponseFromMessageQueue(messageData.content);
@@ -100,7 +95,6 @@ export class MessageQ {
           throw new TransactionError('Exception connecting to mq');
         });
     })
-
   }
 }
 

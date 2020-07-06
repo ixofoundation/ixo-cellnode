@@ -11,9 +11,8 @@ export class FundProjectProcessor extends AbstractHandler {
   }
 
   msgToPublish = (txHash: any, request: Request) => {
-    var blockChainPayload: any;
     return new Promise((resolve: Function, reject: Function) => {
-      let data = {
+      const data = {
         data: {
           status: request.data.status,
           ethFundingTxnID: request.data.txnID
@@ -22,8 +21,8 @@ export class FundProjectProcessor extends AbstractHandler {
         senderDid: request.signature.creator,
         projectDid: request.projectDid
       }
-      var sanitizedData = xss.sanitize(data);
-      blockChainPayload = {
+      const sanitizedData = xss.sanitize(data);
+      const blockChainPayload = {
         payload: [{type: "project/UpdateProjectStatus", value: sanitizedData}]
       }
       resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, 'project/UpdateProjectStatus', BlockchainURI.commit));

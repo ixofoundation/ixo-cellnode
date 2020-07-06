@@ -4,7 +4,7 @@ import Cache from '../Cache';
 import axios from 'axios';
 import {dateTimeLogger} from '../logger/Logger';
 
-var cryptoUtils = new CryptoUtils();
+const cryptoUtils = new CryptoUtils();
 
 const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
 
@@ -17,7 +17,6 @@ export class Request {
   template: any;
   projectDid: string = '';
   data: any;
-
 
   constructor(requestBody: any) {
     this.body = JSON.stringify(requestBody);
@@ -43,7 +42,7 @@ export class Request {
   }
 
   verifyCapability = (allow: any): RequestValidator => {
-    var validator = new RequestValidator();
+    const validator = new RequestValidator();
     if (allow.filter((e: string) => this.signature.creator.match(new RegExp(e))).length > 0) {
       validator.valid = true;
     } else {
@@ -56,7 +55,7 @@ export class Request {
   verifySignature = (preVerifyDidSignature: Function, validateKyc: boolean, capability: string): Promise<RequestValidator> => {
 
     return new Promise((resolve: Function, reject: Function) => {
-      var validator = new RequestValidator();
+      const validator = new RequestValidator();
       if (this.hasSignature()) {
         Cache.get(this.signature.creator)
           .then((didDoc: any) => {

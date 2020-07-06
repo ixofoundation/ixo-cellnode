@@ -3,7 +3,7 @@ import {Document, Model, model, Schema} from "mongoose";
 export interface IAgentStatusModel extends Document {
 }
 
-var AgentStatusSchema: Schema = new Schema({}, {strict: false});
+const AgentStatusSchema: Schema = new Schema({}, {strict: false});
 
 AgentStatusSchema.pre("save", function (next) {
   next();

@@ -4,10 +4,11 @@ import cache from './Cache';
 import mq from './MessageQ';
 import App from './App';
 
-var fs = require("fs");
-var fileContent = Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36);
+const fs = require("fs");
+const fileContent = Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36);
 try {
-  fs.readFileSync("/usr/src/app/pds.txt", 'utf8');
+  const pdsFile = process.env.PDS_FILE || "/usr/src/app/pds.txt"
+  fs.readFileSync(pdsFile, 'utf8');
 } catch (error) {
   fs.writeFile("./pds.txt", fileContent, (err: any) => {
     if (err) {
@@ -22,7 +23,10 @@ try {
 const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
 console.log('Connecting to blockchain on: ' + BLOCKCHAIN_URI_REST);
 
-var mongoose = require('mongoose');
+const mongoose = require('mongoose');
+mongoose.set('useNewUrlParser', true);
+mongoose.set('useCreateIndex', true);
+mongoose.set('useUnifiedTopology', true);
 
 require('mongoose').Promise = global.Promise;
 
@@ -35,8 +39,6 @@ mongoose.connect(process.env.MONGODB_URI || '',
   {
     useCreateIndex: true,
     useNewUrlParser: true,
-    reconnectTries: Number.MAX_VALUE,
-    reconnectInterval: 1000,
     connectTimeoutMS: 2000,
     keepAlive: 1
   })
@@ -47,7 +49,7 @@ cache.connect();
 mq.connect().catch(() => {
 });
 
-var db = mongoose.connection;
+const db = mongoose.connection;
 db.on('error', function (err: any) {
   if (err.message && err.message.match(/failed to connect to server .* on first connect/)) {
     console.log(new Date(), String(err));
@@ -62,7 +64,7 @@ db.on('error', function (err: any) {
 });
 
 db.once('open', function () {
-  console.log('MongDB connected');
+  console.log('MongoDB connected');
 
   // Once connected listen on server
   server.listen(port);
