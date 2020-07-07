@@ -54,7 +54,7 @@ services:
 
   pol:
     container_name: pol
-    image: trustlab/ixo-pol:master
+    image: ixoworld/ixo-pol:0.1.0
     environment:
       - RABITMQ_URI=amqp://guest:guest@mq:5672?heartbeat=2
       - BLOCKCHAIN_URI_SYNC=
