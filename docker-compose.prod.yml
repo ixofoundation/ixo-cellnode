@@ -20,7 +20,7 @@ services:
   pol:
     environment:
       - RABITMQ_URI=amqp://${MQ_USER}:${MQ_PASSWORD}@mq:5672?heartbeat=2
-      - BLOCKCHAIN_REST=http://192.168.220.9:1317
+      - BLOCKCHAIN_REST=http://blockchain.ixo.world:1317
 
   cli:
     environment:
