@@ -6,7 +6,7 @@ import {dateTimeLogger} from '../logger/Logger';
 
 const cryptoUtils = new CryptoUtils();
 
-const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
+const BLOCKSYNC_URI_REST = (process.env.BLOCKSYNC_URI_REST || '');
 
 export class Request {
 
@@ -83,7 +83,7 @@ export class Request {
             } else {
               //cache-miss
               console.log(dateTimeLogger() + ' retrieve pubkey from blockchain');
-              axios.get(BLOCKCHAIN_URI_REST + 'did/getByDid/' + this.signature.creator)
+              axios.get(BLOCKSYNC_URI_REST + 'did/getByDid/' + this.signature.creator)
                 .then((response) => {
                   if (response.status == 200 && response.data.did != null) {
                     //valid response from blockchain
@@ -125,7 +125,7 @@ export class Request {
             // could not connect to cache, read from blockchain
             console.log(dateTimeLogger() + ' cache unavailable ' + reason);
             console.log(dateTimeLogger() + ' retrieve pubkey from blockchain');
-            axios.get(BLOCKCHAIN_URI_REST + 'did/getByDid/' + this.signature.creator)
+            axios.get(BLOCKSYNC_URI_REST + 'did/getByDid/' + this.signature.creator)
               .then((response) => {
                 if (response.status == 200) {
                   //valid response from blockchain

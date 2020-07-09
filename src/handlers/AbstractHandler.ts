@@ -21,9 +21,11 @@ import axios, {AxiosResponse} from "axios";
 import Cache from '../Cache';
 
 import {dateTimeLogger} from '../logger/Logger';
-import {BlockchainURI} from "../ixo/common/shared";
+import {BlockchainMode} from "../ixo/common/shared";
 
-const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
+const base58 = require('bs58');
+
+const BLOCKSYNC_URI_REST = (process.env.BLOCKSYNC_URI_REST || '');
 
 export abstract class AbstractHandler {
 
@@ -191,32 +193,35 @@ export abstract class AbstractHandler {
   abstract msgToPublish = (hash: any, request: Request): any => {
   };
 
-  messageForBlockchain(msgToSign: any, projectDid: string, msgType: string, blockchainUri?: string) {
+  messageForBlockchain(msgToSign: any, projectDid: string, blockchainMode?: string) {
     return new Promise((resolve: Function, reject: Function) => {
       walletService.getWallet(projectDid)
         .then((wallet: IWalletModel) => {
           Cache.set(wallet.did, {publicKey: wallet.verifyKey});
-          const msgJson = JSON.stringify({type: msgType, value: msgToSign.payload[0].value})
+          const msgJson = JSON.stringify(msgToSign)
           const msgUppercaseHex = Buffer.from(msgJson).toString('hex').toUpperCase();
-          axios.post(BLOCKCHAIN_URI_REST + 'sign_data/', {msg: msgUppercaseHex, pub_key: wallet.verifyKey})
+          axios.post(BLOCKSYNC_URI_REST + 'sign_data/', {msg: msgUppercaseHex, pub_key: wallet.verifyKey})
             .then((response: any) => {
               if (response.status == 200 && response.data.sign_bytes) {
                 const signData = response.data
                 const sovrinUtils = new SovrinUtils();
-                const signedMsg = {
-                  ...msgToSign,
+                let signedMsg = {
+                  msg: [msgToSign],
+                  fee: signData.fee,
                   signatures: [{
-                    signatureValue: sovrinUtils.signDocumentNoEncoding(
+                    signature: sovrinUtils.signDocumentNoEncoding(
                       wallet.signKey, wallet.verifyKey, wallet.did, signData.sign_bytes),
-                    created: new Date()
-                  }]
+                    pub_key: {
+                      type: "tendermint/PubKeyEd25519",
+                      value: base58.decode(wallet.verifyKey).toString('base64')
+                    }
+                  }],
+                  // memo: "this is an optional memo",
                 };
-                signedMsg.fee = signData.fee;
                 const message = {
-                  msgType: (msgType || 'blockchain'),
+                  msgType: (msgToSign.type || 'blockchain'),
                   projectDid: wallet.did,
-                  uri: (blockchainUri || BlockchainURI.sync),
-                  data: Buffer.from(JSON.stringify(signedMsg)).toString('hex')
+                  data: JSON.stringify({tx: signedMsg, mode: blockchainMode || BlockchainMode.sync})
                 };
                 resolve(message);
               } else {

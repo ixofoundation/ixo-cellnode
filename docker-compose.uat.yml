@@ -4,7 +4,7 @@ services:
     environment:
       - MONGODB_URI=mongodb://${DB_USER}:${DB_PASSWORD}@db:27017/elysian
       - RABITMQ_URI=amqp://${MQ_USER}:${MQ_PASSWORD}@mq:5672?heartbeat=2
-      - BLOCKCHAIN_URI_REST=https://explorer_uat.ixo.world/api/
+      - BLOCKSYNC_URI_REST=https://explorer_uat.ixo.world/api/
       - ETHEREUM_API=https://ropsten.infura.io/
       - ASYM_CYPHER=${ASYMCYPHER}
       - ASYM_KEY=${ASYMKEY}
@@ -27,10 +27,7 @@ services:
   pol:
     environment:
       - RABITMQ_URI=amqp://${MQ_USER}:${MQ_PASSWORD}@mq:5672?heartbeat=2
-      - BLOCKCHAIN_URI_SYNC=http://blockchain_uat.ixo.world:46657/broadcast_tx_sync?tx=0x
-      - BLOCKCHAIN_URI_COMMIT=http://blockchain_uat.ixo.world:46657/broadcast_tx_commit?tx=0x
-      - BLOCKCHAIN_URI_VALIDATE=http://blockchain_uat.ixo.world:46657/tx?hash=0x
-      - ETHEREUM_API=https://ropsten.infura.io/
+      - BLOCKCHAIN_REST=http://blockchain_uat.ixo.world:1317
 
   cli:
     environment:

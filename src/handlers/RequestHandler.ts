@@ -90,34 +90,29 @@ const lookupProcessor: any = {
 };
 
 export const handleResponseFromMessageQueue = (message: any) => {
-  const jsonResponseMsg = JSON.parse(message);
+  const jsonMsg = JSON.parse(message);
 
   // blockchain node has accepted the transaction, we can go ahead and commit the data
-  if (jsonResponseMsg.msgType === 'eth') {
-    updateProjectStatusProcessor.handleAsyncEthResponse(jsonResponseMsg);
-  } else if (jsonResponseMsg.msgType === 'error') {
-    transactionLogService.updateTransactionLogForError(jsonResponseMsg.txHash, jsonResponseMsg.data);
+  if (jsonMsg.msgType === 'eth') {
+    updateProjectStatusProcessor.handleAsyncEthResponse(jsonMsg);
+  } else if (jsonMsg.msgType === 'error') {
+    transactionLogService.updateTransactionLogForError(jsonMsg.txHash, jsonMsg.data);
   } else {
-    //update transaction log with blockchain response data
-    let blockResponseCode = jsonResponseMsg.data.code != undefined ? jsonResponseMsg.data.code : undefined;
-    blockResponseCode = jsonResponseMsg.data.check_tx != undefined ? jsonResponseMsg.data.check_tx.code : blockResponseCode;
-    blockResponseCode = jsonResponseMsg.data.deliver_tx != undefined ? jsonResponseMsg.data.deliver_tx.code : blockResponseCode;
-    blockResponseCode = jsonResponseMsg.data.tx_result != undefined ? jsonResponseMsg.data.tx_result.code : blockResponseCode;
-    blockResponseCode = blockResponseCode == undefined ? 0 : blockResponseCode;
-
-    transactionLogService.updateTransactionLogForHash(jsonResponseMsg.txHash, jsonResponseMsg.data.hash, jsonResponseMsg.data.height, blockResponseCode)
+    // update transaction log with blockchain response data (default: 0, meaning no error)
+    let responseCode = jsonMsg.data.code || 0;
+    transactionLogService.updateTransactionLogForHash(jsonMsg.txHash, jsonMsg.data.txHash, jsonMsg.data.height, responseCode)
       .then((result: any) => {
-        console.log(dateTimeLogger() + ' transaction log updated with block information for txHash %s %s', jsonResponseMsg.txHash, blockResponseCode);
-        if (blockResponseCode >= 1) {
-          transactionLogService.updateTransactionLogForError(jsonResponseMsg.txHash, JSON.stringify(jsonResponseMsg.data));
-          console.log(dateTimeLogger() + ' blockchain failed for message %s with code %s', jsonResponseMsg.msgType, blockResponseCode);
+        console.log(dateTimeLogger() + ' transaction log updated with block information for txHash %s %s', jsonMsg.txHash, responseCode);
+        if (responseCode >= 1) {
+          transactionLogService.updateTransactionLogForError(jsonMsg.txHash, JSON.stringify(jsonMsg.data));
+          console.log(dateTimeLogger() + ' blockchain failed for message %s with code %s', jsonMsg.msgType, responseCode);
         } else {
-          console.log(dateTimeLogger() + ' process blockchain response for %s hash %s ', jsonResponseMsg.msgType, jsonResponseMsg.txHash);
-          lookupProcessor[jsonResponseMsg.msgType](jsonResponseMsg);
+          console.log(dateTimeLogger() + ' process blockchain response for %s hash %s ', jsonMsg.msgType, jsonMsg.txHash);
+          lookupProcessor[jsonMsg.msgType](jsonMsg);
         }
       })
       .catch(() => {
-        console.log(dateTimeLogger() + ' transaction log failed to update for txHash ' + jsonResponseMsg.txHash);
+        console.log(dateTimeLogger() + ' transaction log failed to update for txHash ' + jsonMsg.txHash);
       });
   }
 };

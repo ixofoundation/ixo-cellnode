@@ -9,4 +9,4 @@ export const enum Status {
 
 export const workflow = ["CREATED", "PENDING", "FUNDED", "STARTED", "STOPPED", "PAIDOUT"];
 
-export const enum BlockchainURI { sync = "SYNC", commit = "COMMIT", validate = "VALIDATE" }
+export const enum BlockchainMode { async = "async", sync = "sync", block = "block" }
