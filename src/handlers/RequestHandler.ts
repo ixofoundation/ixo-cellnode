@@ -100,7 +100,7 @@ export const handleResponseFromMessageQueue = (message: any) => {
   } else {
     // update transaction log with blockchain response data (default: 0, meaning no error)
     let responseCode = jsonMsg.data.code || 0;
-    transactionLogService.updateTransactionLogForHash(jsonMsg.txHash, jsonMsg.data.txHash, jsonMsg.data.height, responseCode)
+    transactionLogService.updateTransactionLogForHash(jsonMsg.txHash, jsonMsg.data.txhash, jsonMsg.data.height, responseCode)
       .then((result: any) => {
         console.log(dateTimeLogger() + ' transaction log updated with block information for txHash %s %s', jsonMsg.txHash, responseCode);
         if (responseCode >= 1) {
