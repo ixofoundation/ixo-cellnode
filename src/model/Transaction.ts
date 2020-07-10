@@ -19,10 +19,10 @@ export var TransactionSchema: Schema = new Schema({
     unique: true // Unique index.
   },
   nonce: String,
-  type: String,
+  // type: String,
   signatureType: String,
   signatureValue: String,
-  publicKey: String,
+  // publicKey: String,
   timestamp: Date,
   capability: String,
   blockHeight: String,
@@ -32,11 +32,10 @@ export var TransactionSchema: Schema = new Schema({
 });
 
 TransactionSchema.pre('save', function (next) {
-  let inst: any;
-  inst = this;
+  const inst = this as ITransactionModel;
   transactionLog.findPreviousTransaction()
     .then((prevTxn: ITransactionModel[]) => {
-      let prevHash = (prevTxn[0] ? prevTxn[0].hash : '');
+      const prevHash = (prevTxn[0] ? prevTxn[0].hash : '');
       inst.nonce = cryptoUtils.createNonce();
       inst.hash = cryptoUtils.hash(prevHash + inst.nonce.toString() + inst.data);
       inst.timestamp = new Date();

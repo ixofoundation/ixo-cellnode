@@ -177,7 +177,7 @@ export abstract class AbstractHandler {
       const sovrinUtils = new SovrinUtils();
       const mnemonic = sovrinUtils.generateBip39Mnemonic();
       const sovrinWallet = sovrinUtils.generateSdidFromMnemonic(mnemonic);
-      const did = String("did:ixo:" + sovrinWallet.did);
+      const did = "did:ixo:" + sovrinWallet.did;
       walletService.createWallet(did, sovrinWallet.secret.signKey, sovrinWallet.verifyKey)
         .then((wallet: IWalletModel) => {
           Cache.set(wallet.did, {publicKey: wallet.verifyKey});

@@ -23,7 +23,7 @@ export class CapabilitiesService {
         {
           projectDid: project,
           capabilities: capability
-        }, function (error: Error, newTransaction: ICapabilitiesModel) {
+        }, function (error: Error, newTransaction: ICapabilitiesModel[]) {
           if (error) {
             reject(error);
           } else {

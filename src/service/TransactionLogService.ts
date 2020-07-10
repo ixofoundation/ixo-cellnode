@@ -11,18 +11,19 @@ export class TransactionLogService {
     this.emitter = new EventEmitter();
   }
 
-
   createTransaction(data: String, signatureType: String, signature: String, projectDid: String, capability: string, emit = true): Promise<ITransactionModel> {
     return new Promise(function (resolve: Function, reject: Function) {
       Transaction.create(
         {
-          "data": data,
-          "signatureType": signatureType,
-          "signatureValue": signature,
-          "projectDid": projectDid,
-          "capability": capability
-
-        }, function (error: Error, newTransaction: ITransactionModel) {
+          data,
+          signatureType,
+          signatureValue: signature,
+          projectDid,
+          capability,
+          nonce: "",     // this is set in pre save
+          hash: "",      // this is set in pre save
+          timestamp: "", // this is set in pre save
+        }, function (error: Error, newTransaction: ITransactionModel[]) {
           if (error) {
             console.log("Error is " + error);
             reject(error);
