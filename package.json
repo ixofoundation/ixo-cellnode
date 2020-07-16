@@ -1,6 +1,6 @@
 {
   "name": "ixo-elysian",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "description": "ixo service to create a project data store and more",
   "repository": "https://github.com/ixofoundation/ixo-cellnode",
   "main": "App.ts",
