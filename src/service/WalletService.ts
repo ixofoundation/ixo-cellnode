@@ -12,15 +12,14 @@ export class WalletService {
   }
 
 
-  createWallet(did: String, signKey: String, verifyKey: String, emit = true): Promise<IWalletModel> {
+  createWallet(did: string, signKey: string, verifyKey: string, emit = true): Promise<IWalletModel> {
     return new Promise(function (resolve: Function, reject: Function) {
       Wallet.create(
         {
-          "did": did,
-          "signKey": signKey,
-          "verifyKey": verifyKey
-
-        }, function (error: Error, newTransaction: IWalletModel) {
+          did: did,
+          signKey: signKey,
+          verifyKey: verifyKey
+        }, function (error: Error, newTransaction: IWalletModel[]) {
           if (error) {
             console.log("Error is " + error);
             reject(error);

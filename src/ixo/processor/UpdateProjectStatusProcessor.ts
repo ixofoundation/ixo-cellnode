@@ -2,7 +2,7 @@ import {AbstractHandler} from '../../handlers/AbstractHandler';
 import {IProjectStatusModel, ProjectStatus} from '../model/ProjectStatusModel';
 import {Request} from "../../handlers/Request";
 import axios from 'axios';
-import {BlockchainURI, Status, workflow} from '../common/shared';
+import {BlockchainMode, Status, workflow} from '../common/shared';
 import {dateTimeLogger} from '../../logger/Logger';
 import Cache from '../../Cache';
 import xss from "../../Xss";
@@ -125,10 +125,8 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
         projectDid: request.projectDid
       };
       const sanitizedData = xss.sanitize(data);
-      const blockChainPayload = {
-        payload: [{type: "project/UpdateProjectStatus", value: sanitizedData}]
-      };
-      resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, 'project/UpdateProjectStatus', BlockchainURI.commit));
+      const msg = {type: "project/UpdateProjectStatus", value: sanitizedData};
+      resolve(this.messageForBlockchain(msg, request.projectDid, BlockchainMode.block));
     });
   };
 

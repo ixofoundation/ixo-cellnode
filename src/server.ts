@@ -20,8 +20,8 @@ try {
   });
 }
 
-const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
-console.log('Connecting to blockchain on: ' + BLOCKCHAIN_URI_REST);
+const BLOCKSYNC_URI_REST = (process.env.BLOCKSYNC_URI_REST || '');
+console.log('Connecting to blocksync on: ' + BLOCKSYNC_URI_REST);
 
 const mongoose = require('mongoose');
 mongoose.set('useNewUrlParser', true);

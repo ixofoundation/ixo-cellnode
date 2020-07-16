@@ -11,16 +11,15 @@ export class PublicService {
     this.emitter = new EventEmitter();
   }
 
-  createPublic(data: Buffer, contentType: String, emit = true): Promise<IPublicModel> {
+  createPublic(data: Buffer, contentType: string, emit = true): Promise<IPublicModel> {
     return new Promise(function (resolve: Function, reject: Function) {
       const key = Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36);
       Public.create(
         {
-          "key": key,
-          "data": data,
-          "contentType": contentType
-
-        }, function (error: Error, newTransaction: IPublicModel) {
+          key,
+          data,
+          contentType,
+        }, function (error: Error, _: IPublicModel[]) {
           if (error) {
             console.log("Error is " + error);
             reject(error);
@@ -31,7 +30,7 @@ export class PublicService {
     });
   }
 
-  findForKey(key: String): Promise<IPublicModel> {
+  findForKey(key: string): Promise<IPublicModel> {
     return new Promise(function (resolve: Function, reject: Function) {
       resolve(Public.findOne({key: key}));
     });
