@@ -6,11 +6,11 @@ import {Project} from '../model/ProjectModel';
 import {Request} from "../../handlers/Request";
 import axios from 'axios';
 import {dateTimeLogger} from '../../logger/Logger';
-import {BlockchainURI, Status} from '../../ixo/common/shared';
+import {BlockchainMode, Status} from '../../ixo/common/shared';
 import Cache from '../../Cache';
 import xss from "../../Xss";
 
-const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
+const BLOCKSYNC_URI_REST = (process.env.BLOCKSYNC_URI_REST || '');
 
 export class EvaluateClaimsProcessor extends AbstractHandler {
 
@@ -68,10 +68,8 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
         projectDid: request.projectDid
       };
       const sanitizedData = xss.sanitize(data);
-      const blockChainPayload = {
-        payload: [{type: "project/CreateEvaluation", value: sanitizedData}]
-      };
-      resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, "project/CreateEvaluation", BlockchainURI.commit));
+      const msg = {type: "project/CreateEvaluation", value: sanitizedData};
+      resolve(this.messageForBlockchain(msg, request.projectDid, BlockchainMode.block));
     });
   };
 
@@ -79,7 +77,7 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
   checkForFunds = (projectDid: string): Promise<boolean> => {
     return new Promise((resolve: Function, reject: Function) => {
       console.log(dateTimeLogger() + ' confirm funds exists');
-      axios.get(BLOCKCHAIN_URI_REST + 'project/getProjectAccounts/' + projectDid)
+      axios.get(BLOCKSYNC_URI_REST + 'project/getProjectAccounts/' + projectDid)
         .then((response) => {
           if (response.status == 200 && (response.data instanceof Array)) {
             let filter: any = response.data.filter((element: any) => element.did == projectDid);

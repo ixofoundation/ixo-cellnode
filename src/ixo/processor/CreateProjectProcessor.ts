@@ -5,7 +5,7 @@ import {Request} from "../../handlers/Request";
 import {dateTimeLogger} from '../../logger/Logger';
 import walletService from '../../service/WalletService';
 import Cache from '../../Cache';
-import {BlockchainURI} from '../common/shared';
+import {BlockchainMode} from '../common/shared';
 import xss from "../../Xss";
 
 export class CreateProjectProcessor extends AbstractHandler {
@@ -75,10 +75,8 @@ export class CreateProjectProcessor extends AbstractHandler {
             pubKey: wallet.verifyKey
           };
           const sanitizedData = xss.sanitize(data);
-          const blockChainPayload = {
-            payload: [{type: "project/CreateProject", value: sanitizedData}]
-          };
-          resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, 'project/CreateProject', BlockchainURI.commit));
+          const msg = {type: "project/CreateProject", value: sanitizedData};
+          resolve(this.messageForBlockchain(msg, request.projectDid, BlockchainMode.block));
         })
     });
   };

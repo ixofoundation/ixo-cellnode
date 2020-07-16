@@ -71,10 +71,8 @@ export class UpdateAgentStatusProcessor extends AbstractHandler {
         projectDid: request.projectDid
       };
       const sanitizedData = xss.sanitize(data);
-      const blockChainPayload = {
-        payload: [{type: "project/UpdateAgent", value: sanitizedData}]
-      };
-      resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, "project/UpdateAgent"));
+      const msg = {type: "project/UpdateAgent", value: sanitizedData};
+      resolve(this.messageForBlockchain(msg, request.projectDid));
     });
   };
 

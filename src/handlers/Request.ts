@@ -6,7 +6,7 @@ import {dateTimeLogger} from '../logger/Logger';
 
 const cryptoUtils = new CryptoUtils();
 
-const BLOCKCHAIN_URI_REST = (process.env.BLOCKCHAIN_URI_REST || '');
+const BLOCKSYNC_URI_REST = (process.env.BLOCKSYNC_URI_REST || '');
 
 export class Request {
 
@@ -53,14 +53,13 @@ export class Request {
   }
 
   verifySignature = (preVerifyDidSignature: Function, validateKyc: boolean, capability: string): Promise<RequestValidator> => {
-
     return new Promise((resolve: Function, reject: Function) => {
       const validator = new RequestValidator();
       if (this.hasSignature()) {
         Cache.get(this.signature.creator)
           .then((didDoc: any) => {
             if (didDoc) {
-              //cache-hit
+              // cache-hit
               console.log(dateTimeLogger() + ' got cache record for key ' + this.signature.creator);
               if (validateKyc) {
                 if (!preVerifyDidSignature(didDoc, this, capability)) {
@@ -81,9 +80,9 @@ export class Request {
               }
               resolve(validator);
             } else {
-              //cache-miss
+              // cache-miss
               console.log(dateTimeLogger() + ' retrieve pubkey from blockchain');
-              axios.get(BLOCKCHAIN_URI_REST + 'did/getByDid/' + this.signature.creator)
+              axios.get(BLOCKSYNC_URI_REST + 'did/getByDid/' + this.signature.creator)
                 .then((response) => {
                   if (response.status == 200 && response.data.did != null) {
                     //valid response from blockchain
@@ -125,7 +124,7 @@ export class Request {
             // could not connect to cache, read from blockchain
             console.log(dateTimeLogger() + ' cache unavailable ' + reason);
             console.log(dateTimeLogger() + ' retrieve pubkey from blockchain');
-            axios.get(BLOCKCHAIN_URI_REST + 'did/getByDid/' + this.signature.creator)
+            axios.get(BLOCKSYNC_URI_REST + 'did/getByDid/' + this.signature.creator)
               .then((response) => {
                 if (response.status == 200) {
                   //valid response from blockchain

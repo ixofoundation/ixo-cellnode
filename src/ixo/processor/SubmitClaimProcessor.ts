@@ -4,7 +4,7 @@ import {IProjectStatusModel, ProjectStatus} from '../model/ProjectStatusModel';
 import {Request} from "../../handlers/Request";
 import {dateTimeLogger} from '../../logger/Logger';
 import Cache from '../../Cache';
-import {BlockchainURI} from '../common/shared';
+import {BlockchainMode} from '../common/shared';
 import xss from "../../Xss";
 
 export class SubmitClaimProcessor extends AbstractHandler {
@@ -61,10 +61,8 @@ export class SubmitClaimProcessor extends AbstractHandler {
         projectDid: request.projectDid
       };
       const sanitizedData = xss.sanitize(data);
-      const blockChainPayload = {
-        payload: [{type: "project/CreateClaim", value: sanitizedData}]
-      };
-      resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, "project/CreateClaim", BlockchainURI.commit));
+      const msg = {type: "project/CreateClaim", value: sanitizedData};
+      resolve(this.messageForBlockchain(msg, request.projectDid, BlockchainMode.block));
     });
   };
 

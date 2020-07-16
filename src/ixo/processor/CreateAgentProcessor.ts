@@ -63,10 +63,8 @@ export class CreateAgentProcessor extends AbstractHandler {
       };
 
       const sanitizedData = xss.sanitize(data);
-      const blockChainPayload = {
-        payload: [{type: "project/CreateAgent", value: sanitizedData}]
-      };
-      resolve(this.messageForBlockchain(blockChainPayload, request.projectDid, "project/CreateAgent"));
+      const msg = {type: "project/CreateAgent", value: sanitizedData};
+      resolve(this.messageForBlockchain(msg, request.projectDid));
     });
   };
 
