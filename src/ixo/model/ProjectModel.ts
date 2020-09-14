@@ -1,23 +1,9 @@
-import {Document, Model, model, Schema} from "mongoose";
+import {Document, Model, model} from "mongoose";
 import updateProjectStatusProcessor from "../processor/UpdateProjectStatusProcessor";
 import {Status} from '../common/shared';
 import {dateTimeLogger} from '../../logger/Logger';
 
-export interface IProjectModel extends Document {
-  autoApprove: [string],
-  evaluatorPayPerClaim: number
-}
-
-const ProjectSchema: Schema = new Schema({
-  autoApprove: [],
-  evaluatorPayPerClaim: Number
-}, {strict: false});
-
-ProjectSchema.pre("save", function (next) {
-  next();
-});
-
-export const Project: Model<IProjectModel> = model<IProjectModel>("Project", ProjectSchema);
+export const Project: Model<Document> = model<Document>("Project");
 
 Project.on("postCommit", function (obj, projectDid) {
   //update project status to created once project ledgered

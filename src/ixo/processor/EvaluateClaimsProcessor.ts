@@ -6,7 +6,7 @@ import {Project} from '../model/ProjectModel';
 import {Request} from "../../handlers/Request";
 import axios from 'axios';
 import {dateTimeLogger} from '../../logger/Logger';
-import {BlockchainMode, Status} from '../../ixo/common/shared';
+import {BlockchainMode, Status} from '../common/shared';
 import Cache from '../../Cache';
 import xss from "../../Xss";
 
@@ -86,7 +86,7 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
             })
               .then((project) => {
                 if (project) {
-                  resolve(filter[0].balance - project.evaluatorPayPerClaim >= 0);
+                  resolve(filter[0].balance >= 0); // TODO: take into consideration amount to be paid, not just balance
                 } else {
                   console.log(dateTimeLogger() + ' check for funds no project found for projectDid ' + projectDid);
                   reject('Check for funds no project found for projectDid ' + projectDid);
@@ -109,7 +109,7 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
   };
 
   process = (args: any) => {
-    console.log(dateTimeLogger() + ' start new evaluate claimtransaction ');
+    console.log(dateTimeLogger() + ' start new evaluate claim transaction');
     const projectDid = new Request(args).projectDid;
     return this.checkForFunds(projectDid)
       .then((resp: boolean) => {
