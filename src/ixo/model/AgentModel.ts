@@ -21,12 +21,9 @@ Agent.on("postCommit", function (obj, projectDid) {
     projectDid: obj.projectDid
   }).then((project) => {
     if (project) {
-      let status = (project.autoApprove.some(function (element) {
-        return (obj.role === element)
-      })) ? "1" : "0";
       const data: any = {
         projectDid: projectDid,
-        status: status,
+        status: "1", // TODO: check if should auto-approve agents
         agentDid: obj.agentDid,
         role: obj.role
       };

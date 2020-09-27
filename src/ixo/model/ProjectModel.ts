@@ -4,14 +4,9 @@ import {Status} from '../common/shared';
 import {dateTimeLogger} from '../../logger/Logger';
 
 export interface IProjectModel extends Document {
-  autoApprove: [string],
-  evaluatorPayPerClaim: number
 }
 
-const ProjectSchema: Schema = new Schema({
-  autoApprove: [],
-  evaluatorPayPerClaim: Number
-}, {strict: false});
+const ProjectSchema: Schema = new Schema({}, {strict: false});
 
 ProjectSchema.pre("save", function (next) {
   next();
