@@ -5,6 +5,7 @@ import {Request} from "../../handlers/Request";
 import {dateTimeLogger} from '../../logger/Logger';
 import Cache from '../../Cache';
 import xss from "../../Xss";
+import {BlockchainMode} from "../common/shared";
 
 export class CreateAgentProcessor extends AbstractHandler {
 
@@ -64,7 +65,7 @@ export class CreateAgentProcessor extends AbstractHandler {
 
       const sanitizedData = xss.sanitize(data);
       const msg = {type: "project/CreateAgent", value: sanitizedData};
-      resolve(this.messageForBlockchain(msg, request.projectDid));
+      resolve(this.messageForBlockchain(msg, request.projectDid, BlockchainMode.block));
     });
   };
 

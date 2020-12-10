@@ -76,6 +76,10 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
   // check the Project Balance to verify that funds are available to pay evaluator
   checkForFunds = (projectDid: string): Promise<boolean> => {
     return new Promise((resolve: Function, reject: Function) => {
+
+      resolve(true); // TODO: remove once we have a way to check project account balance
+      return         // TODO: remove once we have a way to check project account balance
+
       console.log(dateTimeLogger() + ' confirm funds exists');
       axios.get(BLOCKSYNC_URI_REST + 'project/getProjectAccounts/' + projectDid)
         .then((response) => {
