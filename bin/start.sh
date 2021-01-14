@@ -45,10 +45,12 @@ then
 
   sed -i "s|%%ROOT%%|$ROOT|" "$dbadmin/create-admin-user.js"
   sed -i "s|%%PASSWORD%%|$DB_PASSWORD|" "$dbadmin/create-admin-user.js"
+  sudo mkdir $ROOT_DIR/db/
   sudo mv $dbadmin/create-admin-user.js $ROOT_DIR/db/
 
   sed -i "s|%%USER%%|$DB_USER|" "$dbadmin/create-elysian-user.js"
   sed -i "s|%%PASSWORD%%|$DB_PASSWORD|" "$dbadmin/create-elysian-user.js"
+  sudo mkdir $ROOT_DIR/db/
   sudo mv $dbadmin/create-elysian-user.js $ROOT_DIR/db/
 
   rm -rf ${dbadmin}
