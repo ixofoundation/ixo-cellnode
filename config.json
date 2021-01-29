@@ -31,10 +31,6 @@
       "template": "claims"
     },
     {
-      "capability": "ListClaimsByTemplateId",
-      "template": "claims"
-    },
-    {
       "capability": "ListAgents",
       "template": "agents"
     },
