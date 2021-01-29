@@ -3,8 +3,7 @@ import createProjectProcessor from '../ixo/processor/CreateProjectProcessor';
 import createAgentProcessor from '../ixo/processor/CreateAgentProcessor';
 import evaluateClaimsProcessor from '../ixo/processor/EvaluateClaimsProcessor';
 import listAgentsProcessor from '../ixo/processor/ListAgentsProcessor';
-import listClaimsProcessor from '../ixo/processor/ListClaimsProcessor';
-import listClaimsByTemplateIdProcessor from '../ixo/processor/ListClaimsByTemplateIdProcessor';
+import listClaimProcessor from '../ixo/processor/ListClaimsProcessor';
 import submitClaimProcessor from '../ixo/processor/SubmitClaimProcessor';
 import updateAgentStatusProcessor from '../ixo/processor/UpdateAgentStatusProcessor';
 import fundProjectProcessor from '../ixo/processor/FundProjectProcessor';
@@ -40,13 +39,7 @@ export const RequestLookupHandler: any = {
 
   'listClaims': (args: any) => {
     return new Promise((resolve: Function, reject: Function) => {
-      resolve(listClaimsProcessor.process(args));
-    });
-  },
-
-  'listClaimsByTemplateId': (args: any) => {
-    return new Promise((resolve: Function, reject: Function) => {
-      resolve(listClaimsByTemplateIdProcessor.process(args));
+      resolve(listClaimProcessor.process(args));
     });
   },
 
