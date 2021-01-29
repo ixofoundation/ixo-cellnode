@@ -53,9 +53,11 @@ export class UpdateAgentStatusProcessor extends AbstractHandler {
     if (request.data.role === 'SA' && request.data.status === '1') this.addCapabilities(request.projectDid, [request.data.agentDid], 'SubmitClaim');
     if (request.data.role === 'EA' && request.data.status === '1') this.addCapabilities(request.projectDid, [request.data.agentDid], 'EvaluateClaim');
     if (request.data.status === '1') this.addCapabilities(request.projectDid, [request.data.agentDid], 'ListClaims');
+    if (request.data.status === '1') this.addCapabilities(request.projectDid, [request.data.agentDid], 'ListClaimsByTemplateId');
     if (request.data.role === 'SA' && request.data.status === '2') this.removeCapabilities(request.projectDid, request.data.agentDid, 'SubmitClaim');
     if (request.data.role === 'EA' && request.data.status === '2') this.removeCapabilities(request.projectDid, request.data.agentDid, 'EvaluateClaim');
     if (request.data.status === '2') this.removeCapabilities(request.projectDid, request.data.agentDid, 'ListClaims');
+    if (request.data.status === '2') this.removeCapabilities(request.projectDid, request.data.agentDid, 'ListClaimsByTemplateId');
   };
 
   msgToPublish = (txHash: any, request: Request) => {
