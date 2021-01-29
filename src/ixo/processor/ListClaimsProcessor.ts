@@ -4,7 +4,7 @@ import {Request} from "../../handlers/Request";
 import {dateTimeLogger} from '../../logger/Logger';
 import {Agent} from '../model/AgentModel';
 
-export class ListClaimsProcessor extends AbstractHandler {
+export class ListClaimProcessor extends AbstractHandler {
 
   updateCapabilities = (request: Request) => {
   }
@@ -80,4 +80,4 @@ export class ListClaimsProcessor extends AbstractHandler {
   }
 }
 
-export default new ListClaimsProcessor();
+export default new ListClaimProcessor();
