@@ -54,7 +54,8 @@ export class SubmitClaimProcessor extends AbstractHandler {
     return new Promise((resolve: Function, reject: Function) => {
       const data = {
         data: {
-          claimID: txHash
+          claimID: txHash,
+          claimTemplateID: request.data.claimTemplateId
         },
         txHash: txHash,
         senderDid: request.signature.creator,
