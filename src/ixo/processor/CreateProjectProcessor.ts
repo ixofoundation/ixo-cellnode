@@ -56,6 +56,7 @@ export class CreateProjectProcessor extends AbstractHandler {
     this.addCapabilities(request.projectDid, ['did:sov:*', 'did:ixo:*'], 'CreateAgent');
     this.addCapabilities(request.projectDid, [request.signature.creator], 'ListAgents');
     this.addCapabilities(request.projectDid, [request.signature.creator], 'ListClaims');
+    this.addCapabilities(request.projectDid, [request.signature.creator], 'ListClaimsByTemplateId');
   };
 
   msgToPublish = (txHash: any, request: Request) => {

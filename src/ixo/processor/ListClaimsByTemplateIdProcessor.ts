@@ -4,7 +4,7 @@ import {Request} from "../../handlers/Request";
 import {dateTimeLogger} from '../../logger/Logger';
 import {Agent} from '../model/AgentModel';
 
-export class ListClaimsProcessor extends AbstractHandler {
+export class ListClaimsByTemplateIdProcessor extends AbstractHandler {
 
   updateCapabilities = (request: Request) => {
   }
@@ -13,8 +13,8 @@ export class ListClaimsProcessor extends AbstractHandler {
   };
 
   process = (args: any) => {
-    console.log(dateTimeLogger() + ' start new List Claims transaction ');
-    return this.queryTransaction(args, 'ListClaims', (filter: any): Promise<any[]> => {
+    console.log(dateTimeLogger() + ' start new List Claims by template ID transaction ');
+    return this.queryTransaction(args, 'ListClaimsByTemplateId', (filter: any): Promise<any[]> => {
       return new Promise((resolve: Function, reject: Function) => {
         Agent.aggregate([
           {
@@ -30,6 +30,7 @@ export class ListClaimsProcessor extends AbstractHandler {
                   {
                     $match: {
                       projectDid: filter.projectDid,
+                      claimTemplateId: filter.data.claimTemplateId,
                       _creator: filter.signature.creator
                     }
                   },
@@ -80,4 +81,4 @@ export class ListClaimsProcessor extends AbstractHandler {
   }
 }
 
-export default new ListClaimsProcessor();
+export default new ListClaimsByTemplateIdProcessor();
