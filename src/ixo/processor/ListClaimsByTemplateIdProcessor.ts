@@ -28,6 +28,8 @@ export class ListClaimsByTemplateIdProcessor extends AbstractHandler {
             if (agent[0].role === "SA") {
               Claim.aggregate([
                   {
+                    // TODO: can replace claimTemplateId filtering with ...filter.data to include all filters just like
+                    //       what is done in the 'else' part for non-SA agents.
                     $match: {
                       projectDid: filter.projectDid,
                       claimTemplateId: filter.data.claimTemplateId,
