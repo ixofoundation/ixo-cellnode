@@ -28,6 +28,7 @@ export class UpdateProjectDocProcessor extends AbstractHandler {
           const sanitizedData = xss.sanitize(obj);
           ProjectDoc.create({...sanitizedData, projectDid: cached.projectDid});
           ProjectDoc.emit('postCommit', obj, cached.projectDid);
+          // TODO: update project doc in Project database, probably using Project.update(...)
           console.log(dateTimeLogger() + ' Update project doc transaction completed successfully');
         } else {
           let retry: number = retries || 0;
