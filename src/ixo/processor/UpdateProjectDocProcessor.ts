@@ -1,10 +1,12 @@
 import {AbstractHandler} from '../../handlers/AbstractHandler';
 import {ProjectDoc} from '../model/ProjectDocModel';
+import {Project} from '../model/ProjectModel';
 import {Request} from "../../handlers/Request";
 import {BlockchainMode} from '../common/shared';
 import {dateTimeLogger} from '../../logger/Logger';
 import Cache from '../../Cache';
 import xss from "../../Xss";
+import updateAgentStatusProcessor from "./UpdateAgentStatusProcessor";
 
 export class UpdateProjectDocProcessor extends AbstractHandler {
 
@@ -20,7 +22,7 @@ export class UpdateProjectDocProcessor extends AbstractHandler {
           this.updateCapabilities(cached);
           console.log(dateTimeLogger() + ' commit project doc to Elysian');
           const obj = {
-            ...cached.data,
+            ...cached.data.data,
             txHash: jsonResponseMsg.txHash,
             _creator: cached.signature.creator,
             _created: cached.signature.created
@@ -28,8 +30,28 @@ export class UpdateProjectDocProcessor extends AbstractHandler {
           const sanitizedData = xss.sanitize(obj);
           ProjectDoc.create({...sanitizedData, projectDid: cached.projectDid});
           ProjectDoc.emit('postCommit', obj, cached.projectDid);
-          // TODO: update project doc in Project database, probably using Project.update(...)
-          console.log(dateTimeLogger() + ' Update project doc transaction completed successfully');
+
+          Project.findOne({projectDid: cached.projectDid})
+            .then((prevProject) => {
+              if (prevProject) {
+                const prevProjectJSON = JSON.parse(JSON.stringify(prevProject))
+                Project.replaceOne(
+                    {_id: prevProject._id},
+                    {
+                      ...cached.data.data,
+                      projectDid: prevProjectJSON.projectDid,
+                      txHash: prevProjectJSON.txHash,
+                      _creator: prevProjectJSON._creator,
+                      _created: prevProjectJSON._created}
+                ).exec()
+                console.log(dateTimeLogger() + ' Update project doc transaction completed successfully');
+              } else {
+                console.log(dateTimeLogger() + ' project not found when updating projects DB')
+              }
+            })
+            .catch(() => {
+              console.log(dateTimeLogger() + ' exception caught when updating projects DB for handleAsyncProjectDocResponse');
+            });
         } else {
           let retry: number = retries || 0;
           if (retry <= 3) {
@@ -56,9 +78,7 @@ export class UpdateProjectDocProcessor extends AbstractHandler {
   msgToPublish = (txHash: any, request: Request) => {
     return new Promise((resolve: Function, reject: Function) => {
       const data = {
-        data: {
-          // TODO: new project doc (probably) goes here
-        },
+        data: request.data.data,
         txHash: txHash,
         senderDid: request.signature.creator,
         projectDid: request.projectDid
