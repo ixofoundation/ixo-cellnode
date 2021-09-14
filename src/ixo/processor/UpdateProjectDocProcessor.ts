@@ -61,8 +61,6 @@ export class UpdateProjectDocProcessor extends AbstractHandler {
               this.handleAsyncProjectDocResponse(jsonResponseMsg, retry)
             }, 2000)
           } else {
-            //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to
-            //force the data into the DB
             console.log(dateTimeLogger() + ' cached update project not found for transaction %s ', jsonResponseMsg.txHash);
           }
         }
