@@ -1,4 +1,5 @@
 import updateProjectStatusProcessor from '../ixo/processor/UpdateProjectStatusProcessor';
+import updateProjectDocProcessor from '../ixo/processor/UpdateProjectDocProcessor';
 import createProjectProcessor from '../ixo/processor/CreateProjectProcessor';
 import createAgentProcessor from '../ixo/processor/CreateAgentProcessor';
 import evaluateClaimsProcessor from '../ixo/processor/EvaluateClaimsProcessor';
@@ -68,6 +69,12 @@ export const RequestLookupHandler: any = {
     });
   },
 
+  'updateProjectDoc': (args: any) => {
+    return new Promise((resolve: Function, reject: Function) => {
+      resolve(updateProjectDocProcessor.process(args));
+    });
+  },
+
   'fundProject': (args: any) => {
     return new Promise((resolve: Function, reject: Function) => {
       resolve(fundProjectProcessor.process(args));
@@ -81,6 +88,9 @@ const lookupProcessor: any = {
   },
   'project/UpdateProjectStatus': (jsonResponseMsg: any) => {
     updateProjectStatusProcessor.handleAsyncProjectStatusResponse(jsonResponseMsg)
+  },
+  'project/UpdateProjectDoc': (jsonResponseMsg: any) => {
+    updateProjectDocProcessor.handleAsyncProjectDocResponse(jsonResponseMsg)
   },
   'project/CreateAgent': (jsonResponseMsg: any) => {
     createAgentProcessor.handleAsyncCreateAgentResponse(jsonResponseMsg)

@@ -1,6 +1,7 @@
 import InitHandler from '../../handlers/InitHandler';
 import {AbstractHandler} from '../../handlers/AbstractHandler';
 import {Project} from '../model/ProjectModel';
+import {ProjectDoc} from "../model/ProjectDocModel";
 import {Request} from "../../handlers/Request";
 import {dateTimeLogger} from '../../logger/Logger';
 import walletService from '../../service/WalletService';
@@ -25,6 +26,7 @@ export class CreateProjectProcessor extends AbstractHandler {
           };
           const sanitizedData = xss.sanitize(obj);
           Project.create({...sanitizedData, projectDid: cached.projectDid});
+          ProjectDoc.create({...sanitizedData, projectDid: cached.projectDid});
           Project.emit('postCommit', obj, cached.projectDid);
           console.log(dateTimeLogger() + ' create project transaction completed successfully');
         } else {
@@ -52,6 +54,7 @@ export class CreateProjectProcessor extends AbstractHandler {
   updateCapabilities = (request: Request) => {
     this.addCapabilities(request.projectDid, [request.projectDid, request.signature.creator], 'FundProject');
     this.addCapabilities(request.projectDid, [request.projectDid, request.signature.creator], 'UpdateProjectStatus');
+    this.addCapabilities(request.projectDid, [request.projectDid, request.signature.creator], 'UpdateProjectDoc');
     this.addCapabilities(request.projectDid, [request.projectDid, request.signature.creator], 'UpdateAgentStatus');
     this.addCapabilities(request.projectDid, ['did:sov:*', 'did:ixo:*'], 'CreateAgent');
     this.addCapabilities(request.projectDid, [request.signature.creator], 'ListAgents');
