@@ -6,7 +6,6 @@ import {BlockchainMode} from '../common/shared';
 import {dateTimeLogger} from '../../logger/Logger';
 import Cache from '../../Cache';
 import xss from "../../Xss";
-import updateAgentStatusProcessor from "./UpdateAgentStatusProcessor";
 
 export class UpdateProjectDocProcessor extends AbstractHandler {
 
@@ -39,10 +38,11 @@ export class UpdateProjectDocProcessor extends AbstractHandler {
                     {_id: prevProject._id},
                     {
                       ...cached.data.data,
-                      projectDid: prevProjectJSON.projectDid,
                       txHash: prevProjectJSON.txHash,
                       _creator: prevProjectJSON._creator,
-                      _created: prevProjectJSON._created}
+                      _created: prevProjectJSON._created,
+                      projectDid: prevProjectJSON.projectDid
+                    }
                 ).exec()
                 console.log(dateTimeLogger() + ' Update project doc transaction completed successfully');
               } else {
