@@ -68,8 +68,6 @@ export class UpdateProjectDocProcessor extends AbstractHandler {
         }
       })
       .catch(() => {
-        //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to
-        //force the data into the DB
         console.log(dateTimeLogger() + ' exception caught for handleAsyncProjectDocResponse');
       });
 
