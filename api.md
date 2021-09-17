@@ -1,6 +1,6 @@
 # Cell Node API Documentation
 
-This document lists Cell Node's API endpoints and provides some examples of their usage. Since ixo-apimodule is another ixo component which interacts extensively with Cell Node and demonstrates its usage in [demo.ts](https://github.com/ixofoundation/ixo-apimodule/blob/master/test/demo.ts), some documentation for ixo-apimodule is also provided here to illustrate their interactions.
+This document lists ixo-cellnode's API endpoints and provides some examples of their usage. Since ixo-apimodule is another ixo component which interacts extensively with cell node and demonstrates its usage in [demo.ts](https://github.com/ixofoundation/ixo-apimodule/blob/master/test/demo.ts), some documentation for ixo-apimodule is also provided here to illustrate their interactions.
 
 * [ixo-apimodule](#ixo-apimodule) \(NPM module\)
 * [ixo-cellnode](#cell-node-api) \(decentralised data store\)
@@ -9,7 +9,7 @@ This document lists Cell Node's API endpoints and provides some examples of thei
 
 (For the code and further documentation, refer to the repo [here](https://github.com/ixofoundation/ixo-apimodule).)
 
-This NPM module provides APIs that simplify interactions between the ixo-SDK user interfaces and Cell Nodes, Blockchain Nodes and blocksync.
+This NPM module provides APIs that simplify interactions between the ixo-SDK user interfaces and cell nodes, Blockchain Nodes and blocksync.
 
 `npm install --save ixo-module`
 
@@ -108,7 +108,7 @@ Response: [ixo Blocksync: withdraw funds](https://app.swaggerhub.com/apis-docs/d
 
 #### Upload Public Data
 
-Function to upload into a Cell Node any public content relating to an entity. This returns a unique content identifier \(CID\) for the data. This allows the data to be content-addressed and retrieved using the identifier `dataUrl`. The primary use is to upload images and json template files to the Cell Node. But this can accept any arbitrary project-specific public data.
+Function to upload into a cell node any public content relating to an entity. This returns a unique content identifier \(CID\) for the data. This allows the data to be content-addressed and retrieved using the identifier `dataUrl`. The primary use is to upload images and json template files to the cell node. But this can accept any arbitrary project-specific public data.
 
 The `dataUrl` takes the form of `data:<mediatype>;<encoding>,<data>` // In future this will be replaced by IPLD standard content addresses
 
@@ -140,7 +140,7 @@ These calls take the form `ixo.agent.<functionName>`
 
 #### List Agents
 
-Returns a list of all agents associated with an entity, from the Cell Node.
+Returns a list of all agents associated with an entity, from the cell node.
 
 Request:
 
@@ -194,7 +194,7 @@ Calls take the form `ixo.claim.<functionName>`
 
 #### List Claims
 
-Returns a list of all claims for an entity, from a Cell Node, together with the claim status.
+Returns a list of all claims for an entity, from a cell node, together with the claim status.
 
 Request:
 
@@ -208,7 +208,7 @@ Response: [ixo Cell Node: listClaimsForProject](#list-claims-1)
 
 #### List Claims by Template ID
 
-Returns a list of filtered claims for an entity, from a Cell Node, together with the claim status. Claims are filtered by a template ID expected to be included in `data` as `claimTemplateId`.
+Returns a list of filtered claims for an entity, from a cell node, together with the claim status. Claims are filtered by a template ID expected to be included in `data` as `claimTemplateId`.
 
 Request:
 
@@ -319,7 +319,7 @@ Response: [ixo Blocksync: ping](https://app.swaggerhub.com/apis-docs/drshaun/ixo
 
 Note: the legacy name for Cell Node was Project Data Store \(PDS\).
 
-A Cell Node is a decentralised data processing and storage node. This has a public API and private API. Public API requests do not require cryptographic signatures. All other requests must be signed and adhere to the capabilities that have been granted to the signer.
+A cell node is a decentralised data processing and storage node. This has a public API and private API. Public API requests do not require cryptographic signatures. All other requests must be signed and adhere to the capabilities that have been granted to the signer.
 
 ### Public API
 
