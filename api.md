@@ -20,8 +20,6 @@ import ixo from 'ixo-module';
 var ixo = new ixo('ixo_node_url')
 ```
 
-NOTE
-
 ### Entity Functions
 
 Functions are called using `ixo.project.<functionName>`. In future, this will be replaced with the more generic `ixo.entity.<functionName>`.
