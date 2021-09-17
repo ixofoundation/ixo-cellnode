@@ -1,6 +1,6 @@
-# Cellnode API Documentation
+# Cell node API Documentation
 
-This document lists Cellnode's API endpoints and provides some examples of their usage. Since ixo-apimodule is another ixo component which interacts extensively with Cellnode and demonstrates its usage in [demo.ts](https://github.com/ixofoundation/ixo-apimodule/blob/master/test/demo.ts), some documentation for ixo-apimodule is also provided here to illustrate their interactions.
+This document lists Cell node's API endpoints and provides some examples of their usage. Since ixo-apimodule is another ixo component which interacts extensively with Cell node and demonstrates its usage in [demo.ts](https://github.com/ixofoundation/ixo-apimodule/blob/master/test/demo.ts), some documentation for ixo-apimodule is also provided here to illustrate their interactions.
 
 * [ixo-apimodule](#ixo-apimodule) \(NPM module\)
 * [ixo-cellnode](#cell-node-api) \(decentralised data store\)
@@ -61,7 +61,7 @@ ixo.project.createProject(projectData, signature, CellnodeUrl).then((result) => 
 })
 ```
 
-Response: [ixo Cellnode: createProject](#create-entity)
+Response: [ixo Cell node: createProject](#create-entity)
 
 #### Update Project Status
 
@@ -83,7 +83,7 @@ ixo.project.updateProjectStatus(projectStatusData, signature, CellnodeUrl).then(
 })          
 ```
 
-Response: [ixo Cellnode: updateProjectStatus](#update-project-status-1) 
+Response: [ixo Cell node: updateProjectStatus](#update-project-status-1) 
 
 #### Update Project Doc
 Updates a project's `Data` field.
@@ -94,7 +94,7 @@ ixo.project.updateProjectDoc(projectDocData, signature, CellnodeUrl).then((resul
 })    
 ```
 
-Response: [ixo Cellnode: updateProjectDoc](#update-project-doc-1)
+Response: [ixo Cell node: updateProjectDoc](#update-project-doc-1)
 
 #### Withdraw Funds
 Withdraws a project agent's funds from the project.
@@ -121,7 +121,7 @@ ixo.project.createPublic(dataUrl, CellnodeUrl) {
 })
 ```
 
-Response: [ixo Cellnode: createPublic](#upload-an-image)
+Response: [ixo Cell node: createPublic](#upload-an-image)
 
 #### Retrieve Public Data
 
@@ -133,7 +133,7 @@ ixo.project.fetchPublic(documentHash, CellnodeUrl) {
 })
 ```
 
-Response: [ixo Cellnode: fetchPublic](#fetch-image)
+Response: [ixo Cell node: fetchPublic](#fetch-image)
 
 ### Agent Functions
 
@@ -151,7 +151,7 @@ ixo.agent.listAgentsForProject(data, signature, CellnodeUrl).then((result) => {
 })
 ```
 
-Response: [ixo Cellnode: listAgents](#list-agents-1)
+Response: [ixo Cell node: listAgents](#list-agents-1)
 
 #### Register an Agent for an Entity
 
@@ -165,7 +165,7 @@ ixo.agent.createAgent(agentData, signature, CellnodeUrl).then((result) => {
 })
 ```
 
-Response: [ixo Cellnode: createAgent](#create-agent)
+Response: [ixo Cell node: createAgent](#create-agent)
 
 #### Update Agent Status
 
@@ -187,7 +187,7 @@ ixo.agent.updateAgentStatus(agentData, signature, CellnodeUrl).then((result) => 
 })
 ```
 
-Response: [ixo Cellnode: updateAgentStatus](#update-agent-status-1)
+Response: [ixo Cell node: updateAgentStatus](#update-agent-status-1)
 
 ### Claim Functions
 
@@ -205,7 +205,7 @@ ixo.claim.listClaimsForProject(data, signature, CellnodeUrl).then((result) => {
 })
 ```
 
-Response: [ixo Cellnode: listClaimsForProject](#list-claims-1)
+Response: [ixo Cell node: listClaimsForProject](#list-claims-1)
 
 #### List Claims by Template ID
 
@@ -219,7 +219,7 @@ ixo.claim.listClaimsForProjectByTemplateId(data, signature, CellnodeUrl).then((r
 })
 ```
 
-Response: [ixo Cellnode: listClaimsForProjectByTemplateId](#list-claims-by-template-id-1)
+Response: [ixo Cell node: listClaimsForProjectByTemplateId](#list-claims-by-template-id-1)
 
 #### Issue Claim
 
@@ -233,7 +233,7 @@ ixo.agent.createClaim(agentData, signature, CellnodeUrl).then((result) => {
 })
 ```
 
-Response: [ixo Cellnode: createClaim](#submit-claim)
+Response: [ixo Cell node: createClaim](#submit-claim)
 
 #### Evaluate a Claim
 
@@ -255,7 +255,7 @@ ixo.agent.evaluateClaim(evaluationData, signature, CellnodeUrl).then((result) =>
 })
 ```
 
-Response: [ixo Cellnode: evaluateClaim](#evaluate-claim)
+Response: [ixo Cell node: evaluateClaim](#evaluate-claim)
 
 ### User Functions
 
