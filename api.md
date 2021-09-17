@@ -77,6 +77,7 @@ Valid project status updates are:
 - STOPPED -> PAIDOUT
 ```
 
+Usage:
 ```text
 ixo.project.updateProjectStatus(projectStatusData, signature, CellnodeUrl).then((result) => {
     console.log('Project Update Details: ' + result)
