@@ -1058,4 +1058,4 @@ Response:
 API is running
 ```
 
-The ixo-cellNode \(cellnode\) uses JSON-RPC to receive client requests. The structure of all calls follow the same structure.
+The ixo-cellnode uses JSON-RPC to receive client requests. The structure of all calls follows the same structure.
