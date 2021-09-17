@@ -139,6 +139,10 @@ db.createUser({user: "<username>", pwd: "<password>", roles: [{role: "readWrite"
 
 API documents can be found at https://github.com/ixofoundation/mkdocs/blob/master/docs/api.md```
 
+## Documentation
+
+API documentation can be found [here](api.md).
+
 ## License
 
  - **MIT** : http://opensource.org/licenses/MIT
