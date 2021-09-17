@@ -64,6 +64,7 @@ ixo.project.createProject(projectData, signature, CellnodeUrl).then((result) => 
 Response: [ixo Cellnode: createProject](#create-entity)
 
 #### Update Project Status
+
 Updates a project's current status.
 
 Valid project status updates are:
