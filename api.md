@@ -1,6 +1,6 @@
 # Cellnode API Documentation
 
-This document lists Cellnode's API endpoints and provides some examples of their usage. Since ixo-apimodule is another ixo component which interacts extensively with Cellnode and demonstrates its usage in `demo.ts`, some documentation for ixo-apimodule is also provided here to illustrate their interactions.
+This document lists Cellnode's API endpoints and provides some examples of their usage. Since ixo-apimodule is another ixo component which interacts extensively with Cellnode and demonstrates its usage in [demo.ts](https://github.com/ixofoundation/ixo-apimodule/blob/master/test/demo.ts), some documentation for ixo-apimodule is also provided here to illustrate their interactions.
 
 * [ixo-apimodule](#ixo-apimodule) \(NPM module\)
 * [ixo-cellnode](#cell-node-api) \(decentralised data store\)
@@ -64,6 +64,7 @@ ixo.project.createProject(projectData, signature, CellnodeUrl).then((result) => 
 Response: [ixo Cellnode: createProject](#create-entity)
 
 #### Update Project Status
+
 Updates a project's current status.
 
 Valid project status updates are:
