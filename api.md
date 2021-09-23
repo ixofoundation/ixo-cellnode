@@ -285,7 +285,7 @@ ixo.user.getDidDoc(did).then((result) => {
 })
 ```
 
-Response: [ixo Blockchain: getDidDoc](https://app.swaggerhub.com/#/Query/DidDoc)
+Response: [ixo Blockchain: getDidDoc](https://app.swaggerhub.com/apis/ixo-world/ixo-modules_g_rpc_gateway_docs/1.0.0#/Query/DidDoc)
 
 ### Metrics
 
