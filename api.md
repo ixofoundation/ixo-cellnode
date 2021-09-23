@@ -36,7 +36,7 @@ ixo.project.listProjects().then((result) => {
 })
 ```
 
-Response: [ixo Blocksync: listProjects](https://app.swaggerhub.com/apis-docs/drshaun/ixo/0.2.3#/projects/listProjects) 
+Response: [ixo Blocksync: listProjects](https://app.swaggerhub.com/apis/ixo-world/ixo/0.2.1#/projects/listProjects)
 
 #### Get Project
 
@@ -49,7 +49,7 @@ ixo.project.getProjectByProjectDid(projectDid).then((result) => {
 })
 ```
 
-Response: [ixo Blocksync: getProject](https://app.swaggerhub.com/apis-docs/drshaun/ixo/0.2.3#/projects/getByProjectDid)
+Response: [ixo Blocksync: getProject](https://app.swaggerhub.com/apis/ixo-world/ixo/0.2.1#/projects/getByProjectDid)
 
 #### Create Project
 
@@ -104,7 +104,7 @@ ixo.project.withdrawFunds(withdrawFundsData, signature, responseFee).then((resul
 })    
 ```
 
-Response: [ixo Blocksync: withdraw funds](https://app.swaggerhub.com/apis-docs/drshaun/ixo/0.2.3#/transactions/sendTransaction)
+Response: [ixo Blocksync: withdraw funds](https://app.swaggerhub.com/apis/ixo-world/ixo/0.2.1#/transactions/sendTransaction)
 
 #### Upload Public Data
 
@@ -270,7 +270,7 @@ ixo.user.registerUserDid(didData, signature, responseFee).then((result) => {
 })
 ```
 
-Response: [ixo Blockchain: registerUserDid](https://app.swaggerhub.com/apis-docs/drshaun/ixo/0.2.3#/transactions/sendTransaction)
+Response: [ixo Blockchain: registerUserDid](https://app.swaggerhub.com/apis/ixo-world/ixo/0.2.1#/transactions/sendTransaction)
 
 #### Get a DID Document
 
@@ -285,7 +285,7 @@ ixo.user.getDidDoc(did).then((result) => {
 })
 ```
 
-Response: [ixo Blockchain: getDidDoc](https://github.com/ixofoundation/ixo-blockchain/blob/a5d632c3e86250f56300f0a623fd50702b2fd36c/client/docs/swagger-ui/swagger.yaml#L2016)
+Response: [ixo Blockchain: getDidDoc](https://app.swaggerhub.com/#/Query/DidDoc)
 
 ### Metrics
 
@@ -299,7 +299,7 @@ ixo.stats.getGlobalStats().then((result) => {
 })
 ```
 
-Response: [ixo Blocksync: listStats](https://app.swaggerhub.com/apis-docs/drshaun/ixo/0.2.3#/stats/getStats)
+Response: [ixo Blocksync: listStats](https://app.swaggerhub.com/apis/ixo-world/ixo/0.2.1#/stats/getStats)
 
 ### Health Check Functions
 
@@ -313,7 +313,7 @@ ixo.network.pingIxoExplorer().then((result) => {
 })
 ```
 
-Response: [ixo Blocksync: ping](https://app.swaggerhub.com/apis-docs/drshaun/ixo/0.2.3#/blocksync/ping)
+Response: [ixo Blocksync: ping](https://app.swaggerhub.com/apis/ixo-world/ixo/0.2.1#/blocksync/ping)
 
 ## Cell Node API
 
