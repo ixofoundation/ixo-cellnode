@@ -137,7 +137,9 @@ use elysian
 db.createUser({user: "<username>", pwd: "<password>", roles: [{role: "readWrite", db: "elysian"}]})
 ```
 
-API documents can be found at https://github.com/ixofoundation/mkdocs/blob/master/docs/api.md```
+## Documentation
+
+API documentation can be found [here](api.md).
 
 ## License
 
