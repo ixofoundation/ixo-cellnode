@@ -10,6 +10,10 @@
       "validateKYC": false
     },
     {
+      "capability": "UpdateProjectDoc",
+      "template": "projects"
+    },
+    {
       "capability": "CreateAgent",
       "template": "agents",
       "validateKYC": false
