@@ -8,7 +8,7 @@ This runs a Node.js app using [Express 4](http://expressjs.com/) in a dockerized
 Make sure you have [Docker](https://docker.com/) installed.
 
 ```sh
-git clone https://github.com/ixofoundation/ixo_pds.git # or clone your own fork
+git clone https://github.com/ixofoundation/ixo-cellnode.git # or clone your own fork
 cd ixo-cellnode/
 npm install
 cd bin
@@ -18,7 +18,6 @@ cd bin
 * ELYSIAN START                   *
 ***********************************
 
-WARNING: The create command is deprecated. Use the up command with the --no-start flag instead.
 Creating db ... done
 Creating cache ... done
 Creating mq    ... done
