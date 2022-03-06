@@ -49,7 +49,7 @@ services:
 
   mq:
     container_name: mq
-    image: rabbitmq:latest
+    image: rabbitmq:3-management
     restart: always
 
   pol:
