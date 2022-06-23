@@ -56,6 +56,9 @@ export class MessageQ {
         })
         .then(() => {
           let jsonContent = JSON.stringify(content);
+          console.log("Debug");
+          console.log(content);
+          
           console.log(dateTimeLogger() + ' cache object ' + content.txHash);
           Cache.set(content.txHash, content.request);
           inst.channel.sendToQueue(inst.queue, Buffer.from(jsonContent), {
