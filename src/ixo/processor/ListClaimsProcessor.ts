@@ -25,6 +25,10 @@ export class ListClaimsProcessor extends AbstractHandler {
           }
         ])
           .then((agent: any) => {
+            if (agent === undefined){
+              reject("Agent not found");
+           
+            }
             if (agent[0].role === "SA") {
               Claim.aggregate([
                   {
