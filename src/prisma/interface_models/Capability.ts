@@ -1,4 +1,4 @@
-export interface ICapabilities {
+export interface ICapability {
     projectDid: string;
     capability: string;
     template: string;

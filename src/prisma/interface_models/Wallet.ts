@@ -1,5 +1,5 @@
-import { createCipher, createDecipher } from "crypto";
 import { prisma } from "../prisma_client";
+import { createCipher, createDecipher } from "crypto";
 
 export interface IWallet {
     did: string;
