@@ -50,5 +50,11 @@
     "utf8": "^3.0.0",
     "validator": "^10.11.0",
     "xss-filters": "^1.2.7"
+  },
+  "devDependencies": {
+    "prisma": "^4.2.1"
+  },
+  "prisma": {
+    "schema": "src/prisma/schema.prisma"
   }
 }
