@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "outDir": "./dist",
+    "outDir": "build/dist",
     "module": "commonjs",
     "target": "ES2020",
     "lib": [
@@ -39,6 +39,5 @@
   "exclude": [
     "node_modules",
     "build",
-    "dist"
   ]
 }

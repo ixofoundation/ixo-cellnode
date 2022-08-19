@@ -9,3 +9,42 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Capability {
+  id          Int      @id @default(autoincrement())
+  projectDid  String
+  capability  String
+  template    String
+  allow       String[]
+  validateKYC Boolean
+}
+
+model Public {
+  id          Int    @id @default(autoincrement())
+  key         String
+  data        Bytes
+  contentType String
+}
+
+model Transaction {
+  hash             String   @id
+  projectDid       String
+  data             String
+  nonce            String
+  signatureType    String
+  signatureValue   String
+  timestamp        DateTime
+  capability       String
+  blockHeight      String?
+  blockHash        String?
+  blockResponeCode Int?
+  blockError       String?
+
+  @@index([hash])
+}
+
+model Wallet {
+  did       String @id
+  signKey   String
+  verifyKey String
+}
