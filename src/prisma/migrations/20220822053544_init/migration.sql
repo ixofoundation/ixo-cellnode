@@ -12,12 +12,11 @@ CREATE TABLE "Capability" (
 
 -- CreateTable
 CREATE TABLE "Public" (
-    "id" SERIAL NOT NULL,
     "key" TEXT NOT NULL,
     "data" BYTEA NOT NULL,
     "contentType" TEXT NOT NULL,
 
-    CONSTRAINT "Public_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Public_pkey" PRIMARY KEY ("key")
 );
 
 -- CreateTable

@@ -18,7 +18,7 @@ export interface ITransaction {
 
 const cryptoUtils = new CryptoUtils();
 
-export const createTransaction = async (data: string, signatureType: string, signatureValue: string, projectDid: string, capability: string) => {
+export const createTransactionDoc = async (data: string, signatureType: string, signatureValue: string, projectDid: string, capability: string) => {
     const res = await prisma.transaction.findMany({
         take: -1,
     });

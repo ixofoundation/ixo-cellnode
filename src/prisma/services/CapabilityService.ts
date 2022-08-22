@@ -1,5 +1,4 @@
 import { prisma } from "../prisma_client";
-import { dateTimeLogger } from "../../logger/Logger";
 
 export const createCapability = async (projectDid: string, capabilities: any) => {
     try {
@@ -39,6 +38,7 @@ export const findCapabilitiesForProject = async (projectDid: string) => {
                 projectDid: projectDid,
             },
         });
+        return res;
     } catch (error) {
         console.log(error);
         return;
@@ -58,6 +58,7 @@ export const addCapabilities = async (projectDid: string, dids: string[], capabi
                 },
             },
         });
+        return res;
     } catch (error) {
         console.log(error);
         return;
