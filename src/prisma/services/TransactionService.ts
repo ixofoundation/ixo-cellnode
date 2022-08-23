@@ -24,7 +24,7 @@ export const findPreviousTransaction = async () => {
     };
 };
 
-export const findTransaction = async () => {
+export const findTransactions = async () => {
     try {
         const res = await prisma.transaction.findMany();
         return res;
