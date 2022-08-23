@@ -30,6 +30,7 @@
     "bip39": "^2.6.0",
     "body-parser": "^1.19.0",
     "bs58": "^4.0.1",
+    "bullmq": "^1.89.1",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
     "dateformat": "^3.0.3",

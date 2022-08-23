@@ -9,8 +9,8 @@ export const createCapability = async (projectDid: string, capabilities: any) =>
                     projectDid: projectDid,
                     capability: capability.capability,
                     template: capability.template,
-                    allow: capability.allow,
-                    validateKYC: capability.validateKYC,
+                    allow: capability.allow ? capabilities.allow : [],
+                    validateKYC: capability.validateKYC ? capabilities.validateKYC : true,
                 },
             });
         });
