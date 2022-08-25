@@ -16,7 +16,7 @@ model Capability {
   capability  String
   template    String
   allow       String[]
-  validateKYC Boolean
+  validateKYC Boolean?
 }
 
 model Public {
@@ -46,4 +46,78 @@ model Wallet {
   did       String @id
   signKey   String
   verifyKey String
+}
+
+model Agent {
+  agentDid   String @id
+  projectDid String
+  email      String
+  name       String
+  role       String
+  txHash     String
+  creator    String
+  created    String
+}
+
+model AgentStatus {
+  id         Int    @id @default(autoincrement())
+  agentDid   String
+  projectDid String
+  status     String
+  role       String
+  version    String
+  txHash     String
+  creator    String
+  created    String
+}
+
+model Claim {
+  id              Int    @id @default(autoincrement())
+  claimTemplateId String
+  projectDid      String
+  context         String
+  type            String
+  issuerId        String
+  claimSubjectId  String
+  items           Json?
+  dateTime        String
+  txHash          String
+  creator         String
+  created         String
+}
+
+model EvaluateClaim {
+  id         Int    @id @default(autoincrement())
+  claimId    String
+  projectDid String
+  status     String
+  txHash     String
+  creator    String
+  created    String
+  version    Int
+}
+
+model Project {
+  projectDid  String @id
+  projectData Json?
+  txHash      String
+  creator     String
+  created     String
+}
+
+model ProjectDoc {
+  projectDid String @id
+  projectDoc Json?
+  txHash     String
+  creator    String
+  created    String
+}
+
+model ProjectStatus {
+  id         Int    @id @default(autoincrement())
+  projectDid String
+  status     String
+  txHash     String
+  creator    String
+  created    String
 }
