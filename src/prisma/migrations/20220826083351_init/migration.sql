@@ -143,3 +143,6 @@ CREATE TABLE "ProjectStatus" (
 
 -- CreateIndex
 CREATE INDEX "Transaction_hash_idx" ON "Transaction"("hash");
+
+-- AddForeignKey
+ALTER TABLE "AgentStatus" ADD CONSTRAINT "AgentStatus_agentDid_fkey" FOREIGN KEY ("agentDid") REFERENCES "Agent"("agentDid") ON DELETE RESTRICT ON UPDATE CASCADE;

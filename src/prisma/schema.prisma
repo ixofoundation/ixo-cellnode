@@ -49,18 +49,20 @@ model Wallet {
 }
 
 model Agent {
-  agentDid   String @id
-  projectDid String
-  email      String
-  name       String
-  role       String
-  txHash     String
-  creator    String
-  created    String
+  agentDid    String        @id
+  projectDid  String
+  email       String
+  name        String
+  role        String
+  txHash      String
+  creator     String
+  created     String
+  AgentStatus AgentStatus[]
 }
 
 model AgentStatus {
   id         Int    @id @default(autoincrement())
+  agent      Agent  @relation(fields: [agentDid], references: [agentDid])
   agentDid   String
   projectDid String
   status     String
