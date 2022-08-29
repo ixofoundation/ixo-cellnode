@@ -1,6 +1,6 @@
 import { prisma } from "../../prisma_client";
 import { AbstractHandler } from "../../handlers/AbstractHandler";
-import UpdateAgentStatusProcessor from "./UpdateAgentStatusProcessor";
+import { UpdateProjectStatusProcessor } from "./UpdateProjectStatusProcessor";
 import { Request } from "../../handlers/Request";
 import axios from "axios";
 import { dateTimeLogger } from "../../../logger/Logger";
@@ -115,7 +115,28 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
             });
         } else {
             console.log(dateTimeLogger() + " insufficient funds available");
-            //updateProjectStatusProcessor
+            const updateProjectStatusProcessor = new UpdateProjectStatusProcessor();
+            const data: any = {
+                projectDid: projectDid,
+                status: Status.stopped,
+            };
+            const signature = await updateProjectStatusProcessor.selfSignMessage(data, projectDid);
+            const projectStatusRequest: any = {
+                payload: {
+                    template: {
+                        name: "project_status"
+                    },
+                    data: data,
+                },
+                signature: {
+                    type: "ed25519-sha-256",
+                    created: new Date().toISOString(),
+                    creator: projectDid,
+                    signatureValue: signature
+                },
+            };
+            updateProjectStatusProcessor.process(projectStatusRequest);
+            return Error("Insufficient funds available, project stopped");
         };
     };
 };

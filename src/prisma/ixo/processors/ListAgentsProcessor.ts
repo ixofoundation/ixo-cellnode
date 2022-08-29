@@ -46,3 +46,5 @@ export class ListAgentsProcessor extends AbstractHandler {
         });
     };
 };
+
+export default new ListAgentsProcessor();

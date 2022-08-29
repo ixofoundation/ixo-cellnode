@@ -77,7 +77,7 @@ CREATE TABLE "AgentStatus" (
 
 -- CreateTable
 CREATE TABLE "Claim" (
-    "id" SERIAL NOT NULL,
+    "txHash" TEXT NOT NULL,
     "claimTemplateId" TEXT NOT NULL,
     "projectDid" TEXT NOT NULL,
     "context" TEXT NOT NULL,
@@ -86,11 +86,10 @@ CREATE TABLE "Claim" (
     "claimSubjectId" TEXT NOT NULL,
     "items" JSONB,
     "dateTime" TEXT NOT NULL,
-    "txHash" TEXT NOT NULL,
     "creator" TEXT NOT NULL,
     "created" TEXT NOT NULL,
 
-    CONSTRAINT "Claim_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Claim_pkey" PRIMARY KEY ("txHash")
 );
 
 -- CreateTable
@@ -146,3 +145,6 @@ CREATE INDEX "Transaction_hash_idx" ON "Transaction"("hash");
 
 -- AddForeignKey
 ALTER TABLE "AgentStatus" ADD CONSTRAINT "AgentStatus_agentDid_fkey" FOREIGN KEY ("agentDid") REFERENCES "Agent"("agentDid") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "EvaluateClaim" ADD CONSTRAINT "EvaluateClaim_claimId_fkey" FOREIGN KEY ("claimId") REFERENCES "Claim"("txHash") ON DELETE RESTRICT ON UPDATE CASCADE;
