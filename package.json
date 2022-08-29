@@ -44,7 +44,7 @@
     "lodash": "^4.17.21",
     "memcached": "^2.2.2",
     "mongoose": "^5.10.5",
-    "node": "^11.15.0",
+    "node": "^16.14.2",
     "node-fetch": "^2.6.7",
     "sovrin-did": "^1.4.0",
     "tweetnacl": "^1.0.3",
@@ -54,7 +54,8 @@
     "xss-filters": "^1.2.7"
   },
   "devDependencies": {
-    "prisma": "^4.2.1"
+    "prisma": "^4.2.1",
+    "typedoc": "^0.23.11"
   },
   "prisma": {
     "schema": "src/prisma/schema.prisma"
