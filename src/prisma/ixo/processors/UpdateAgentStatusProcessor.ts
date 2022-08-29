@@ -6,7 +6,7 @@ import Cache from "../../../Cache";
 import xss from "../../../Xss";
 
 export class UpdateAgentStatusProcessor extends AbstractHandler {
-    handleAsyncUpdateAgentStatusProcessor = async (jsonResponseMsg: any, retries?: number) => {
+    handleAsyncUpdateAgentStatusResponse = async (jsonResponseMsg: any, retries?: number) => {
         try {
             const cached = await Cache.get(jsonResponseMsg.txHash);
             if (cached != undefined) {
@@ -40,7 +40,7 @@ export class UpdateAgentStatusProcessor extends AbstractHandler {
                     retry++;
                     setTimeout(() => {
                         console.log(dateTimeLogger() + ` retry cached create agent transaction for ${jsonResponseMsg.txHash}`);
-                        this.handleAsyncUpdateAgentStatusProcessor(jsonResponseMsg, retry);
+                        this.handleAsyncUpdateAgentStatusResponse(jsonResponseMsg, retry);
                     }, 2000)
                 } else {
                     //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to

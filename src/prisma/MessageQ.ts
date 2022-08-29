@@ -1,4 +1,6 @@
 import * as TransactionService from "./services/TransactionService";
+import UpdateProjectStatusProcessor from "./ixo/processors/UpdateProjectStatusProcessor";
+import { lookupProcessor } from "./handlers/RequestHandler";
 import { TransactionError } from "../error/TransactionError";
 import { dateTimeLogger } from "../logger/Logger";
 import Cache from "../Cache";
@@ -17,7 +19,7 @@ const worker = new Worker("Messages", async (job) => {
     try {
         console.log(dateTimeLogger() + ` received response for ${jsonContent.msgType} with has ${jsonContent.txHash}`)
         if (jsonContent.msgType === "eth") {
-            //project status processor
+            await UpdateProjectStatusProcessor.handleAsyncEthResponse(jsonContent);
         } else if (jsonContent.msgType === "error") {
             await TransactionService.updateTransactionLogForError(jsonContent.txHash, jsonContent.data);
         } else {
@@ -29,7 +31,7 @@ const worker = new Worker("Messages", async (job) => {
                 console.log(dateTimeLogger() + ` blockchain failed for message ${jsonContent.msgType} with code ${responseCode}`);
             } else {
                 console.log(dateTimeLogger() + ` process blockchain response for ${jsonContent.msgType} hash ${jsonContent.txHash}`);
-                //lookupProcessor[jsonContent.msgType](jsonMsg)
+                lookupProcessor[jsonContent.msgType](jsonContent);
             };
         };
     } catch (error) {
@@ -46,14 +48,6 @@ export const publish = async (content: any) => {
         Cache.set(content.txHash, content.request);
         queue.add("Message", jsonContent);
         return true;
-    } catch (error) {
-        throw new TransactionError("Queue exception " + error);
-    };
-};
-
-export const subscribe = async () => {
-    try {
-        queue
     } catch (error) {
         throw new TransactionError("Queue exception " + error);
     };

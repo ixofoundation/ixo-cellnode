@@ -19,6 +19,8 @@ import { dateTimeLogger } from "../../logger/Logger";
 import { BlockchainMode } from "../../ixo/common/shared";
 import { setIWallet } from "../interface_models/Wallet";
 
+import { publish } from "../MessageQ";
+
 const base58 = require('bs58');
 
 const BLOCKSYNC_URI_REST = (process.env.BLOCKSYNC_URI_REST || '');
@@ -218,18 +220,23 @@ export abstract class AbstractHandler {
     };
 
     async publishMessageToQueue(message: any) {
-        //implement bullmq
-        return;
+        console.log(dateTimeLogger() + " message to be published " + message.data.msgType);
+        return publish(message);
     };
 
-    async subscribeToMessageQueue() {
-        //''
-        return;
+    msgToPublish = (hash: any, request: Request): any => {
     };
 
     private publishAndRespond(hash: string, request: Request) {
-        //''
-        return;
+        const msg = this.msgToPublish(hash, request);
+        console.log(dateTimeLogger() + " message to be published " + msg.msgType);
+        const cacheMsg = {
+            data: msg,
+            request: request,
+            txHash: hash
+        };
+        publish(cacheMsg);
+        return hash;
     };
 
     private async createTransactionLog(request: Request, capabilityMap: any) {
