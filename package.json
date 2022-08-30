@@ -11,7 +11,7 @@
     "start": "node dist/server.js",
     "dropdb": "node dist/dropdb.js",
     "build": "tsc",
-    "test": "we are live"
+    "dev": "npx ts-node src/server.ts"
   },
   "author": "brennon.hampton@gmail.com",
   "license": "MIT",
