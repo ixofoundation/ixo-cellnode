@@ -52,8 +52,7 @@
     "xss-filters": "^1.2.7"
   },
   "devDependencies": {
-    "prisma": "^4.3.0",
-    "typedoc": "^0.23.12"
+    "prisma": "^4.3.0"
   },
   "prisma": {
     "schema": "src/prisma/schema.prisma"
