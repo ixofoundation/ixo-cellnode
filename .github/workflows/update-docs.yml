@@ -25,7 +25,7 @@ jobs:
         run: yarn add typedoc
       
       - name: generate docs
-        run: npx typedoc src/server.ts
+        run: npx typedoc src/* src/*/*
         
       #   run: echo ${GITHUB_REF##*/}
 
