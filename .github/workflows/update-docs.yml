@@ -22,7 +22,7 @@ jobs:
           node-version: 16.x
 
       - name: install typedoc
-        run: yarn add typedoc
+        run: npm install typedoc
       
       - name: generate docs
         run: npx typedoc src/* src/*/*
