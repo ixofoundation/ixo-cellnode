@@ -1,16 +1,7 @@
-import capabilities from "../service/CapabilitiesService";
+import * as CapabilityService from "../services/CapabilityService";
 
-declare var Promise: any;
-
-export class InitHandler {
-
-  initialise(did: string) {
-    return new Promise((resolve: Function, reject: Function) => {
-      const fileSystem = require('fs');
-      const data = JSON.parse(fileSystem.readFileSync(process.env.CONFIG, 'utf8'));
-      resolve(capabilities.createCapability(did, data.configuration));
-    })
-  }
-}
-
-export default new InitHandler();
+export const initialise = async (did: string) => {
+    const fileSystem = require("fs");
+    const data = JSON.parse(fileSystem.readFileSync(process.env.CONFIG, "utf8"));
+    return CapabilityService.createCapability(did, data.configuration);
+};

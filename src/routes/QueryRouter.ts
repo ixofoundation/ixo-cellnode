@@ -1,16 +1,11 @@
-import {AbstractRouter} from './AbstractRouter';
-import {QueryHandler} from '../handlers/QueryHandler'
-
-declare var Promise: any;
+import { AbstractRouter } from "./AbstractRouter";
+import * as QueryHandler from "../handlers/QueryHandler";
 
 export class QueryRouter extends AbstractRouter {
-
-  setup() {
-    let config = {};
-
-    const handler = new QueryHandler();
-    this.register(config, "queryTransactions", handler.queryTransactions);
-    this.register(config, "queryCapabilities", handler.queryCapabilities);
-    return config;
-  }
-}
+    setup() {
+        let config = {};
+        this.register(config, "queryTransactions", QueryHandler.queryTransactions);
+        this.register(config, "queryCapabilities", QueryHandler.queryCapabilities);
+        return config;
+    };
+};
