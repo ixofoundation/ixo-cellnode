@@ -201,6 +201,7 @@ export abstract class AbstractHandler {
           Cache.set(wallet.did, { publicKey: wallet.verifyKey });
           const msgJson = JSON.stringify(msgToSign);
           const msgUppercaseHex = Buffer.from(msgJson).toString('hex').toUpperCase();
+          console.log({ msg: msgUppercaseHex, pub_key: wallet.verifyKey });
           axios.post(BLOCKSYNC_URI_REST + 'sign_data/', { msg: msgUppercaseHex, pub_key: wallet.verifyKey })
             .then((response: any) => {
               res = response;
