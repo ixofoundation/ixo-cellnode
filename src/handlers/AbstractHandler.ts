@@ -1,27 +1,27 @@
-import {connection, Model} from "mongoose";
-import {ITransactionModel} from '../model/Transaction';
-import {ICapabilitiesModel} from '../model/Capabilities';
+import { connection, Model } from "mongoose";
+import { ITransactionModel } from '../model/Transaction';
+import { ICapabilitiesModel } from '../model/Capabilities';
 
 import transactionService from '../service/TransactionLogService';
 import capabilitiesService from '../service/CapabilitiesService';
 import walletService from '../service/WalletService';
 
-import {RequestValidator} from '../templates/RequestValidator';
-import {validateJson} from '../templates/JsonValidator';
-import {ValidatorResult} from 'jsonschema';
-import {ValidationError} from '../error/ValidationError';
-import {TransactionError} from '../error/TransactionError';
+import { RequestValidator } from '../templates/RequestValidator';
+import { validateJson } from '../templates/JsonValidator';
+import { ValidatorResult } from 'jsonschema';
+import { ValidationError } from '../error/ValidationError';
+import { TransactionError } from '../error/TransactionError';
 
-import {Request} from "./Request";
+import { Request } from "./Request";
 import TemplateUtils from '../templates/TemplateUtils';
-import {SovrinUtils} from '../crypto/SovrinUtils';
+import { SovrinUtils } from '../crypto/SovrinUtils';
 import mq from '../MessageQ';
-import {IWalletModel} from "../model/Wallet";
-import axios, {AxiosResponse} from "axios";
+import { IWalletModel } from "../model/Wallet";
+import axios, { AxiosResponse } from "axios";
 import Cache from '../Cache';
 
-import {dateTimeLogger} from '../logger/Logger';
-import {BlockchainMode} from "../ixo/common/shared";
+import { dateTimeLogger } from '../logger/Logger';
+import { BlockchainMode } from "../ixo/common/shared";
 
 const base58 = require('bs58');
 
@@ -30,7 +30,7 @@ const BLOCKSYNC_URI_REST = (process.env.BLOCKSYNC_URI_REST || '');
 export abstract class AbstractHandler {
 
   public createTransaction(args: any, method: string, model: Model<any>,
-                           verifyData?: Function, projectDid?: string) {
+    verifyData?: Function, projectDid?: string) {
     const request = new Request(args);
     return new Promise((resolve: Function, reject: Function) => {
       if (connection.readyState != 1) {
@@ -67,7 +67,7 @@ export abstract class AbstractHandler {
                               .catch((error: string) => {
                                 console.log(dateTimeLogger() + ' error creating transaction log ' + request.projectDid);
                                 reject(new TransactionError(error));
-                              })
+                              });
                           } else {
                             //submit information to blockchain. Poller to add to cache once it gets hash from chain
                             this.createTransactionLog(request, capabilityMap)
@@ -137,7 +137,7 @@ export abstract class AbstractHandler {
                         reject(new ValidationError(sigValid.errors[0]));
                       }
                       console.log(dateTimeLogger() + ' transaction completed successfully');
-                    })
+                    });
                 } else {
                   reject(new ValidationError(capValid.errors[0]));
                 }
@@ -180,7 +180,7 @@ export abstract class AbstractHandler {
       const did = "did:ixo:" + sovrinWallet.did;
       walletService.createWallet(did, sovrinWallet.secret.signKey, sovrinWallet.verifyKey)
         .then((wallet: IWalletModel) => {
-          Cache.set(wallet.did, {publicKey: wallet.verifyKey});
+          Cache.set(wallet.did, { publicKey: wallet.verifyKey });
           console.log(dateTimeLogger() + ' project wallet created');
           resolve(wallet.did);
         });
@@ -194,16 +194,18 @@ export abstract class AbstractHandler {
   };
 
   messageForBlockchain(msgToSign: any, projectDid: string, blockchainMode?: string) {
+    let res: any;
     return new Promise((resolve: Function, reject: Function) => {
       walletService.getWallet(projectDid)
         .then((wallet: IWalletModel) => {
-          Cache.set(wallet.did, {publicKey: wallet.verifyKey});
-          const msgJson = JSON.stringify(msgToSign)
+          Cache.set(wallet.did, { publicKey: wallet.verifyKey });
+          const msgJson = JSON.stringify(msgToSign);
           const msgUppercaseHex = Buffer.from(msgJson).toString('hex').toUpperCase();
-          axios.post(BLOCKSYNC_URI_REST + 'sign_data/', {msg: msgUppercaseHex, pub_key: wallet.verifyKey})
+          axios.post(BLOCKSYNC_URI_REST + 'sign_data/', { msg: msgUppercaseHex, pub_key: wallet.verifyKey })
             .then((response: any) => {
+              res = response;
               if (response.status == 200 && response.data.sign_bytes) {
-                const signData = response.data
+                const signData = response.data;
                 const sovrinUtils = new SovrinUtils();
                 let signedMsg = {
                   msg: [msgToSign],
@@ -221,23 +223,23 @@ export abstract class AbstractHandler {
                 const message = {
                   msgType: (msgToSign.type || 'blockchain'),
                   projectDid: wallet.did,
-                  data: JSON.stringify({tx: signedMsg, mode: blockchainMode || BlockchainMode.sync})
+                  data: JSON.stringify({ tx: signedMsg, mode: blockchainMode || BlockchainMode.sync })
                 };
                 resolve(message);
               } else {
-                console.log(dateTimeLogger() + ' error when requesting sign data from blockchain ' + response.statusText);
+                console.log(dateTimeLogger() + ' error when requesting sign data from blockchain ' + response.statusText + response);
                 reject('Error when requesting sign data from blockchain');
               }
             })
             .catch((err: any) => {
-              console.log(dateTimeLogger() + ' get sign data failed ' + err);
-              reject(err)
+              console.log(dateTimeLogger() + ' get sign data failed ' + err + res);
+              reject(err);
             });
         })
         .catch((err: any) => {
-          console.log(dateTimeLogger() + ' get wallet failed ' + err);
-          reject(err)
-        })
+          console.log(dateTimeLogger() + ' get wallet failed ' + err + res);
+          reject(err);
+        });
     });
   }
 
@@ -245,7 +247,7 @@ export abstract class AbstractHandler {
     return new Promise((resolve: Function, reject: Function) => {
       walletService.getWallet(projectDid)
         .then((wallet: IWalletModel) => {
-          Cache.set(wallet.did, {publicKey: wallet.verifyKey});
+          Cache.set(wallet.did, { publicKey: wallet.verifyKey });
           const sovrinUtils = new SovrinUtils();
           resolve(sovrinUtils.signDocumentNoEncoding(wallet.signKey, wallet.verifyKey, wallet.did, msgToSign));
         })
