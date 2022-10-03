@@ -78,24 +78,28 @@ export class SubmitClaimProcessor extends AbstractHandler {
         });
     };
 
-    process = async (args: any) => {
+    process = (args: any) => {
         console.log(dateTimeLogger() + " start new Submit Claim transaction");
-        return this.createTransaction(args, "SubmitClaim", async (request: any): Promise<boolean> => {
-            const validStatus = ["STARTED"];
-            const projectStatuses = await prisma.projectStatus.findMany({
-                where: {
-                    projectDid: request.data.projectDid
-                },
-                take: -1,
-            });
-            if (projectStatuses) {
-                if (projectStatuses.length > 0 && validStatus.some(elem => elem === projectStatuses[0].status)) {
-                    return true;
+        return this.createTransaction(args, "SubmitClaim", (request: any): Promise<boolean> => {
+            return new Promise((resolve: Function, reject: Function) => {
+                const validStatus = ["STARTED"];
+                try {
+                    prisma.projectStatus.findMany({
+                        where: {
+                            projectDid: request.data.projectDid
+                        },
+                        take: -1,
+                    })
+                    .then((results) => {
+                        if (results.length > 0 && validStatus.some(elem => elem === results[0].status)) {
+                            resolve(results[0]);
+                        }
+                        reject("Invalid Project Status. Valid statuses are " + validStatus.toString())
+                    })
+                } catch (error) {
+                    reject(error)
                 }
-                return false;
-            } else {
-                return false;
-            }
+            })
         });
     };
 };

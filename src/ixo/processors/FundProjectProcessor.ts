@@ -35,26 +35,30 @@ export class FundProjectProcessor extends AbstractHandler {
         });
     };
 
-    process = async (args: any) => {
+    process = (args: any) => {
         console.log(dateTimeLogger() + "start new Fund Project transaction");
         const request = new Request(args);
-        return this.createTransaction(args, "FundProject", async (request: any): Promise<boolean> => {
-            if (workflow.indexOf(request.data.status) === 0) {
-                const projectStatus = await this.getLatestProjectStatus(request.projectDid);
-                if (projectStatus.length > 0) {
-                    if (workflow.indexOf(request.data.status) - 1 <= workflow.indexOf(projectStatus[0].status)) {
-                        return true;
-                    } else {
-                        console.log(dateTimeLogger() + " Invalid status workflow " + request.data.status);
-                        return false;
-                    };
-                } else {
-                    console.log(dateTimeLogger() + " no status exists for project " + request.projectDid);
-                    return false;
-                };
+        return this.createTransaction(args, "FundProject", (request: any): Promise<boolean> => {
+            return new Promise((resolve: Function, reject: Function) => {
+                if (workflow.indexOf(request.data.status) === 0) {
+                this.getLatestProjectStatus(request.projectDid)
+                    .then((current) => {
+                        if (current.length > 0) {
+                            if (workflow.indexOf(request.data.status) - 1 <= workflow.indexOf(current[0].status)) {
+                                resolve(true);
+                            } else {
+                                console.log(dateTimeLogger() + " Invalid status workflow " + request.data.status);
+                                reject("Invalid status workflow");
+                            };
+                        } else {
+                            console.log(dateTimeLogger() + " no status exists for project " + request.projectDid);
+                            reject('No status exists for project ' + request.projectDid);
+                        };
+                    }) 
             } else {
-                return true;
+                resolve(true);
             }
+            })  
         });
     };
 };

@@ -142,11 +142,15 @@ export class CreateProjectProcessor extends AbstractHandler {
         return this.checkLatestKycCredential(didDoc);
     };
 
-    process = async (args: any) => {
+    process = (args: any) => {
         console.log(dateTimeLogger() + " start new Create Project transaction");
-        const did = await this.generateProjectWallet();
-        if (did) { const response = await InitHandler.initialise(did) }
-        return this.createTransaction(args, "CreatePoject", undefined, did);
+        return this.generateProjectWallet()
+            .then((did) => {
+                return InitHandler.initialise(did)
+                    .then((response) => {
+                        return this.createTransaction(args, "CreateProject", undefined, did);
+                    })
+            })
     }
 };
 

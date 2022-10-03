@@ -10,39 +10,31 @@ export class ListAgentsProcessor extends AbstractHandler {
     msgToPublish = (obj: any, request: Request) => {
     };
 
-    process = async (args: any) => {
+    process = (args: any) => {
         console.log(dateTimeLogger() + " start new List Agents transaction");
-        return this.queryTransaction(args, "ListAgents", async (filter: any): Promise<any> => {
-            const agentsArr: any[] = [];
-            const agents = await prisma.agent.findMany({
-                select: {
-                    name: true,
-                    agentDid: true,
-                    projectDid: true,
-                    role: true,
-                    email: true,
-                    AgentStatus: {
+        return this.queryTransaction(args, "ListAgents", (filter: any): Promise<any[]> => {
+            return new Promise((resolve: Function, reject: Function) => {
+                try {
+                    prisma.agent.findMany({
                         select: {
-                            status: true,
+                            name: true,
+                            agentDid: true,
+                            projectDid: true,
+                            role: true,
+                            email: true,
+                            AgentStatus: {
+                                select: {
+                                    status: true,
+                                },
+                                take: -1,
+                            },
                         },
-                    },
-                },
-            });
-            if (agents) {
-                agents.forEach(agent => {
-                    const currentStatus = agent.AgentStatus[agent.AgentStatus.length - 1].status;
-                    const newAgent = {
-                        name: agent.name,
-                        agentDid: agent.agentDid,
-                        projectDid: agent.projectDid,
-                        role: agent.role,
-                        email: agent.email,
-                        currentStatus: currentStatus,
-                    };
-                    agentsArr.push(newAgent);
-                });
-                return agentsArr;
-            }
+                    })
+                    .then((result) => resolve(result))
+                } catch (error) {
+                    reject(error)
+                }
+            })
         });
     };
 };

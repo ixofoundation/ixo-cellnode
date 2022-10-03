@@ -88,29 +88,39 @@ export class UpdateAgentStatusProcessor extends AbstractHandler {
         console.log(dateTimeLogger() + " start new Update Agent Status transaction");
         return this.createTransaction(args, "UpdateAgentStatus", async (request: any): Promise<boolean> => {
             const newVersion = request.version + 1;
-            const agentStatus = await prisma.agentStatus.findFirst({
+            return new Promise((resolve: Function, reject: Function) => {
+                prisma.agentStatus.findFirst({
                 where: {
                     agentDid: request.data.agentDid,
                     projectDid: request.data.projectDid,
                     version: newVersion,
-                },
-            });
-            if (agentStatus) {
-                return false;
-            } else {
-                const validStatus = ["CREATED", "PENDING", "FUNDED", "STARTED", "STOPPED"];
-                const projectStatuses = await prisma.projectStatus.findMany({
-                    where: {
-                        projectDid: request.data.projectDid
                     },
-                    take: -1,
-                });
-                if (projectStatuses.length > 0 && validStatus.some(elem => elem === projectStatuses[0].status)) {
-                    return true;
-                } else {
-                    return false;
-                };
-            };
+                })
+                .then((result) => {
+                    if (result) {
+                        reject("invalid record or record already exists")
+                    }
+                })
+                .then(() => {
+                    const validStatus = ["CREATED", "PENDING", "FUNDED", "STARTED", "STOPPED"];
+                    try {
+                        prisma.projectStatus.findMany({
+                            where: {
+                                projectDid: request.data.projectDid
+                            },
+                            take: -1,
+                        })
+                        .then((results) => {
+                            if (results.length > 0 && validStatus.some(elem => elem === results[0].status)) {
+                                resolve(results[0]);
+                            }
+                            reject("Invalid Project Status. Valid statuses are " + validStatus.toString())
+                        })
+                    } catch (error) {
+                        reject(error)
+                    }
+                })
+            })
         });
     };
 };

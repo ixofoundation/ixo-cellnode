@@ -10,65 +10,84 @@ export class ListClaimsProcessor extends AbstractHandler {
     msgToPublish = (obj: any, request: Request) => {
     };
 
-    process = async (args: any) => {
+    process = (args: any) => {
         console.log(dateTimeLogger() + " start new List Claims transaction ");
-        return this.queryTransaction(args, "ListClaims", async (filter: any): Promise<any> => {
-            const agent = await prisma.agent.findMany({
-                where: {
-                    projectDid: filter.projectDid,
-                    creator: filter.signature.creator,
-                },
-            });
-            if (agent === undefined) {
-                return "Agent not found";
-            } else {
-                if (agent[0].role === "SA") {
-                    const claimEvalArr: any[] = [];
-                    const claims = await prisma.claim.findMany({
-                        where: {
-                            projectDid: filter.projectDid,
-                            creator: filter.signature.creator,
-                        },
-                    });
-                    claims.forEach(async claim => {
-                        const evaluations = await prisma.evaluateClaim.findMany({
+        return this.queryTransaction(args, "ListClaims", (filter: any): Promise<any[]> => {
+            return new Promise((resolve: Function, reject: Function) => {
+                prisma.agent.findMany({
+                    where: {
+                        projectDid: filter.projectDid,
+                        creator: filter.signature.creator,
+                    },
+                })
+                .then((agents) => {
+                    if (agents === undefined) {
+                        reject("Agent not found")
+                    }
+                    if (agents[0].role === "SA") {
+                        const claimEvalArr: any[] = [];
+                        try {
+                            prisma.claim.findMany({
                             where: {
-                                claimId: claim.txHash,
+                                projectDid: filter.projectDid, 
+                                creator: filter.signature.creator
                             },
-                            orderBy: {
-                                version: "desc",
-                            },
-                        });
-                        const claimEval = {
-                            claim,
-                            evaluations,
-                        };
-                        claimEvalArr.push(claimEval);
-                        return claimEvalArr;
-                    });
-                } else {
-                    const claimEvalArr: any[] = [];
-                    const claims = await prisma.claim.findMany({
-                        where: filter.data,
-                    });
-                    claims.forEach(async claim => {
-                        const evaluations = await prisma.evaluateClaim.findMany({
-                            where: {
-                                claimId: claim.txHash,
-                            },
-                            orderBy: {
-                                version: "desc",
-                            },
-                        });
-                        const claimEval = {
-                            claim,
-                            evaluations,
-                        };
-                        claimEvalArr.push(claimEval);
-                        return claimEvalArr;
-                    });
-                };
-            };
+                            })
+                            .then((claims) => {        
+                                claims.forEach(claim => {
+                                    prisma.evaluateClaim.findMany({
+                                        where: {
+                                            claimId: claim.txHash,
+                                        },
+                                        orderBy: {
+                                            version: "desc",
+                                        },
+                                    })
+                                    .then((evaluations) => {
+                                        const claimEval = {
+                                            claim,
+                                            evaluations,
+                                        };
+                                        claimEvalArr.push(claimEval);
+                                    })
+                                });
+                            })
+                            resolve(claimEvalArr)
+                        } catch (error) {
+                            reject(error)
+                        } 
+                    } else {
+                        const claimEvalArr: any[] = [];
+                        try {
+                            prisma.claim.findMany({
+                            where: filter.data,
+                            })
+                            .then((claims) => {
+                                claims.forEach(claim => {
+                                    prisma.evaluateClaim.findMany({
+                                        where: {
+                                            claimId: claim.txHash,
+                                        },
+                                        orderBy: {
+                                            version: "desc",
+                                        },
+                                    })
+                                    .then((evaluations) => {
+                                        const claimEval = {
+                                            claim,
+                                            evaluations,
+                                        };
+                                        claimEvalArr.push(claimEval);
+                                    })
+                                });
+                            })
+                            resolve(claimEvalArr)
+                        } catch (error) {
+                            reject(error)
+                        }
+                    }
+                })
+            }) 
         });
     };
 };

@@ -166,9 +166,12 @@ export abstract class AbstractHandler {
         const did = "did:ixo:" + sovrinWallet.did;
         const IWallet = setIWallet(did, sovrinWallet.secret.signKey, sovrinWallet.verifyKey);
         const res = await WalletService.createWallet(IWallet.did, IWallet.signKey, IWallet.verifyKey);
-        if (res) Cache.set(res.did, { publicKey: res.verifyKey });
-        console.log(dateTimeLogger() + " project wallet created")
-        return res?.did;
+        if (res) {
+            Cache.set(res.did, { publicKey: res.verifyKey });
+            console.log(dateTimeLogger() + " project wallet created")
+            return res.did
+        }
+        return "";
     };
 
     async messageForBlockchain(msgToSign: any, projectDid: string, blockchainMode?: string) {

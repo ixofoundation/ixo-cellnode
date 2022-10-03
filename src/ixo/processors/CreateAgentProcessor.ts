@@ -126,38 +126,42 @@ export class CreateAgentProcessor extends AbstractHandler {
         return true;
     };
 
-    process = async (args: any) => {
+    process = (args: any) => {
         console.log(dateTimeLogger() + " start new Create Agent transaction");
-        return this.createTransaction(args, "CreateAgent", async (request: any): Promise<boolean> => {
-            const agents = await prisma.agent.findMany({
-                where: {
-                    projectDid: request.data.projectDid,
-                    agentDid: request.data.agentDid,
-                },
-            });
-            if (agents) {
-                if (agents.some(elem => (elem.role === request.data.role) ||
-                    (elem.role === "EA" && request.data.role === "SA") ||
-                    (elem.role === "SA" && request.data.role === "EA")))
-                    return false;
-            } else {
-                return false;
-            };
-            const validStatus = ["CREATED", "PENDING", "FUNDED", "STARTED"];
-            const projectStatuses = await prisma.projectStatus.findMany({
-                where: {
-                    projectDid: request.data.projectDid
-                },
-                take: -1,
-            });
-            if (projectStatuses) {
-                if (projectStatuses.length > 0 && validStatus.some(elem => elem === projectStatuses[0].status)) {
-                    return true;
-                }
-                return false;
-            } else {
-                return false;
-            };
+        return this.createTransaction(args, "CreateAgent", (request: any): Promise<boolean> => {
+            return new Promise((resolve: Function, reject: Function) => {
+                prisma.agent.findMany({
+                    where: {
+                        projectDid: request.data.projectDid,
+                        agentDid: request.data.agentDid,
+                    },
+                })
+                .then((results) => {
+                    if (results.some(elem => (elem.role === request.data.role) ||
+                    (elem.role === 'EA' && request.data.role === 'SA') ||
+                    (elem.role === 'SA' && request.data.role === 'EA')))
+                        reject("Agent already exists on this project in another role");
+                })
+                .then(() => {
+                    const validStatus = ["CREATED", "PENDING", "FUNDED", "STARTED"];
+                    try {
+                        prisma.projectStatus.findMany({
+                            where: {
+                                projectDid: request.data.projectDid
+                            },
+                            take: -1,
+                        })
+                        .then((results) => {
+                            if (results.length > 0 && validStatus.some(elem => elem === results[0].status)) {
+                                resolve(results[0])
+                            }
+                            reject("Invalid Project Status. Valid statuses are " + validStatus.toString())
+                        })
+                    } catch (error) {
+                        reject(error)
+                    }
+                })
+            })
         });
     };
 };
