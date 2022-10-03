@@ -1,7 +1,7 @@
 name: update docs
 on: 
   push: 
-    branches: [dev]
+    branches: [master]
   workflow_dispatch: 
 permissions:
   contents: write
@@ -33,5 +33,5 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: docs
-          branch: dev
+          branch: master
           target-folder: docs
