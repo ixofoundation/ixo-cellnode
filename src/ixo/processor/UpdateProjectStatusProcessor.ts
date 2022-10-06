@@ -141,25 +141,25 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
     let request = new Request(args);
     return this.createTransaction(args, 'UpdateProjectStatus', ProjectStatus, (request: any): Promise<boolean> => {
       return new Promise((resolve: Function, reject: Function) => {
-        // if (workflow.indexOf(request.data.status) !== 0) {
-        //   this.getLatestProjectStatus(request.projectDid)
-        //     .then((current: IProjectStatusModel[]) => {
-        //       // check that the status can only roll forward by 1 or backwards
-        //       if (current.length > 0) {
-        //         if (workflow.indexOf(request.data.status) - 1 <= workflow.indexOf(current[0].status)) {
-        //           resolve(true);
-        //         } else {
-        //           console.log(dateTimeLogger() + ' Invalid status workflow ' + request.data.status);
-        //           reject("Invalid status workflow");
-        //         }
-        //       } else {
-        //         console.log(dateTimeLogger() + ' no status exists for project ' + request.projectDid);
-        //         reject('No status exists for project ' + request.projectDid);
-        //       }
-        //     })
-        // } else {
+        if (workflow.indexOf(request.data.status) !== 0) {
+          this.getLatestProjectStatus(request.projectDid)
+            .then((current: IProjectStatusModel[]) => {
+              // check that the status can only roll forward by 1 or backwards
+              if (current.length > 0) {
+                if (workflow.indexOf(request.data.status) - 1 <= workflow.indexOf(current[0].status)) {
+                  resolve(true);
+                } else {
+                  console.log(dateTimeLogger() + ' Invalid status workflow ' + request.data.status);
+                  reject("Invalid status workflow");
+                }
+              } else {
+                console.log(dateTimeLogger() + ' no status exists for project ' + request.projectDid);
+                reject('No status exists for project ' + request.projectDid);
+              }
+            })
+        } else {
           resolve(true)
-        // }
+        }
       });
     })
   }
