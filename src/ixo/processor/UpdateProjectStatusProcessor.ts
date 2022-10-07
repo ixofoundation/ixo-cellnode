@@ -145,8 +145,8 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
           this.getLatestProjectStatus(request.projectDid)
             .then((current: IProjectStatusModel[]) => {
               // check that the status can only roll forward by 1 or backwards
-              if (current.length > 0) {
-                if (workflow.indexOf(request.data.status) - 1 <= workflow.indexOf(current[0].status)) {
+              if (current.length > 0 || request.data.status === "CREATED") {
+                if (workflow.indexOf(request.data.status) - 1 <= workflow.indexOf(current[0].status) || request.data.status === "CREATED") {
                   resolve(true);
                 } else {
                   console.log(dateTimeLogger() + ' Invalid status workflow ' + request.data.status);
