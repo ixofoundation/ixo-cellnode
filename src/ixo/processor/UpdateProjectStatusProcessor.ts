@@ -130,7 +130,7 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
     });
   };
 
-  getLatestProjectStatus = (projectDid: string): Promise<IProjectStatusModel[]> => {
+  getLatestProjectStatus = (projectDid: string): Promise<any> => {
     return new Promise((resolve: Function) => {
       resolve(ProjectStatus.find({projectDid: projectDid}).limit(1).sort({$natural: -1}))
     })
@@ -143,7 +143,7 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
       return new Promise((resolve: Function, reject: Function) => {
         if (workflow.indexOf(request.data.status) !== 0) {
           this.getLatestProjectStatus(request.projectDid)
-            .then((current: IProjectStatusModel[]) => {
+            .then((current: any) => {
               if (current != undefined) {
                 if (current.length > 0 || request.data.status === "CREATED") {
                   if (workflow.indexOf(request.data.status) - 1 <= workflow.indexOf(current[0].status) || request.data.status === "CREATED") {
@@ -163,6 +163,9 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
               //   console.log(dateTimeLogger() + ' no status exists for project ' + request.projectDid);
               //   reject('No status exists for project ' + request.projectDid);
               // }
+            })
+            .catch((error) => {
+              console.log(error)
             })
         } else {
           resolve(true)
