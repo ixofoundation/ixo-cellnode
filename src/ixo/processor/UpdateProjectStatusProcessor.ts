@@ -144,18 +144,25 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
         if (workflow.indexOf(request.data.status) !== 0) {
           this.getLatestProjectStatus(request.projectDid)
             .then((current: IProjectStatusModel[]) => {
-              // check that the status can only roll forward by 1 or backwards
-              if (current.length > 0 || request.data.status === "CREATED") {
-                if (workflow.indexOf(request.data.status) - 1 <= workflow.indexOf(current[0].status) || request.data.status === "CREATED") {
-                  resolve(true);
-                } else {
-                  console.log(dateTimeLogger() + ' Invalid status workflow ' + request.data.status);
-                  reject("Invalid status workflow");
+              if (current != undefined) {
+                if (current.length > 0 || request.data.status === "CREATED") {
+                  if (workflow.indexOf(request.data.status) - 1 <= workflow.indexOf(current[0].status) || request.data.status === "CREATED") {
+                    resolve(true);
+                  } else {
+                    console.log(dateTimeLogger() + ' Invalid status workflow ' + request.data.status);
+                    reject("Invalid status workflow");
+                  }
                 }
+              // check that the status can only roll forward by 1 or backwards
               } else {
-                console.log(dateTimeLogger() + ' no status exists for project ' + request.projectDid);
-                reject('No status exists for project ' + request.projectDid);
+                if (request.data.status === "CREATED") {
+                  resolve(true);
+                }
               }
+              // else {
+              //   console.log(dateTimeLogger() + ' no status exists for project ' + request.projectDid);
+              //   reject('No status exists for project ' + request.projectDid);
+              // }
             })
         } else {
           resolve(true)
