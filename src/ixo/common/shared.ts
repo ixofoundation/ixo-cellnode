@@ -7,6 +7,6 @@ export const enum Status {
   payout = "PAIDOUT"
 }
 
-export const workflow = [undefined, "CREATED", "PENDING", "FUNDED", "STARTED", "STOPPED", "PAIDOUT"];
+export const workflow = ["CREATED", "PENDING", "FUNDED", "STARTED", "STOPPED", "PAIDOUT"];
 
 export const enum BlockchainMode { async = "async", sync = "sync", block = "block" }
