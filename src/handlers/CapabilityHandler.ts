@@ -1,13 +1,11 @@
-import { Capabilities, ICapabilitiesModel } from "../model/Capabilities";
+import { Capabilities } from "../model/Capabilities";
 
 export const getCapabilities = async (projectDid: string, userDid: string) => {
-    const capabilities = await Capabilities.find({ projectDid: projectDid });
-    const capabilitiesByUser: ICapabilitiesModel[] = [];
-    capabilities.forEach((capability) => {
-        capability.capabilities.forEach((cap) => {
-            if (cap.allow.includes(userDid))
-                capabilitiesByUser.push(capability);
-        });
+    const capabilitiesData = await Capabilities.findOne({
+        projectDid: projectDid,
     });
-    return capabilitiesByUser;
+    const capabilities = capabilitiesData?.capabilities.filter((capability) =>
+        capability.allow.includes(userDid),
+    );
+    return capabilities;
 };
