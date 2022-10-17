@@ -46,7 +46,7 @@ class App {
     this.express.use('/api/query', new QueryRouter().router);
     this.express.use('/api/public', new PublicRouter().router);
 
-    this.express.get('/api/capabilities', async (req, res) => {
+    this.express.post('/api/capabilities', async (req, res) => {
       const capabilities = await getCapabilities(req.body.projectDid, req.body.userDid);
       res.json(capabilities);
     });
