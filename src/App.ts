@@ -5,7 +5,7 @@ import {RequestRouter} from './routes/RequestRouter';
 import {QueryRouter} from './routes/QueryRouter';
 import {PublicRouter} from './routes/PublicRouter';
 import {PublicHandler} from './handlers/PublicHandler';
-import { getCapabilitiesByProjectDid } from './handlers/CapabilityHandler';
+import { getCapabilities } from './handlers/CapabilityHandler';
 
 const compression = require('compression');
 
@@ -47,7 +47,7 @@ class App {
     this.express.use('/api/public', new PublicRouter().router);
 
     this.express.get('/api/capabilities', async (req, res) => {
-      const capabilities = await getCapabilitiesByProjectDid(req.body.projectDid);
+      const capabilities = await getCapabilities(req.body.projectDid, req.body.userDid);
       res.json(capabilities);
     });
   }
