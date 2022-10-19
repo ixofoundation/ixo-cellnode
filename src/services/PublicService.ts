@@ -1,7 +1,10 @@
+import { store } from "../handlers/Web3StorageHandler";
 import { prisma } from "../prisma/prisma_client";
 
 export const createPublic = async (data: Buffer, contentType: string) => {
-    const key = Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36);
+    const key =
+        Math.random().toString(36).substring(2) +
+        new Date().getTime().toString(36);
     try {
         const res = await prisma.public.create({
             data: {
@@ -10,11 +13,12 @@ export const createPublic = async (data: Buffer, contentType: string) => {
                 contentType: contentType,
             },
         });
-        return res;
+        const cid = await store(data, key);
+        return { public: res, cid: cid, fileName: key };
     } catch (error) {
         console.log(error);
         return;
-    };
+    }
 };
 
 export const findForKey = async (key: string) => {
@@ -28,5 +32,5 @@ export const findForKey = async (key: string) => {
     } catch (error) {
         console.log(error);
         return;
-    };
+    }
 };

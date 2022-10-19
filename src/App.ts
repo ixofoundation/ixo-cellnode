@@ -5,6 +5,7 @@ import { RequestRouter } from "./routes/RequestRouter";
 import { QueryRouter } from "./routes/QueryRouter";
 import { PublicRouter } from "./routes/PublicRouter";
 import * as PublicHandler from "./handlers/PublicHandler";
+import { getCapabilities } from "./handlers/CapabilityHandler";
 const compression = require("compression");
 
 class App {
@@ -14,14 +15,16 @@ class App {
         this.express = express();
         this.middleware();
         this.routes();
-    };
+    }
 
     private middleware(): void {
         this.express.use(cors());
         this.express.use(compression({ threshold: 0 }));
-        this.express.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
+        this.express.use(
+            bodyParser.urlencoded({ limit: "50mb", extended: true }),
+        );
         this.express.use(bodyParser.json({ limit: "4mb" }));
-    };
+    }
 
     private routes(): void {
         this.express.get("/", (req, res, next) => {
@@ -36,7 +39,15 @@ class App {
         this.express.use("/api/request", new RequestRouter().router);
         this.express.use("/api/query", new QueryRouter().router);
         this.express.use("/api/public", new PublicRouter().router);
-    };
-};
+
+        this.express.post("/api/capabilities", async (req, res) => {
+            const capabilities = await getCapabilities(
+                req.body.projectDid,
+                req.body.userDid,
+            );
+            res.json(capabilities);
+        });
+    }
+}
 
 export default new App().express;
