@@ -95,7 +95,8 @@ export class CreateAgentProcessor extends AbstractHandler {
     console.log(dateTimeLogger() + ' start new Create Agent transaction ');
     return this.createTransaction(args, 'CreateAgent', Agent, (request: any): Promise<boolean> => {
       return new Promise((resolve: Function, reject: Function) => {
-        // check that and Agent cannot be EA and SA on same project
+        // check that an Agent cannot be EA and SA on same project
+        // added an additional check for IA
         Agent.find(
           {
             projectDid: request.data.projectDid,
@@ -104,7 +105,11 @@ export class CreateAgentProcessor extends AbstractHandler {
           .then((results: IAgentModel[]) => {
             if (results.some(elem => (elem.role === request.data.role) ||
               (elem.role === 'EA' && request.data.role === 'SA') ||
-              (elem.role === 'SA' && request.data.role === 'EA')))
+              (elem.role === 'EA' && request.data.role === 'IA') ||
+              (elem.role === 'SA' && request.data.role === 'EA') ||
+              (elem.role === 'SA' && request.data.role === 'IA') ||
+              (elem.role === 'IA' && request.data.role === 'EA') ||
+              (elem.role === 'IA' && request.data.role === 'SA')))
               reject("Agent already exists on this project in another role");
           })
           .then(() => {
