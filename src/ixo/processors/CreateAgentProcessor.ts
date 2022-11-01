@@ -139,7 +139,11 @@ export class CreateAgentProcessor extends AbstractHandler {
                 .then((results) => {
                     if (results.some(elem => (elem.role === request.data.role) ||
                     (elem.role === 'EA' && request.data.role === 'SA') ||
-                    (elem.role === 'SA' && request.data.role === 'EA')))
+                    (elem.role === 'EA' && request.data.role === 'IA') ||
+                    (elem.role === 'SA' && request.data.role === 'EA') ||
+                    (elem.role === 'SA' && request.data.role === 'IA') ||
+                    (elem.role === 'IA' && request.data.role === 'EA') ||
+                    (elem.role === 'IA' && request.data.role === 'SA')))
                         reject("Agent already exists on this project in another role");
                 })
                 .then(() => {
