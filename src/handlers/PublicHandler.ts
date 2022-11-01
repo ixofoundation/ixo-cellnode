@@ -1,69 +1,53 @@
-import publicService from '../service/PublicService';
-import {IPublicModel} from '../model/Public';
-import {dateTimeLogger} from '../logger/Logger';
-import {TransactionError} from '../error/TransactionError';
+import * as PublicService from "../services/PublicService";
+import { dateTimeLogger } from "../logger/Logger";
+import { TransactionError } from "../error/TransactionError";
 
-const validator = require('validator');
+const validator = require("validator");
 
-declare var Promise: any;
+const MAX_AGE = 60 * 60 * 24 * 7;
 
-const MAX_AGE = 60 * 60 * 24 * 7; // 1 week
+export const createPublic = async (args: any) => {
+    return PublicService.createPublic(args.data, args.contentType);
+};
 
-export class PublicHandler {
-
-  createPublic = (args: any) => {
-    return new Promise((resolve: Function, reject: Function) => {
-      resolve(publicService.createPublic(args.data, args.contentType));
-    });
-  };
-
-  fetchPublic = (args: any) => {
-    return new Promise((resolve: Function, reject: Function) => {
-      try {
+export const fetchPublic = async (args: any) => {
+    try {
         if (!validator.isAlphanumeric(args.key)) {
-          reject(new TransactionError('Invalid value'))
+            throw new TransactionError("Invalid Value");
         } else {
-          publicService.findForKey(args.key)
-            .then((resp: IPublicModel) => {
-              if (resp != undefined) {
-                let obj = {
-                  data: resp.data.toString(),
-                  contentType: resp.contentType
+            const res = await PublicService.findForKey(args.key);
+            if (res) {
+                const obj = {
+                    data: res.data.toString(),
+                    contentType: res.contentType,
                 };
-                resolve(obj);
-              } else {
-                throw new TransactionError('Record not found')
-              }
-            })
-            .catch((err) => {
-              console.log(dateTimeLogger() + ' image fetch error ' + err);
-              reject(err);
-            });
-        }
-      } catch (error) {
-        reject(new TransactionError('Invalid value'))
-      }
+                return obj;
+            } else {
+                throw new TransactionError("Record not found");
+            }
+        };
+    } catch (error) {
+        console.log(dateTimeLogger() + " image fetch error " + error);
+        return;
+    };
+};
 
-    });
-  };
-
-  getPublic = (req: any, res: any) => {
-    return this.fetchPublic(req.params)
-      .then((obj: any) => {
-        const img = Buffer.from(obj.data, 'base64');
+export const getPublic = async (req: any, res: any) => {
+    const obj = await fetchPublic(req.params);
+    if (obj) {
+        const img = Buffer.from(obj.data, "base64");
         let maxAge = 0;
-        if (obj.contentType.indexOf('image/') == 0) {
-          maxAge = MAX_AGE;
-        }
+        if (obj.contentType.indexOf("image/") == 0) {
+            maxAge = MAX_AGE;
+        };
         res.writeHead(200, {
-          'Cache-Control': 'public, max-age=' + maxAge,
-          'Content-Type': obj.contentType,
-          'Content-Length': img.length
+            "Cache-Control": "public, max-age=" + maxAge,
+            "Content-Type": obj.contentType,
+            "Content_Length": img.length,
         });
-        console.log(dateTimeLogger() + ' image found with length ' + img.length);
+        console.log(dateTimeLogger() + "image found with length " + img.length);
         res.end(img);
-      }).catch((err: any) => {
-        res.status(404).send('Sorry, we cannot find that!');
-      });
-  }
-}
+    } else {
+        res.status(404).send("Sorry, we cannot find that!");
+    };
+};

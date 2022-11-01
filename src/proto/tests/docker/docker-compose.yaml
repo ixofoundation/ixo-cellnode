@@ -1,0 +1,22 @@
+version: '3.7'
+services:
+  #blockchain
+  chain:
+    container_name: chain
+    image: ghcr.io/ixofoundation/ixo-blockchain:0.19.0-beta-10
+    ports:
+      - 1317:1317
+      - 26657:26657
+      - 9090:9090
+    command: bash -c "
+      chmod +x /root/setup-devnet.sh
+      && /root/setup-devnet.sh
+      && /app/ixod start --x-crisis-skip-assert-invariants --log_level=debug "
+    volumes:
+      - ./app.toml:/root/.ixod/config/app.toml
+      - ./config.toml:/root/.ixod/config/config.toml
+  client-sdk-test:
+    image: northroomza/ixo-client-sdk:mike
+    # command: command
+    environment:
+      - RPC_URL=http://chain:26657

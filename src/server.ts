@@ -1,116 +1,66 @@
-require('dotenv').config();
-import * as http from 'http';
-import cache from './Cache';
-import mq from './MessageQ';
-import App from './App';
+require("dotenv").config();
+import * as http from "http";
+import cache from "./Cache";
+import App from "./App";
 
 const fs = require("fs");
 const fileContent = Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36);
 try {
-  const pdsFile = process.env.PDS_FILE || "/usr/src/app/pds.txt"
-  fs.readFileSync(pdsFile, 'utf8');
+    const pdsFile = process.env.PDS_FILE || "/usr/src/app/pds.txt"
+    fs.readFileSync(pdsFile, "utf8");
 } catch (error) {
-  fs.writeFile("./pds.txt", fileContent, (err: any) => {
-    if (err) {
-      console.error(err);
-      return;
-    }
+    fs.writeFile("./pds.txt", fileContent, (err: any) => {
+        if (err) {
+            console.error(err);
+            return;
+        }
+        console.log("Elysian identifier " + fileContent);
+    });
+};
 
-    console.log("Elysian identifier " + fileContent);
-  });
-}
+const BLOCKSYNC_URI_REST = (process.env.BLOCKSYNC_URI_REST || "");
+console.log("Connecting to blocksync on: " + BLOCKSYNC_URI_REST);
 
-const BLOCKSYNC_URI_REST = (process.env.BLOCKSYNC_URI_REST || '');
-console.log('Connecting to blocksync on: ' + BLOCKSYNC_URI_REST);
-
-const mongoose = require('mongoose');
-mongoose.set('useNewUrlParser', true);
-mongoose.set('useCreateIndex', true);
-mongoose.set('useUnifiedTopology', true);
-
-require('mongoose').Promise = global.Promise;
-
-// Set the port
-const port = normalizePort(process.env.PORT || '');
-App.set('port', port);
+const port = normalizePort(process.env.PORT || "");
+App.set("port", port);
 const server = http.createServer(App);
 
-mongoose.connect(process.env.MONGODB_URI || '',
-  {
-    useCreateIndex: true,
-    useNewUrlParser: true,
-    connectTimeoutMS: 2000,
-    keepAlive: 1
-  })
-  .catch(() => {
-  });
-
 cache.connect();
-mq.connect().catch(() => {
-});
 
-const db = mongoose.connection;
-db.on('error', function (err: any) {
-  if (err.message && err.message.match(/failed to connect to server .* on first connect/)) {
-    console.log(new Date(), String(err));
-    setTimeout(function () {
-      console.log("Retrying first connect...");
-      db.openUri(process.env.MONGODB_URI || '').catch(() => {
-      });
-    }, 5 * 1000);
-  } else {
-    console.error(new Date(), String(err));
-  }
-});
+server.listen(port);
+server.on("error", onError);
+server.on("listening", onListening);
 
-db.once('open', function () {
-  console.log('MongoDB connected');
-
-  // Once connected listen on server
-  server.listen(port);
-  server.on('error', onError);
-  server.on('listening', onListening);
-
-});
-
-
-process.on('SIGTERM', function () {
-  console.log('Shut down');
-  db.close();
-  server.close(function () {
+process.on("SIGTERM", function () {
+    console.log("Shut down");
+    cache.close();
     process.exit(0);
-  });
-  cache.close();
-  mq.connection.close();
 });
 
 function normalizePort(val: number | string): number | string | boolean {
-  let port: number = (typeof val === 'string') ? parseInt(val, 10) : val;
-  if (isNaN(port)) return val;
-  else if (port >= 0) return port;
-  else return false;
-}
+    let port: number = (typeof val === "string") ? parseInt(val, 10) : val;
+    if (isNaN(port)) return val;
+    else if (port >= 0) return port;
+    else return false;
+};
 
 function onError(error: NodeJS.ErrnoException): void {
-  if (error.syscall !== 'listen') throw error;
-  let bind = (typeof port === 'string') ? 'Pipe ' + port : 'Port ' + port;
-  switch (error.code) {
-    case 'EACCES':
-      console.log(`${bind} requires elevated privileges`);
-      process.exit(1);
-      break;
-    case 'EADDRINUSE':
-      console.log(`${bind} is already in use`);
-      process.exit(1);
-      break;
-    default:
-      throw error;
-  }
-}
+    if (error.syscall !== "listen") throw error;
+    let bind = (typeof port === "string") ? "Pipe " + port : "Port " + port;
+    switch (error.code) {
+        case "EACCES":
+            console.log(`${bind} requires elevated privileges`);
+            process.exit(1);
+        case "EADDRINUSE":
+            console.log(`${bind} is already in use`);
+            process.exit(1);
+        default:
+            throw error;
+    };
+};
 
 function onListening(): void {
-  let addr = server.address();
-  let bind = (typeof addr === 'string') ? `pipe ${addr}` : `port ${addr.port}`;
-  console.log(`App listening on ${bind}`);
-}
-
+    let addr = server.address();
+    let bind = (typeof addr === "string") ? `pipe ${addr}` : `port ${addr.port}`;
+    console.log(`App listening on ${bind}`);
+};

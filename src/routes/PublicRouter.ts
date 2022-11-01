@@ -1,16 +1,11 @@
-import {AbstractRouter} from './AbstractRouter';
-import {PublicHandler} from '../handlers/PublicHandler'
-
-declare var Promise: any;
+import { AbstractRouter } from "./AbstractRouter";
+import * as PublicHandler from "../handlers/PublicHandler";
 
 export class PublicRouter extends AbstractRouter {
-
-  setup() {
-    let config = {};
-
-    const handler = new PublicHandler();
-    this.register(config, "createPublic", handler.createPublic);
-    this.register(config, "fetchPublic", handler.fetchPublic);
-    return config;
-  }
-}
+    setup() {
+        let config = {};
+        this.register(config, "createPublic", PublicHandler.createPublic);
+        this.register(config, "fetchPublic", PublicHandler.fetchPublic);
+        return config;
+    };
+};

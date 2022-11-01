@@ -1,19 +1,10 @@
-import transactionLog from '../service/TransactionLogService';
-import capabilities from '../service/CapabilitiesService';
+import * as TransactionService from "../services/TransactionService";
+import * as CapabilitiesService from "../services/CapabilityService";
 
-declare var Promise: any;
+export const queryTransactions = async () => {
+    return TransactionService.findTransactions();
+};
 
-export class QueryHandler {
-
-  queryTransactions = (args: any) => {
-    return new Promise((resolve: Function, reject: Function) => {
-      resolve(transactionLog.findTransaction())
-    });
-  };
-
-  queryCapabilities = (args: any) => {
-    return new Promise((resolve: Function, reject: Function) => {
-      resolve(capabilities.findCapabilities())
-    });
-  }
-}
+export const queryCapabilities = async () => {
+    return CapabilitiesService.findCapabilities();
+};
