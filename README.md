@@ -6,7 +6,6 @@ This runs a Node.js app using [Express 4](http://expressjs.com/) in a dockerized
 ---
 
 ## Akash
-###Akash
 [![Akash](https://raw.githubusercontent.com/ixofoundation/ixo-cellnode/master/akash%20button.svg)](https://github.com/ixofoundation/ixo-cellnode/blob/master/akash.deploy.yaml) 
 
 ---
