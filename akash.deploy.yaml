@@ -1,0 +1,178 @@
+#deployment for blocksync on the akash network
+#this file has not been tested
+version: "2.0"
+
+services:   #environment variables still need to be filled
+  app:
+    image: northroomza/ixo-cellnode:latest  #try to not use latest because akash uses heavy caching
+    env:
+      - 'url=https://add.the.full.domain.here'
+      - PORT=5000
+      - MONGODB_URI=mongodb://db:27017/elysian
+      - MEMCACHE_URI=cache:11211
+      - RABITMQ_URI=amqp://guest:guest@mq:5672?heartbeat=2
+      - BLOCKSYNC_URI_REST=
+      - CONFIG=/usr/src/app/config.json
+      - TEMPLATE_REPO=https://api.github.com/repos/ixofoundation/schema/contents/
+      - ETHEREUM_API=
+      - ASYM_CYPHER=aes-256-cbc
+      - ASYM_KEY=trustlab.tech
+      - VALIDISSUERS=did:sov:123456789
+      - NODEDID=
+      - BLOCKSYNC_URI_REST=http://EXAMPLE:8080/api/
+    depends-on:
+      - mq
+      - db
+    expose:
+      - port: 5000
+        as: 80
+        accept: 
+          - "add.domain.hostname.here"
+        to: 
+          - global : true
+
+  cache: 
+    image: memcached:latest   11211
+    expose:
+      - port: 11211
+        as: 11211
+        to: 
+          - global : false
+  mq:
+    image: rabbitmq:3-management
+    env:
+      - vhosts="'/','pds'""
+    expose:
+      - port: 5672
+        as: 5672
+        to: 
+          - global : false
+  pol: 
+    image: ixoworld/ixo-pol:1.1.3
+    depends-on:
+      - mq
+      - db
+    env:
+    - RABITMQ_URI=amqp://guest:guest@mq:5672?heartbeat=2
+    - BLOCKCHAIN_REST=
+  cli: 
+    image: trustlab/ixo-cli:master
+    env:
+      - MONGODB_URI=mongodb://db:27017/elysian
+      - MEMCACHE_URI=cache:11211
+      - BLOCKCHAIN_URI_REST=
+  db: 
+    image: postgres:12.12
+    storage:
+      data: 
+        mount: /db/data
+    expose:
+      - port: 5432
+        as: 5432
+        to: 
+          - global : false
+
+profiles:
+  compute:
+    app:
+      resources:
+        cpu:
+          units: 1.0
+        memory:
+          size: 512Mi
+        storage: 512Mi
+    cache:
+      resources:
+        cpu:
+          units: 1.0
+        memory:
+          size: 512Mi
+        storage: 512Mi
+    mq:
+      resources:
+        cpu:
+          units: 1.0
+        memory:
+          size: 1G
+        storage: 512Mi
+    pol:
+      resources:
+        cpu:
+          units: 1.0
+        memory:
+          size: 512Mi
+        storage: 512Mi
+    cli:
+      resources:
+        cpu:
+          units: 1.0
+        memory:
+          size: 512Mi
+        storage: 512Mi
+    db:
+      resources:
+        cpu:
+          units: 1.0
+        memory:
+          size: 512Mi
+        storage:
+          - 512Mi
+          - name: data
+            size: 10Gi
+            attributes:
+              persistent: true
+              class: beta2
+  placements:   #this sections needs to be configured
+    westcoast:    #example region
+      attributes: 
+        region: us-west #example region
+      pricing: 
+        app-profile:
+          denom: #add token denom
+          amount: #add token amount
+        cache-profile:
+          denom: #add token denom
+          amount: #add token amount
+        mq-profile:
+          denom: #add token denom
+          amount: #add token amount
+        pol-profile:
+          denom: #add token denom
+          amount: #add token amount
+        cli-profile:
+          denom: #add token denom
+          amount: #add token amount
+        db-profile:
+          denom: #add token denom
+          amount: #add token amount
+
+deployment: 
+  app:
+    akash:
+      profiles: app
+      count: 1
+  cache:
+    akash:
+      profiles: cache
+      count: 1
+  mq:
+    akash:
+      profiles:  mq
+      count: 1
+  pol:
+    akash:
+      profiles: pol
+      count: 1
+  cli:
+    akash:
+      profiles: cli
+      count: 1
+  db:
+    akash:  
+      profiles: db
+      count: 1
+
+
+      ###Please note that storage only persists during the lease. The storage is lost when: 
+      ###The deployment is migrated to a different provider.
+      ###The deployment’s lease is closed.  Even when relaunched onto the same provider, storage will not persist across leases.
