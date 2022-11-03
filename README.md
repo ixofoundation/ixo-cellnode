@@ -3,6 +3,14 @@
 Instructions to set up the Elysian release of the Cell Node.  
 This runs a Node.js app using [Express 4](http://expressjs.com/) in a dockerized container.
 
+---
+
+## Akash
+###Akash
+[![Akash](https://raw.githubusercontent.com/ixofoundation/ixo-cellnode/master/akash%20button.svg)](https://github.com/ixofoundation/ixo-cellnode/blob/master/akash.deploy.yaml) 
+
+---
+
 ## Running Elysian
 
 Make sure you have [Docker](https://docker.com/) installed.
