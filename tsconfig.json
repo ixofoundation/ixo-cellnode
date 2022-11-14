@@ -25,5 +25,5 @@
         "strict": false,
         "skipLibCheck": true
     },
-    "exclude": ["node_modules", "build", "docs", "src/proto"]
+    "exclude": ["node_modules", "build", "docs"]
 }

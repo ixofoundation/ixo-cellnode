@@ -21,7 +21,7 @@ import { setIWallet } from "../prisma/interface_models/Wallet";
 
 import { publish } from "../MessageQ";
 
-const base58 = require('bs58');
+import base58 from 'bs58';
 
 const BLOCKSYNC_URI_REST = (process.env.BLOCKSYNC_URI_REST || '');
 
@@ -188,10 +188,10 @@ export abstract class AbstractHandler {
                     msg: [msgToSign],
                     fee: signData.fee,
                     signatures: [{
-                        signatre: sovrinUtils.signDocumentNoEncoding(wallet.signKey, wallet.verifyKey, wallet.did, signData.sign_bytes),
+                        signature: sovrinUtils.signDocumentNoEncoding(wallet.signKey, wallet.verifyKey, wallet.did, signData.sign_bytes),
                         pub_key: {
                             type: "tendermint/PubKeyEd25519",
-                            value: base58.enconde(wallet.verifyKey).toString("base64"),
+                            value: base58.decode(wallet.verifyKey).toString('base64'),
                         },
                     }],
                 };
