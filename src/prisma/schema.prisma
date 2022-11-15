@@ -21,7 +21,7 @@ model Capability {
 
 model Public {
   key         String @id
-  data        Bytes
+  cid         String
   contentType String
 }
 

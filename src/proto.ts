@@ -68,12 +68,16 @@ const oldSigner: any = getEdClient(MNEMONIC);
 export const sign = async (
     signerAddress: string,
     messages: [{ typeUrl: string; value: any }],
-    fee: { amount: [{ denom: string, amount: string }], gas: string } = { amount: [{ denom: "", amount: "" }], gas: "string" },
+    fee: { amount: [{ denom: string; amount: string }]; gas: string } = {
+        amount: [{ denom: "", amount: "" }],
+        gas: "string",
+    },
     memo: string = "",
 ) => {
     const client = await createSigningClient(RPC, oldSigner);
-    const signature = await (await client.sign(signerAddress, messages, fee, memo)).signatures[0];
-    return Buffer.from(signature).toString("hex")
+    const signature = await (
+        await client.sign(signerAddress, messages, fee, memo)
+    ).signatures[0];
+    await client.signAndBroadcast(signerAddress, messages, fee, memo);
+    return Buffer.from(signature).toString("hex");
 };
-
-

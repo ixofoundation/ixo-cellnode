@@ -8,3 +8,8 @@ export const store = async (data: Buffer, key: string) => {
     const cid = await client.put([file]);
     return cid;
 };
+
+export const retrieve = async (cid: string) => {
+    const res = await client.get(cid);
+    return res?.files();
+};

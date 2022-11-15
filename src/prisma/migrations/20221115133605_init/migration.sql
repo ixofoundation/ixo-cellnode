@@ -13,7 +13,7 @@ CREATE TABLE "Capability" (
 -- CreateTable
 CREATE TABLE "Public" (
     "key" TEXT NOT NULL,
-    "data" BYTEA NOT NULL,
+    "cid" TEXT NOT NULL,
     "contentType" TEXT NOT NULL,
 
     CONSTRAINT "Public_pkey" PRIMARY KEY ("key")
