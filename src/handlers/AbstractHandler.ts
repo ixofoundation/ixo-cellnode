@@ -22,6 +22,7 @@ import { setIWallet } from "../prisma/interface_models/Wallet";
 import { publish } from "../MessageQ";
 
 import base58 from 'bs58';
+import { sign as protoSign } from "../proto";
 
 const BLOCKSYNC_URI_REST = (process.env.BLOCKSYNC_URI_REST || '');
 
@@ -188,7 +189,8 @@ export abstract class AbstractHandler {
                     msg: [msgToSign],
                     fee: signData.fee,
                     signatures: [{
-                        signature: sovrinUtils.signDocumentNoEncoding(wallet.signKey, wallet.verifyKey, wallet.did, signData.sign_bytes),
+                        // signature: sovrinUtils.signDocumentNoEncoding(wallet.signKey, wallet.verifyKey, wallet.did, signData.sign_bytes),
+                        signature: protoSign(wallet.did, [msgToSign], signData.fee),
                         pub_key: {
                             type: "tendermint/PubKeyEd25519",
                             value: base58.decode(wallet.verifyKey).toString('base64'),
@@ -216,7 +218,8 @@ export abstract class AbstractHandler {
         if (wallet) {
             Cache.set(wallet.did, { publicKey: wallet.verifyKey });
             const sovrinUtils = new SovrinUtils();
-            return sovrinUtils.signDocumentNoEncoding(wallet.signKey, wallet.verifyKey, wallet.did, msgToSign);
+            // return sovrinUtils.signDocumentNoEncoding(wallet.signKey, wallet.verifyKey, wallet.did, msgToSign);
+            return protoSign(wallet.did, msgToSign)
         } else {
             return new TransactionError("Exception signing request with did " + projectDid);
         };

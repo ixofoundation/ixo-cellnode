@@ -65,14 +65,15 @@ const RPC = process.env.RPC_URL || "";
 const MNEMONIC = process.env.MNEMONIC || "";
 const oldSigner: any = getEdClient(MNEMONIC);
 
-export const signDocumentNoEncoding = async (
+export const sign = async (
     signerAddress: string,
     messages: [{ typeUrl: string; value: any }],
-    fee: { amount: [{ denom: string; amount: string }]; gas: string },
-    memo: string,
+    fee: { amount: [{ denom: string, amount: string }], gas: string } = { amount: [{ denom: "", amount: "" }], gas: "string" },
+    memo: string = "",
 ) => {
     const client = await createSigningClient(RPC, oldSigner);
-    return client.sign(signerAddress, messages, fee, memo);
+    const signature = await (await client.sign(signerAddress, messages, fee, memo)).signatures[0];
+    return Buffer.from(signature).toString("hex")
 };
 
 
