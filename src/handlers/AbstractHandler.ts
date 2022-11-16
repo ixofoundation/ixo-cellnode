@@ -19,10 +19,10 @@ import { dateTimeLogger } from "../logger/Logger";
 import { BlockchainMode } from "../ixo/common/shared";
 import { setIWallet } from "../prisma/interface_models/Wallet";
 
-import { publish } from "../MessageQ";
+// import { publish } from "../MessageQ";
 
 import base58 from 'bs58';
-import { sign as protoSign } from "../proto";
+import { sign, broadcast } from "../proto";
 
 const BLOCKSYNC_URI_REST = (process.env.BLOCKSYNC_URI_REST || '');
 
@@ -190,7 +190,7 @@ export abstract class AbstractHandler {
                     fee: signData.fee,
                     signatures: [{
                         // signature: sovrinUtils.signDocumentNoEncoding(wallet.signKey, wallet.verifyKey, wallet.did, signData.sign_bytes),
-                        signature: protoSign(wallet.did, [msgToSign], signData.fee),
+                        signature: sign(wallet.did, [msgToSign], signData.fee),
                         pub_key: {
                             type: "tendermint/PubKeyEd25519",
                             value: base58.decode(wallet.verifyKey).toString('base64'),
@@ -219,15 +219,23 @@ export abstract class AbstractHandler {
             Cache.set(wallet.did, { publicKey: wallet.verifyKey });
             const sovrinUtils = new SovrinUtils();
             // return sovrinUtils.signDocumentNoEncoding(wallet.signKey, wallet.verifyKey, wallet.did, msgToSign);
-            return protoSign(wallet.did, msgToSign)
+            return sign(wallet.did, msgToSign)
         } else {
             return new TransactionError("Exception signing request with did " + projectDid);
         };
     };
 
     async publishMessageToQueue(message: any) {
-        console.log(dateTimeLogger() + " message to be published " + message.data.msgType);
-        return publish(message);
+        // console.log(dateTimeLogger() + " message to be published " + message.data.msgType);
+        // return publish(message);
+        const tx = {
+            msgType: message.msgType,
+            projectDid: message.projectDid,
+            data: JSON.parse(message.data.tx)
+        };
+        const txBytes = new Uint8Array(Buffer.from(JSON.stringify(tx)));
+        const mode = JSON.parse(message.data.mode)
+        return broadcast({txBytes, mode});
     };
 
     msgToPublish = (hash: any, request: Request): any => {
@@ -235,14 +243,22 @@ export abstract class AbstractHandler {
 
     private publishAndRespond(hash: string, request: Request) {
         const msg = this.msgToPublish(hash, request);
-        console.log(dateTimeLogger() + " message to be published " + msg.msgType);
-        const cacheMsg = {
-            data: msg,
-            request: request,
-            txHash: hash
+        // console.log(dateTimeLogger() + " message to be published " + msg.msgType);
+        // const cacheMsg = {
+        //     data: msg,
+        //     request: request,
+        //     txHash: hash
+        // };
+        // publish(cacheMsg);
+        // return hash;
+        const tx = {
+            msgType: msg.msgType,
+            projectDid: msg.projectDid,
+            data: JSON.parse(msg.data.tx)
         };
-        publish(cacheMsg);
-        return hash;
+        const txBytes = new Uint8Array(Buffer.from(JSON.stringify(tx)));
+        const mode = JSON.parse(msg.data.mode);
+        return broadcast({txBytes, mode});
     };
 
     private async createTransactionLog(request: Request, capabilityMap: any) {
