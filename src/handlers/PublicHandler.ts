@@ -7,7 +7,11 @@ const validator = require("validator");
 const MAX_AGE = 60 * 60 * 24 * 7;
 
 export const createPublic = async (args: any) => {
-    return PublicService.createPublic(args.data, args.contentType);
+    return PublicService.createPublic(
+        args.data,
+        args.extension,
+        args.contentType,
+    );
 };
 
 export const fetchPublic = async (args: any) => {
@@ -16,11 +20,12 @@ export const fetchPublic = async (args: any) => {
             throw new TransactionError("Invalid Value");
         } else {
             const res = await PublicService.findForKey(args.key);
-            if (res?.res && res.files) {
+            if (res?.record && res.file) {
                 const obj = {
-                    key: res.res.key,
-                    cid: res.files[0].cid,
-                    contentType: res.res?.contentType,
+                    key: res.record.key,
+                    cid: res.file.cid,
+                    extension: res.record.extension,
+                    contentType: res.record.contentType,
                 };
                 return obj;
             } else {
@@ -37,7 +42,7 @@ export const getPublic = async (req: any, res: any) => {
     const obj = await fetchPublic(req.params);
     if (obj) {
         res.json({
-            url: `${obj.cid}.ipfs.w3s.link/${obj.key}`,
+            url: `${obj.cid}.ipfs.w3s.link/${obj.key}.${obj.extension}`,
         });
     } else {
         res.status(404).send("Sorry, we cannot find that!");

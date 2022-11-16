@@ -14,6 +14,7 @@ CREATE TABLE "Capability" (
 CREATE TABLE "Public" (
     "key" TEXT NOT NULL,
     "cid" TEXT NOT NULL,
+    "extension" TEXT NOT NULL,
     "contentType" TEXT NOT NULL,
 
     CONSTRAINT "Public_pkey" PRIMARY KEY ("key")

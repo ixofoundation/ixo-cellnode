@@ -22,6 +22,7 @@ model Capability {
 model Public {
   key         String @id
   cid         String
+  extension   String
   contentType String
 }
 
