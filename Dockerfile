@@ -1,18 +1,19 @@
 FROM node:18.10
 
 # Create app directory
-RUN mkdir /usr/src/app
-WORKDIR /usr/src/app
+WORKDIR /app
 
 # Copy files
 COPY package*.json ./
 
 # Install app dependencies and build
-RUN npm install
+RUN yarn
 
 COPY . .
 
-RUN npm run build
+RUN npx prisma generate
+
+RUN yarn build
 
 EXPOSE 5000
 
