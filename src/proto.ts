@@ -5,7 +5,6 @@ import { decode } from "bs58";
 import sovrin from "sovrin-did";
 
 import { createSigningClient, createQueryClient } from "@ixo/impactxclient-sdk";
-import { BroadcastTxRequest } from "@ixo/impactxclient-sdk/types/codegen/cosmos/tx/v1beta1/service";
 
 const getEdClient = (mnemonic: string) => {
     const didDoc = sovrin.fromSeed(sha256(toUtf8(mnemonic)).slice(0, 32));
@@ -76,9 +75,9 @@ enum BroadcastMode {
     UNRECOGNIZED = -1,
 }
 type tx = {
-    txBytes: Uint8Array
-    mode: BroadcastMode
-}
+    txBytes: Uint8Array;
+    mode: BroadcastMode;
+};
 
 export const sign = async (
     signerAddress: string,
@@ -98,5 +97,5 @@ export const sign = async (
 
 export const broadcast = async (tx: tx) => {
     const client = await createQueryClient(RPC);
-    return client.cosmos.tx.v1beta1.broadcastTx(BroadcastTxRequest.fromPartial(tx));
+    return client.cosmos.tx.v1beta1.broadcastTx(tx);
 };
