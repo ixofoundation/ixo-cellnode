@@ -1,7 +1,7 @@
 import * as PublicService from "../services/PublicService";
 import { dateTimeLogger } from "../logger/Logger";
 import { TransactionError } from "../error/TransactionError";
-import { fileTypeFromBuffer } from "file-type";
+const { fileTypeFromBuffer } = require("file-type");
 
 const validator = require("validator");
 

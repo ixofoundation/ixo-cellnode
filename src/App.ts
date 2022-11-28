@@ -7,6 +7,10 @@ import { QueryRouter } from "./routes/QueryRouter";
 import { PublicRouter } from "./routes/PublicRouter";
 import * as PublicHandler from "./handlers/PublicHandler";
 import { getCapabilities } from "./handlers/CapabilityHandler";
+import swaggerUi from "swagger-ui-express";
+const swaggerFile = require(`${__dirname}/../../swagger.json`);
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 
 const compression = require("compression");
 
@@ -36,6 +40,19 @@ class App {
                 dynamicJson: true,
             }),
         );
+        this.express.use(
+            "/swagger",
+            swaggerUi.serve,
+            swaggerUi.setup(swaggerFile),
+        );
+        this.express.use(helmet());
+        const limiter = rateLimit({
+            windowMs: 15 * 60 * 1000, // 15 minutes
+            max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+            standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+            legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+        });
+        this.express.use(limiter);
     }
 
     private routes(): void {
