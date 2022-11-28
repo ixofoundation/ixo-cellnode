@@ -1,12 +1,18 @@
 import * as PublicService from "../services/PublicService";
 import { dateTimeLogger } from "../logger/Logger";
 import { TransactionError } from "../error/TransactionError";
+import { fileTypeFromBuffer } from "file-type";
 
 const validator = require("validator");
 
-const MAX_AGE = 60 * 60 * 24 * 7;
+const fileTypes = process.env.FILE_TYPES || [""];
 
 export const createPublic = async (args: any) => {
+    const file = await fileTypeFromBuffer(args.data);
+    const mime = file?.mime.toString() || "";
+    if (!fileTypes.includes(mime)) {
+        return "Invalid File Type";
+    }
     return PublicService.createPublic(
         args.data,
         args.extension,
@@ -43,6 +49,7 @@ export const getPublic = async (req: any, res: any) => {
     if (obj) {
         res.json({
             url: `${obj.cid}.ipfs.w3s.link/${obj.key}.${obj.extension}`,
+            cid: obj.cid,
         });
     } else {
         res.status(404).send("Sorry, we cannot find that!");

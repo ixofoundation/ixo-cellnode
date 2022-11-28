@@ -1,12 +1,16 @@
 import express from "express";
 import cors from "cors";
 import * as bodyParser from "body-parser";
+import postgraphile from "postgraphile";
 import { RequestRouter } from "./routes/RequestRouter";
 import { QueryRouter } from "./routes/QueryRouter";
 import { PublicRouter } from "./routes/PublicRouter";
 import * as PublicHandler from "./handlers/PublicHandler";
 import { getCapabilities } from "./handlers/CapabilityHandler";
+
 const compression = require("compression");
+
+const DATABASE_URL = process.env.DATABASE_URL;
 
 class App {
     public express: any;
@@ -24,6 +28,14 @@ class App {
             bodyParser.urlencoded({ limit: "50mb", extended: true }),
         );
         this.express.use(bodyParser.json({ limit: "4mb" }));
+        this.express.use(
+            postgraphile(DATABASE_URL, "public", {
+                watchPg: true,
+                graphiql: true,
+                enhanceGraphiql: true,
+                dynamicJson: true,
+            }),
+        );
     }
 
     private routes(): void {
