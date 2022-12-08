@@ -17,6 +17,7 @@
         "suppressImplicitAnyIndexErrors": true,
         "noUnusedLocals": false,
         "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
         "resolveJsonModule": true,
         "esModuleInterop": true,
         "declaration": true,

@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import express from "express";
 import cors from "cors";
 import * as bodyParser from "body-parser";
@@ -11,6 +12,10 @@ import swaggerUi from "swagger-ui-express";
 const swaggerFile = require(`${__dirname}/../../swagger.json`);
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import { resolvers } from "./prisma/generated";
+import { buildSchemaSync } from "type-graphql";
+import { graphqlHTTP } from "express-graphql";
+import { prisma } from "./prisma/prisma_client";
 
 const compression = require("compression");
 
@@ -26,18 +31,28 @@ class App {
     }
 
     private middleware(): void {
+        const schema = buildSchemaSync({ resolvers });
+
         this.express.use(cors());
         this.express.use(compression({ threshold: 0 }));
         this.express.use(
             bodyParser.urlencoded({ limit: "50mb", extended: true }),
         );
         this.express.use(bodyParser.json({ limit: "4mb" }));
+        // this.express.use(
+        //     postgraphile(DATABASE_URL, "public", {
+        //         watchPg: true,
+        //         graphiql: true,
+        //         enhanceGraphiql: true,
+        //         dynamicJson: true,
+        //     }),
+        // );
         this.express.use(
-            postgraphile(DATABASE_URL, "public", {
-                watchPg: true,
+            "/graphql",
+            graphqlHTTP({
+                schema: schema,
                 graphiql: true,
-                enhanceGraphiql: true,
-                dynamicJson: true,
+                context: { prisma },
             }),
         );
         this.express.use(
