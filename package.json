@@ -35,7 +35,7 @@
     "dotenv": "^6.2.0",
     "ethereumjs-util": "^6.2.1",
     "ethereumjs-wallet": "^0.6.5",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "five-bells-condition": "^5.0.1",
     "jayson": "^2.1.2",
     "jsonschema": "^1.2.6",
