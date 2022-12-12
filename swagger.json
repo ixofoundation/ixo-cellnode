@@ -16,17 +16,6 @@
                 "responses": {}
             }
         },
-        "/graphiql": {
-            "get": {
-                "description": "GraphiQL IDE",
-                "parameters": [],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                }
-            }
-        },
         "/graphql": {
             "post": {
                 "description": "GraphQL",

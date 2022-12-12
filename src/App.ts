@@ -16,6 +16,7 @@ import { resolvers } from "./prisma/generated";
 import { buildSchemaSync } from "type-graphql";
 import { graphqlHTTP } from "express-graphql";
 import { prisma } from "./prisma/prisma_client";
+import { capabilitiesMiddleware } from "./graphql-capabilities";
 
 const compression = require("compression");
 
@@ -48,17 +49,18 @@ class App {
         //     }),
         // );
         this.express.use(
-            "/graphql",
-            graphqlHTTP({
-                schema: schema,
-                graphiql: true,
-                context: { prisma },
-            }),
-        );
-        this.express.use(
             "/swagger",
             swaggerUi.serve,
             swaggerUi.setup(swaggerFile),
+        );
+        this.express.use(capabilitiesMiddleware);
+        this.express.use(
+            "/graphql",
+            graphqlHTTP({
+                schema: schema,
+                graphiql: false,
+                context: { prisma },
+            }),
         );
         this.express.use(helmet());
         const limiter = rateLimit({
@@ -72,10 +74,7 @@ class App {
 
     private routes(): void {
         this.express.get("/", (req, res, next) => {
-            const fileSystem = require("fs");
-            const pdsFile = process.env.PDS_FILE || "/usr/src/app/pds.txt";
-            const data = fileSystem.readFileSync(pdsFile, "utf8");
-            res.send("API is running with ID " + data);
+            res.send("API Running");
         });
 
         this.express.get("/public/:key", PublicHandler.getPublic);

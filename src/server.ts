@@ -3,22 +3,7 @@ import * as http from "http";
 import cache from "./Cache";
 import App from "./App";
 
-const fs = require("fs");
-const fileContent = Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36);
-try {
-    const pdsFile = process.env.PDS_FILE || "/usr/src/app/pds.txt"
-    fs.readFileSync(pdsFile, "utf8");
-} catch (error) {
-    fs.writeFile("./pds.txt", fileContent, (err: any) => {
-        if (err) {
-            console.error(err);
-            return;
-        }
-        console.log("Elysian identifier " + fileContent);
-    });
-};
-
-const BLOCKSYNC_URI_REST = (process.env.BLOCKSYNC_URI_REST || "");
+const BLOCKSYNC_URI_REST = process.env.BLOCKSYNC_URI_REST || "";
 console.log("Connecting to blocksync on: " + BLOCKSYNC_URI_REST);
 
 const port = normalizePort(process.env.PORT || "");
@@ -38,15 +23,15 @@ process.on("SIGTERM", function () {
 });
 
 function normalizePort(val: number | string): number | string | boolean {
-    let port: number = (typeof val === "string") ? parseInt(val, 10) : val;
+    let port: number = typeof val === "string" ? parseInt(val, 10) : val;
     if (isNaN(port)) return val;
     else if (port >= 0) return port;
     else return false;
-};
+}
 
 function onError(error: NodeJS.ErrnoException): void {
     if (error.syscall !== "listen") throw error;
-    let bind = (typeof port === "string") ? "Pipe " + port : "Port " + port;
+    let bind = typeof port === "string" ? "Pipe " + port : "Port " + port;
     switch (error.code) {
         case "EACCES":
             console.log(`${bind} requires elevated privileges`);
@@ -56,11 +41,11 @@ function onError(error: NodeJS.ErrnoException): void {
             process.exit(1);
         default:
             throw error;
-    };
-};
+    }
+}
 
 function onListening(): void {
     let addr = server.address();
-    let bind = (typeof addr === "string") ? `pipe ${addr}` : `port ${addr.port}`;
+    let bind = typeof addr === "string" ? `pipe ${addr}` : `port ${addr.port}`;
     console.log(`App listening on ${bind}`);
-};
+}

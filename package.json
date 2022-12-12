@@ -11,7 +11,7 @@
         "start": "node ./build/dist/server.js",
         "dropdb": "node dist/dropdb.js",
         "build": "tsc",
-        "dev": "npx ts-node src/server.ts",
+        "dev": "npx nodemon",
         "swagger-gen": "npx ts-node ./src/swagger.ts"
     },
     "author": "brennon.hampton@gmail.com",
