@@ -12,6 +12,7 @@
         "dropdb": "node dist/dropdb.js",
         "build": "tsc",
         "dev": "npx nodemon",
+        "seed": "npx ts-node src/seed/seed.ts",
         "swagger-gen": "npx ts-node ./src/swagger.ts"
     },
     "author": "brennon.hampton@gmail.com",

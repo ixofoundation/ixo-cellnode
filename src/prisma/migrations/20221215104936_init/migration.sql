@@ -16,6 +16,7 @@ CREATE TABLE "Public" (
     "cid" TEXT NOT NULL,
     "extension" TEXT NOT NULL,
     "contentType" TEXT NOT NULL,
+    "data" BYTEA,
 
     CONSTRAINT "Public_pkey" PRIMARY KEY ("key")
 );

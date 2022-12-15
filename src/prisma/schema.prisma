@@ -5,10 +5,10 @@ generator client {
   provider = "prisma-client-js"
 }
 
-generator typegraphql {
-  provider = "typegraphql-prisma"
-  output   = "./generated"
-}
+// generator typegraphql {
+//   provider = "typegraphql-prisma"
+//   output   = "./generated"
+// }
 
 datasource db {
   provider = "postgresql"
@@ -29,6 +29,7 @@ model Public {
   cid         String
   extension   String
   contentType String
+  data        Bytes?
 }
 
 model Transaction {
