@@ -5,7 +5,7 @@
 ![Twitter Follow](https://img.shields.io/twitter/follow/ixoworld?style=social)
 ![Medium](https://img.shields.io/badge/Medium-12100E?style=for-the-badge&logo=medium&logoColor=white)
 
-Instructions to set up the Elysian release of the Cell Node.  
+Instructions to set up the current v2 release of IXO CellNode.  
 This runs a Node.js app using [Express 4](http://expressjs.com/) in a dockerized container.
 
 ---
