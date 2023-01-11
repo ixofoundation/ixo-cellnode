@@ -21,6 +21,26 @@ export class SubmitClaimProcessor extends AbstractHandler {
                     created: cached.signature.created,
                 };
                 const sanitizedData = xss.sanitize(obj);
+                const checkDuplicate = await prisma.claim.findFirst({ 
+                    where: {
+                        items: sanitizedData.items
+                    },
+                });
+                if (checkDuplicate) {
+                    console.log(dateTimeLogger() + " claim subsmission failed, duplicate found")
+                    await prisma.evaluateClaim.create({
+                        data: {
+                            claimId: checkDuplicate.txHash,
+                            projectDid: checkDuplicate.projectDid,
+                            status: "DISPUTED",
+                            txHash: jsonResponseMsg.txHash,
+                            creator: cached.signature.creator,
+                            created: cached.signature.created,
+                            version: 0
+                        },
+                    });
+                    return;
+                };
                 await prisma.claim.create({
                     data: {
                         claimTemplateId: sanitizedData.claim,
