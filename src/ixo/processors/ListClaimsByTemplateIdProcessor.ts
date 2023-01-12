@@ -11,7 +11,7 @@ export class ListClaimsByTemplateId extends AbstractHandler {
     };
 
     process = (args: any) => {
-        console.log(dateTimeLogger() + " start new List Claims by template ID transaction ");
+        console.log(dateTimeLogger("start new List Claims by template ID transaction"));
         return this.queryTransaction(args, "ListClaimsByTemplateId", (filter: any): Promise<any[]> => {
             return new Promise((resolve: Function, reject: Function) => {
                 prisma.agent.findMany({

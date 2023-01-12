@@ -35,20 +35,20 @@ export abstract class AbstractHandler {
                 .then((result) => {
                     const capabilities = newCapabilitiesDoc(result);
                     const capabilityMap = capabilities.capabilities.filter(element => element.capability == method)[0];
-                    console.log(dateTimeLogger() + " have capability " + capabilityMap.capability);
+                    console.log(dateTimeLogger("have capability " + capabilityMap.capability));
                     TemplateUtils.getTemplateFromCache(capabilityMap.template, request.template)
                         .then((schema: any) => {
-                            console.log(dateTimeLogger() + ' validate the template');
+                            console.log(dateTimeLogger('validate the template'));
                             const validator: ValidatorResult = validateJson(schema, args);
                             if (validator.valid) {
-                                console.log(dateTimeLogger() + ' validate the capability');
+                                console.log(dateTimeLogger('validate the capability'));
                                 const capValid: RequestValidator = request.verifyCapability(capabilityMap.allow);
                                 if (capValid.valid) {
-                                    console.log(dateTimeLogger() + ' verify the signature');
+                                    console.log(dateTimeLogger('verify the signature'));
                                     request.verifySignature(this.preVerifyDidSignature.bind(this), capabilityMap.validateKYC, capabilityMap.capability)
                                         .then((sigValid: RequestValidator) => {
                                             if (sigValid.valid) {
-                                                console.log(dateTimeLogger() + ' signature verified');
+                                                console.log(dateTimeLogger('signature verified'));
                                                 if (verifyData) {
                                                     verifyData(request)
                                                         .then(() => {
@@ -59,7 +59,7 @@ export abstract class AbstractHandler {
                                                                 });
                                                         })
                                                         .catch((error: string) => {
-                                                            console.log(dateTimeLogger() + ' error creating transaction log ' + request.projectDid);
+                                                            console.log(dateTimeLogger('error creating transaction log ' + request.projectDid, true));
                                                             reject(new TransactionError(error));
                                                         })
                                                 } else {
@@ -69,7 +69,7 @@ export abstract class AbstractHandler {
                                                             resolve(this.publishAndRespond(transaction.hash, request));
                                                         })
                                                         .catch((error: string) => {
-                                                            console.log(dateTimeLogger() + ' error creating transaction log ' + request.projectDid);
+                                                            console.log(dateTimeLogger('error creating transaction log ' + request.projectDid, true));
                                                             reject(new TransactionError(error));
                                                         });
                                                 }
@@ -78,25 +78,25 @@ export abstract class AbstractHandler {
                                             }
                                         })
                                         .catch((error: string) => {
-                                            console.log(dateTimeLogger() + ' error verifying signature ' + request.projectDid);
+                                            console.log(dateTimeLogger('error verifying signature ' + request.projectDid, true));
                                             reject(new TransactionError(error));
                                         });
                                 } else {
-                                    console.log(dateTimeLogger() + ' error processing capability ' + request.projectDid);
+                                    console.log(dateTimeLogger('error processing capability ' + request.projectDid, true));
                                     reject(new ValidationError(capValid.errors[0]));
                                 }
                             } else {
-                                console.log(dateTimeLogger() + ' template validation failed');
+                                console.log(dateTimeLogger(' template validation failed', true));
                                 reject(new ValidationError(validator.errors[0].message));
                             }
                         })
                         .catch((reason) => {
-                            console.log(dateTimeLogger() + ' template registry failed' + reason);
+                            console.log(dateTimeLogger(' template registry failed' + reason, true));
                             reject(new TransactionError('Cannot connect to template registry'));
                         });
                 })
                 .catch(() => {
-                    console.log(dateTimeLogger() + ' capabilities not found for project ' + request.projectDid);
+                    console.log(dateTimeLogger(' capabilities not found for project ' + request.projectDid, true));
                     reject(new TransactionError('Capabilities not found for project'));
                 });
         });
@@ -111,22 +111,22 @@ export abstract class AbstractHandler {
                     const capabilityMap = capabilities.capabilities.filter(element => element.capability == method)[0];
                     TemplateUtils.getTemplateFromCache(capabilityMap.template, request.template)
                         .then((schema: any) => {
-                            console.log(dateTimeLogger() + ' validate the template');
+                            console.log(dateTimeLogger('validate the template'));
                             const validator: ValidatorResult = validateJson(schema, args);
                             if (validator.valid) {
-                                console.log(dateTimeLogger() + ' validate the capability');
+                                console.log(dateTimeLogger('validate the capability'));
                                 const capValid: RequestValidator = request.verifyCapability(capabilityMap.allow);
                                 if (capValid.valid) {
-                                    console.log(dateTimeLogger() + ' verify the signature');
+                                    console.log(dateTimeLogger(' verify the signature'));
                                     request.verifySignature(this.preVerifyDidSignature.bind(this), capabilityMap.validateKYC, capabilityMap.capability)
                                         .then((sigValid: RequestValidator) => {
                                             if (sigValid.valid) {
-                                                console.log(dateTimeLogger() + ' query Elysian');
+                                                console.log(dateTimeLogger('query Elysian'));
                                                 resolve(query(request));
                                             } else {
                                                 reject(new ValidationError(sigValid.errors[0]));
                                             }
-                                            console.log(dateTimeLogger() + ' transaction completed successfully');
+                                            console.log(dateTimeLogger(' transaction completed successfully'));
                                         })
                                 } else {
                                     reject(new ValidationError(capValid.errors[0]));
@@ -136,12 +136,12 @@ export abstract class AbstractHandler {
                             }
                         })
                         .catch((reason) => {
-                            console.log(dateTimeLogger() + ' template registry failed' + reason);
+                            console.log(dateTimeLogger('template registry failed' + reason, true));
                             reject(new TransactionError('Cannot connect to template registry'));
                         });
                 })
                 .catch(() => {
-                    console.log(dateTimeLogger() + ' capabilities not found for project ' + request.projectDid);
+                    console.log(dateTimeLogger('capabilities not found for project ' + request.projectDid, true));
                     reject(new TransactionError('Capabilities not found for project'));
                 });
         })
@@ -169,7 +169,7 @@ export abstract class AbstractHandler {
         const res = await WalletService.createWallet(IWallet.did, IWallet.signKey, IWallet.verifyKey);
         if (res) {
             Cache.set(res.did, { publicKey: res.verifyKey });
-            console.log(dateTimeLogger() + " project wallet created")
+            console.log(dateTimeLogger("project wallet created"))
             return res.did
         }
         return "";
@@ -204,11 +204,11 @@ export abstract class AbstractHandler {
                 };
                 return message;
             } else {
-                console.log(dateTimeLogger() + " error when requesting sign data from blockchain " + res.statusText);
+                console.log(dateTimeLogger("error when requesting sign data from blockchain " + res.statusText, true));
                 return ("Error when requesting sign data from blockchain");
             };
         } else {
-            console.log(dateTimeLogger() + " get wallet failed ");
+            console.log(dateTimeLogger("get wallet failed", true));
             return;
         };
     };
@@ -264,7 +264,7 @@ export abstract class AbstractHandler {
     private async createTransactionLog(request: Request, capabilityMap: any) {
         const res = await TransactionService.createTransaction(request.body, request.signature.type, request.signature.signatureValue, request.projectDid, capabilityMap.capability);
         if (res) {
-            console.log(dateTimeLogger() + " write transaction to log" + res.hash);
+            console.log(dateTimeLogger(" write transaction to log" + res.hash));
             return res;
         }
         return;

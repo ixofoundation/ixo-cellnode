@@ -12,9 +12,9 @@ export class CreateAgentProcessor extends AbstractHandler {
         try {
             const cached = await Cache.get(jsonResponseMsg.txHash);
             if (cached != undefined) {
-                console.log(dateTimeLogger() + " updating the create agent capabilities");
+                console.log(dateTimeLogger("updating the create agent capabilities"));
                 this.updateCapabilities(cached);
-                console.log(dateTimeLogger() + " commit create agent to Elysian");
+                console.log(dateTimeLogger("commit create agent to Elysian"));
                 const obj = {
                     ...cached.data,
                     txHash: jsonResponseMsg.txHash,
@@ -68,19 +68,19 @@ export class CreateAgentProcessor extends AbstractHandler {
                 if (retry <= 3) {
                     retry++;
                     setTimeout(() => {
-                        console.log(dateTimeLogger() + ` retry cached create agent transaction for ${jsonResponseMsg.txHash}`);
+                        console.log(dateTimeLogger(`retry cached create agent transaction for ${jsonResponseMsg.txHash}`));
                         this.handleAsyncCreateAgentResponse(jsonResponseMsg, retry);
                     }, 2000)
                 } else {
                     //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to
                     //force the data into the DB
-                    console.log(dateTimeLogger() + ` cached create agent not found for transaction ${jsonResponseMsg.txHash}`);
+                    console.log(dateTimeLogger(`cached create agent not found for transaction ${jsonResponseMsg.txHash}`, true));
                 };
             };
         } catch (error) {
             //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to
             //force the data into the DB
-            console.log(dateTimeLogger() + ` exception for cached transaction for ${jsonResponseMsg.txHash} not found`);
+            console.log(dateTimeLogger(`exception for cached transaction for ${jsonResponseMsg.txHash} not found`, true));
         };
     };
 
@@ -127,7 +127,7 @@ export class CreateAgentProcessor extends AbstractHandler {
     };
 
     process = (args: any) => {
-        console.log(dateTimeLogger() + " start new Create Agent transaction");
+        console.log(dateTimeLogger("start new Create Agent transaction"));
         return this.createTransaction(args, "CreateAgent", (request: any): Promise<boolean> => {
             return new Promise((resolve: Function, reject: Function) => {
                 prisma.agent.findMany({

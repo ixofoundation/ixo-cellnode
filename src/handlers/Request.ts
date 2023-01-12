@@ -60,7 +60,7 @@ export class Request {
                     .then((didDoc: any) => {
                         if (didDoc) {
                             // cache-hit
-                            console.log(dateTimeLogger() + ' got cache record for key ' + this.signature.creator);
+                            console.log(dateTimeLogger('got cache record for key ' + this.signature.creator));
                             if (validateKyc) {
                                 if (!preVerifyDidSignature(didDoc, this, capability)) {
                                     validator.addError("Signature failed pre verification " + this.signature.creator);
@@ -81,7 +81,7 @@ export class Request {
                             resolve(validator);
                         } else {
                             // cache-miss
-                            console.log(dateTimeLogger() + ' retrieve pubkey from blockchain');
+                            console.log(dateTimeLogger('retrieve pubkey from blockchain'));
                             axios.get(BLOCKSYNC_URI_REST + 'did/getByDid/' + this.signature.creator)
                                 .then((response) => {
                                     if (response.status == 200 && response.data.did != null) {
@@ -122,8 +122,8 @@ export class Request {
                     })
                     .catch((reason) => {
                         // could not connect to cache, read from blockchain
-                        console.log(dateTimeLogger() + ' cache unavailable ' + reason);
-                        console.log(dateTimeLogger() + ' retrieve pubkey from blockchain');
+                        console.log(dateTimeLogger('cache unavailable ' + reason, true));
+                        console.log(dateTimeLogger('retrieve pubkey from blockchain', true));
                         axios.get(BLOCKSYNC_URI_REST + 'did/getByDid/' + this.signature.creator)
                             .then((response) => {
                                 if (response.status == 200) {

@@ -37,7 +37,7 @@ export class Cache {
 
   set(key: string, value: any, ttl: number = 0) {
     cache.set(key, value, ttl, function (err: any) {
-      if (err) console.log(dateTimeLogger() + ' Memcached could not set value for key ' + key);
+      if (err) console.log(dateTimeLogger(' Memcached could not set value for key ' + key, true));
     });
   }
 

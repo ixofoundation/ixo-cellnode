@@ -39,7 +39,7 @@ export const fetchPublic = async (args: any) => {
             }
         }
     } catch (error) {
-        console.log(dateTimeLogger() + " image fetch error " + error);
+        console.log(dateTimeLogger(" image fetch error " + error, true));
         return;
     }
 };

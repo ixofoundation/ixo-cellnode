@@ -18,9 +18,9 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
         try {
             const cached = await Cache.get(jsonResponseMsg.txHash);
             if (cached != undefined) {
-                console.log(dateTimeLogger() + " updating the project status capabilities");
+                console.log(dateTimeLogger("updating the project status capabilities"));
                 this.updateCapabilities(cached);
-                console.log(dateTimeLogger() + " commit project status to Elysian");
+                console.log(dateTimeLogger("commit project status to Elysian"));
                 const obj = {
                     ...cached.data,
                     txHash: jsonResponseMsg.txHash,
@@ -46,23 +46,23 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
                     txHash: obj.txnID,
                 };
                 this.publishMessageToQueue(message);
-                console.log(dateTimeLogger() + " Update project status transaction completed successfully");
+                console.log(dateTimeLogger("Update project status transaction completed successfully"));
             } else {
                 let retry: number = retries || 0;
                 if (retry <= 3) {
                     retry++;
                     setTimeout(() => {
-                        console.log(dateTimeLogger() + ` retry cached update projecttransaction for ${jsonResponseMsg.txHash}`);
+                        console.log(dateTimeLogger(`retry cached update projecttransaction for ${jsonResponseMsg.txHash}`));
                         this.handleAsyncProjectStatusResponse(jsonResponseMsg, retry)
                     }, 2000)
                 } else {
                     //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to
                     //force the data into the DB
-                    console.log(dateTimeLogger() + ` cached update project not found for transaction ${jsonResponseMsg.txHash}`);
+                    console.log(dateTimeLogger(`cached update project not found for transaction ${jsonResponseMsg.txHash}`, true));
                 };
             };
         } catch (error) {
-            console.log(dateTimeLogger() + " exception caught for handleAsyncProjectStatusResponse");
+            console.log(dateTimeLogger(error + "exception caught for handleAsyncProjectStatusResponse", true));
         };
     };
 
@@ -103,12 +103,12 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
                     txHash: jsonResponseMsg.txHash
                 };
                 setTimeout(() => {
-                    console.log(dateTimeLogger() + " resubmit fund check to Ethereum for TxnID " + jsonResponseMsg.txHash);
+                    console.log(dateTimeLogger("resubmit fund check to Ethereum for TxnID " + jsonResponseMsg.txHash));
                     this.publishMessageToQueue(message);
                 }, 30000)
             };
         } catch (error) {
-            console.log(dateTimeLogger() + " exception caught for handleAsyncEthResponse");
+            console.log(dateTimeLogger(error + "exception caught for handleAsyncEthResponse", true));
         };
     };
 
@@ -139,7 +139,7 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
     };
 
     process = (args: any) => {
-        console.log(dateTimeLogger() + " start new Update Project Status transaction");
+        console.log(dateTimeLogger("start new Update Project Status transaction"));
         const request = new Request(args);
         return this.createTransaction(args, "UpdateProjectStatus", (request: any): Promise<boolean> => {
             return new Promise((resolve: Function, reject: Function) => {
@@ -150,11 +150,11 @@ export class UpdateProjectStatusProcessor extends AbstractHandler {
                                 if (workflow.indexOf(request.data.status) - 1 <= workflow.indexOf(current[0].status) || request.data.status === "CREATED") {
                                     resolve(true);
                                 } else {
-                                    console.log(dateTimeLogger() + ' Invalid status workflow ' + request.data.status);
+                                    console.log(dateTimeLogger('Invalid status workflow ' + request.data.status, true));
                                     reject("Invalid status workflow");
                                 }
                             } else {
-                                console.log(dateTimeLogger() + ' no status exists for project ' + request.projectDid);
+                                console.log(dateTimeLogger('no status exists for project ' + request.projectDid, true));
                                 reject('No status exists for project ' + request.projectDid);
                             }
                         })

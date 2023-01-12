@@ -11,9 +11,9 @@ export class SubmitClaimProcessor extends AbstractHandler {
         try {
             const cached = await Cache.get(jsonResponseMsg.txHash);
             if (cached != undefined) {
-                console.log(dateTimeLogger() + " updating the submit claim capabilities");
+                console.log(dateTimeLogger("updating the submit claim capabilities"));
                 this.updateCapabilities(cached);
-                console.log(dateTimeLogger() + " commit submit claim to Elysian");
+                console.log(dateTimeLogger("commit submit claim to Elysian"));
                 const obj = {
                     ...cached.data,
                     txHash: jsonResponseMsg.txHash,
@@ -27,7 +27,7 @@ export class SubmitClaimProcessor extends AbstractHandler {
                     },
                 });
                 if (checkDuplicate) {
-                    console.log(dateTimeLogger() + " claim subsmission failed, duplicate found")
+                    console.log(dateTimeLogger("claim subsmission failed, duplicate found", true))
                     await prisma.evaluateClaim.create({
                         data: {
                             claimId: checkDuplicate.txHash,
@@ -56,25 +56,25 @@ export class SubmitClaimProcessor extends AbstractHandler {
                         created: sanitizedData.created,
                     },
                 });
-                console.log(dateTimeLogger() + " submit claim transaction completed successfully")
+                console.log(dateTimeLogger("submit claim transaction completed successfully"))
             } else {
                 let retry: number = retries || 0;
                 if (retry <= 3) {
                     retry++;
                     setTimeout(() => {
-                        console.log(dateTimeLogger() + ` retry cached submit claim transaction for ${jsonResponseMsg.txHash}`);
+                        console.log(dateTimeLogger(`retry cached submit claim transaction for ${jsonResponseMsg.txHash}`));
                         this.handleAsyncSubmitClaimResponse(jsonResponseMsg, retry)
                     }, 2000)
                 } else {
                     //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to
                     //force the data into the DB
-                    console.log(dateTimeLogger() + ` cached submit claim not found for transaction ${jsonResponseMsg.txHash}`);
+                    console.log(dateTimeLogger(`cached submit claim not found for transaction ${jsonResponseMsg.txHash}`, true));
                 }
             };
         } catch (error) {
             //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to
             //force the data into the DB
-            console.log(dateTimeLogger() + ` exception for cached transaction for ${jsonResponseMsg.txHash} not found`);
+            console.log(dateTimeLogger(`exception for cached transaction for ${jsonResponseMsg.txHash} not found`, true));
         };
     };
 
@@ -99,7 +99,7 @@ export class SubmitClaimProcessor extends AbstractHandler {
     };
 
     process = (args: any) => {
-        console.log(dateTimeLogger() + " start new Submit Claim transaction");
+        console.log(dateTimeLogger("start new Submit Claim transaction"));
         return this.createTransaction(args, "SubmitClaim", (request: any): Promise<boolean> => {
             return new Promise((resolve: Function, reject: Function) => {
                 const validStatus = ["STARTED"];
@@ -114,9 +114,11 @@ export class SubmitClaimProcessor extends AbstractHandler {
                         if (results.length > 0 && validStatus.some(elem => elem === results[0].status)) {
                             resolve(results[0]);
                         }
+                        console.log(dateTimeLogger("Invalid Project Status. Valid statuses are " + validStatus.toString(), true))
                         reject("Invalid Project Status. Valid statuses are " + validStatus.toString())
                     })
                 } catch (error) {
+                    console.log(dateTimeLogger(error, true))
                     reject(error)
                 }
             })

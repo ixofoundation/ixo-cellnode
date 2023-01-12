@@ -11,7 +11,7 @@ export class ListClaimsProcessor extends AbstractHandler {
     };
 
     process = (args: any) => {
-        console.log(dateTimeLogger() + " start new List Claims transaction ");
+        console.log(dateTimeLogger("start new List Claims transaction"));
         return this.queryTransaction(args, "ListClaims", (filter: any): Promise<any[]> => {
             return new Promise((resolve: Function, reject: Function) => {
                 prisma.agent.findMany({

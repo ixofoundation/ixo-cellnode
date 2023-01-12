@@ -14,9 +14,9 @@ export class UpdateProjectDocProcessor extends AbstractHandler {
         try {
             const cached = await Cache.get(jsonResponseMsg.txHash);
             if (cached != undefined) {
-                console.log(dateTimeLogger() + " updating the project doc capabilities");
+                console.log(dateTimeLogger("updating the project doc capabilities"));
                 this.updateCapabilities(cached);
-                console.log(dateTimeLogger() + " commit project doc to Elysian");
+                console.log(dateTimeLogger("commit project doc to Elysian"));
                 const projectData = {
                     ...cached.data,
                 };
@@ -53,24 +53,24 @@ export class UpdateProjectDocProcessor extends AbstractHandler {
                             created: prevProject.created,
                         },
                     });
-                    console.log(dateTimeLogger() + " Update project doc transaction completed successfully");
+                    console.log(dateTimeLogger("Update project doc transaction completed successfully"));
                 } else {
-                    console.log(dateTimeLogger() + " project not found when updating projects DB");
+                    console.log(dateTimeLogger("project not found when updating projects DB"));
                 };
             } else {
                 let retry: number = retries || 0;
                 if (retry <= 3) {
                     retry++;
                     setTimeout(() => {
-                        console.log(dateTimeLogger() + ` retry cached update project transaction for ${jsonResponseMsg.txHash}`);
+                        console.log(dateTimeLogger(`retry cached update project transaction for ${jsonResponseMsg.txHash}`));
                         this.handleAsyncProjectDocResponse(jsonResponseMsg, retry)
                     }, 2000)
                 } else {
-                    console.log(dateTimeLogger() + ` cached update project not found for transaction ${jsonResponseMsg.txHash}`);
+                    console.log(dateTimeLogger(`cached update project not found for transaction ${jsonResponseMsg.txHash}`, true));
                 }
             };
         } catch (error) {
-            console.log(dateTimeLogger() + " exception caught for handleAsyncProjectDocResponse");
+            console.log(dateTimeLogger(error + "exception caught for handleAsyncProjectDocResponse", true));
         };
     };
 
@@ -89,7 +89,7 @@ export class UpdateProjectDocProcessor extends AbstractHandler {
     };
 
     process = (args: any) => {
-        console.log(dateTimeLogger() + " start new Update Project Doc transaction");
+        console.log(dateTimeLogger("start new Update Project Doc transaction"));
         // TODO: add check to make sure project status is one of ["NULL", "CREATED", "PENDING", "FUNDED"]
         //       but in any case this is enforced by the blockchain, so we might want to just rely on that.
         return this.createTransaction(args, "UpdateProjectDoc", undefined);

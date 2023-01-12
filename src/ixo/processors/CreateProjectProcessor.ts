@@ -14,9 +14,9 @@ export class CreateProjectProcessor extends AbstractHandler {
         try {
             const cached = await Cache.get(jsonResponseMsg.txHash);
             if (cached != undefined) {
-                console.log(dateTimeLogger() + " updating the create project capabilities");
+                console.log(dateTimeLogger("updating the create project capabilities"));
                 this.updateCapabilities(cached);
-                console.log(dateTimeLogger() + " commit create project to Elysian");
+                console.log(dateTimeLogger("commit create project to Elysian"));
                 const projectData = {
                     ...cached.data,
                 };
@@ -65,25 +65,25 @@ export class CreateProjectProcessor extends AbstractHandler {
                     },
                 };
                 await updateProjectStatusProcessor.process(projectStatusRequest);
-                console.log(dateTimeLogger() + " create project transaction completed successfully");
+                console.log(dateTimeLogger("create project transaction completed successfully"));
             } else {
                 let retry: number = retries || 0;
                 if (retry <= 3) {
                     retry++;
                     setTimeout(() => {
-                        console.log(dateTimeLogger() + ` retry cached create project transaction for ${jsonResponseMsg.txHash} `);
+                        console.log(dateTimeLogger(`retry cached create project transaction for ${jsonResponseMsg.txHash}`));
                         this.handleAsyncCreateProjectResponse(jsonResponseMsg, retry)
                     }, 2000)
                 } else {
                     //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to
                     //force the data into the DB
-                    console.log(dateTimeLogger() + ` cached create project not found for transaction ${jsonResponseMsg.txHash} `);
+                    console.log(dateTimeLogger(`cached create project not found for transaction ${jsonResponseMsg.txHash}`, true));
                 }
             };
         } catch (error) {
             //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to
             //force the data into the DB
-            console.log(dateTimeLogger() + " exception for cached transaction for %s not found", jsonResponseMsg.txHash);
+            console.log(dateTimeLogger(`exception for cached transaction for ${jsonResponseMsg.txHash} not found`, true));
         };
     };
 
@@ -143,7 +143,7 @@ export class CreateProjectProcessor extends AbstractHandler {
     };
 
     process = (args: any) => {
-        console.log(dateTimeLogger() + " start new Create Project transaction");
+        console.log(dateTimeLogger("start new Create Project transaction"));
         return this.generateProjectWallet()
             .then((did) => {
                 return InitHandler.initialise(did)

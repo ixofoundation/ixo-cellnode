@@ -36,7 +36,7 @@ export class FundProjectProcessor extends AbstractHandler {
     };
 
     process = (args: any) => {
-        console.log(dateTimeLogger() + "start new Fund Project transaction");
+        console.log(dateTimeLogger("start new Fund Project transaction"));
         const request = new Request(args);
         return this.createTransaction(args, "FundProject", (request: any): Promise<boolean> => {
             return new Promise((resolve: Function, reject: Function) => {
@@ -47,11 +47,11 @@ export class FundProjectProcessor extends AbstractHandler {
                             if (workflow.indexOf(request.data.status) - 1 <= workflow.indexOf(current[0].status)) {
                                 resolve(true);
                             } else {
-                                console.log(dateTimeLogger() + " Invalid status workflow " + request.data.status);
+                                console.log(dateTimeLogger("Invalid status workflow " + request.data.status, true));
                                 reject("Invalid status workflow");
                             };
                         } else {
-                            console.log(dateTimeLogger() + " no status exists for project " + request.projectDid);
+                            console.log(dateTimeLogger("no status exists for project " + request.projectDid, true));
                             reject('No status exists for project ' + request.projectDid);
                         };
                     }) 

@@ -15,9 +15,9 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
         try {
             const cached = await Cache.get(jsonResponseMsg.txHash);
             if (cached != undefined) {
-                console.log(dateTimeLogger() + " updating the evaluate claim capabilities");
+                console.log(dateTimeLogger("updating the evaluate claim capabilities"));
                 this.updateCapabilities(cached);
-                console.log(dateTimeLogger() + " commit evaluate claim to Elysian");
+                console.log(dateTimeLogger("commit evaluate claim to Elysian"));
                 const obj = {
                     ...cached.data,
                     txHash: jsonResponseMsg.txHash,
@@ -37,25 +37,25 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
                         version: sanitizedData.version,
                     },
                 });
-                console.log(dateTimeLogger() + "evaluate claim transaction completed successfully");
+                console.log(dateTimeLogger("evaluate claim transaction completed successfully"));
             } else {
                 let retry: number = retries || 0;
                 if (retry <= 3) {
                     retry++;
                     setTimeout(() => {
-                        console.log(dateTimeLogger() + ` retry cached evaluate claim transaction for ${jsonResponseMsg.txHash}`);
+                        console.log(dateTimeLogger(`retry cached evaluate claim transaction for ${jsonResponseMsg.txHash}`));
                         this.handleAsyncEvaluateClaimResponse(jsonResponseMsg, retry)
                     }, 2000)
                 } else {
                     //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to
                     //force the data into the DB
-                    console.log(dateTimeLogger() + ` cached evaluate claim not found for transaction ${jsonResponseMsg.txHash}`);
+                    console.log(dateTimeLogger(`cached evaluate claim not found for transaction ${jsonResponseMsg.txHash}`, true));
                 };
             };
         } catch (error) {
             //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to
             //force the data into the DB
-            console.log(dateTimeLogger() + ` exception for cached transaction for ${jsonResponseMsg.txHash} not found`);
+            console.log(dateTimeLogger(`exception for cached transaction for ${jsonResponseMsg.txHash} not found`, true));
         };
     };
 
@@ -88,7 +88,7 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
     }
 
     process = async (args: any) => {
-        console.log(dateTimeLogger() + " start new evaluate claim transaction");
+        console.log(dateTimeLogger("start new evaluate claim transaction"));
         const projectDid = new Request(args).projectDid;
         return this.checkForFunds(projectDid)
             .then((resp: boolean) => {
@@ -129,7 +129,7 @@ export class EvaluateClaimsProcessor extends AbstractHandler {
                     })
                 }
                 return new Promise((resolve: Function, reject: Function) => {
-                    console.log(dateTimeLogger() + ' insufficient funds available');
+                    console.log(dateTimeLogger('insufficient funds available', true));
                     const updateProjectStatusProcessor = new UpdateProjectStatusProcessor();
                     const data: any = {
                         projectDid: projectDid,

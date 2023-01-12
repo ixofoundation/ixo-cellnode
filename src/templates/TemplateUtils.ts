@@ -18,7 +18,7 @@ export class TemplateUtils {
         .then((template: string) => {
           if (template) {
             // cache-hit
-            console.log(dateTimeLogger() + ' got cache record for key ' + key);
+            console.log(dateTimeLogger(' got cache record for key ' + key));
             resolve(template);
           } else {
             resolve(this.getTemplateFromRegistry(templateType, name));
@@ -26,7 +26,7 @@ export class TemplateUtils {
         })
         .catch((reason) => {
           // cannot connect to cache; cache-miss
-          console.log(dateTimeLogger() + ' template registry failed ' + reason);
+          console.log(dateTimeLogger(' template registry failed ' + reason, true));
           resolve(this.getTemplateFromRegistry(templateType, name));
         });
     });
@@ -34,7 +34,7 @@ export class TemplateUtils {
 
   getTemplateFromRegistry(templateType: string, name: string): any {
     const template = this.constructTemplate(templateType, name);
-    console.log(dateTimeLogger() + ' load template contents from file');
+    console.log(dateTimeLogger(' load template contents from file'));
     return this.gitUtils.loadFileContents(template)
       .then((templateContents: any) => {
         const res = JSON.parse(templateContents);

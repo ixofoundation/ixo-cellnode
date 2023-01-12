@@ -10,9 +10,9 @@ export class UpdateAgentStatusProcessor extends AbstractHandler {
         try {
             const cached = await Cache.get(jsonResponseMsg.txHash);
             if (cached != undefined) {
-                console.log(dateTimeLogger() + " updating the agent status update capabilities");
+                console.log(dateTimeLogger("updating the agent status update capabilities"));
                 this.updateCapabilities(cached);
-                console.log(dateTimeLogger() + " commit agent status update to Elysian");
+                console.log(dateTimeLogger("commit agent status update to Elysian"));
                 const obj = {
                     ...cached.data,
                     txHash: jsonResponseMsg.txHash,
@@ -33,25 +33,25 @@ export class UpdateAgentStatusProcessor extends AbstractHandler {
                         created: sanitizedData.created,
                     },
                 });
-                console.log(dateTimeLogger() + " update agent status transaction completed successfully");
+                console.log(dateTimeLogger("update agent status transaction completed successfully"));
             } else {
                 let retry: number = retries || 0;
                 if (retry <= 3) {
                     retry++;
                     setTimeout(() => {
-                        console.log(dateTimeLogger() + ` retry cached create agent transaction for ${jsonResponseMsg.txHash}`);
+                        console.log(dateTimeLogger(`retry cached create agent transaction for ${jsonResponseMsg.txHash}`));
                         this.handleAsyncUpdateAgentStatusResponse(jsonResponseMsg, retry);
                     }, 2000)
                 } else {
                     //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to
                     //force the data into the DB
-                    console.log(dateTimeLogger() + ` cached agent status update not found for transaction ${jsonResponseMsg.txHash}`);
+                    console.log(dateTimeLogger(`cached agent status update not found for transaction ${jsonResponseMsg.txHash}`));
                 };
             };
         } catch (error) {
             //TODO we will want to get the transaction from the tranaction log and try the commit again. he transaction has already been accepted by the chain so we need to
             //force the data into the DB
-            console.log(dateTimeLogger() + ` exception for cached transaction for ${jsonResponseMsg.txHash} not found`);
+            console.log(dateTimeLogger(`exception for cached transaction for ${jsonResponseMsg.txHash} not found`, true));
         };
     };
 
@@ -87,7 +87,7 @@ export class UpdateAgentStatusProcessor extends AbstractHandler {
     };
 
     process = async (args: any) => {
-        console.log(dateTimeLogger() + " start new Update Agent Status transaction");
+        console.log(dateTimeLogger("start new Update Agent Status transaction"));
         return this.createTransaction(args, "UpdateAgentStatus", async (request: any): Promise<boolean> => {
             const newVersion = request.version + 1;
             return new Promise((resolve: Function, reject: Function) => {
