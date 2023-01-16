@@ -227,7 +227,7 @@ Issues a claim for an entity.
 Request:
 
 ```text
-ixo.agent.createClaim(agentData, signature, CellnodeUrl).then((result) => {
+ixo.agent.createClaim(claimData, signature, CellnodeUrl).then((result) => {
     console.log('Create Claim: ' + result)
 })
 ```
@@ -245,6 +245,7 @@ Valid statuses are:
 | Pending | 0 |
 | Approved | 1 |
 | Rejected | 2 |
+| Disputed | 3 |
 
 Request:
 
@@ -279,7 +280,7 @@ Retrieves the DID Doc for a specified agent identifier
 Request:
 
 ```text
-Let did = 'did:sov:2p19P17cr6XavfMJ8htYSS';
+Let did = 'did:ixo:2p19P17cr6XavfMJ8htYSS';
 ixo.user.getDidDoc(did).then((result) => {
     console.log('DID Doc: ' + result)
 })
@@ -496,9 +497,9 @@ Everything in the payload section is signed to generate a valid signature. This 
                 "name": "create_agent"
             },
             "data": {"projectDid": "did:ixo:TknEju4pjyRQvVehivZ82x",
-                     "name": "Brennon",
-                     "surname": "Hampton",
-                     "email": "brennon@me.com",
+                     "name": "example name",
+                     "surname": "example name",
+                     "email": "test@test.com",
                      "agentDid": "did:sov:64",
                      "role": "SA"}
         },
