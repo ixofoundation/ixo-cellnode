@@ -8,16 +8,13 @@ const validator = require("validator");
 const fileTypes = process.env.FILE_TYPES || [""];
 
 export const createPublic = async (args: any) => {
-    const file = await fileTypeFromBuffer(args.data);
+    const buf = Buffer.from(args.data);
+    const file = await fileTypeFromBuffer(buf);
     const mime = file?.mime.toString() || "";
     if (!fileTypes.includes(mime)) {
         return "Invalid File Type";
     }
-    return PublicService.createPublic(
-        args.data,
-        args.extension,
-        args.contentType,
-    );
+    return PublicService.createPublic(args.contentType, args.data);
 };
 
 export const fetchPublic = async (args: any) => {
@@ -25,15 +22,9 @@ export const fetchPublic = async (args: any) => {
         if (!validator.isAlphanumeric(args.key)) {
             throw new TransactionError("Invalid Value");
         } else {
-            const res = await PublicService.findForKey(args.key);
-            if (res?.record && res.file) {
-                const obj = {
-                    key: res.record.key,
-                    cid: res.file.cid,
-                    extension: res.record.extension,
-                    contentType: res.record.contentType,
-                };
-                return obj;
+            const res = await PublicService.getPublic(args.key);
+            if (res) {
+                return res;
             } else {
                 throw new TransactionError("Record not found");
             }
@@ -47,10 +38,7 @@ export const fetchPublic = async (args: any) => {
 export const getPublic = async (req: any, res: any) => {
     const obj = await fetchPublic(req.params);
     if (obj) {
-        res.json({
-            url: `${obj.cid}.ipfs.w3s.link/${obj.key}.${obj.extension}`,
-            cid: obj.cid,
-        });
+        res.json(obj);
     } else {
         res.status(404).send("Sorry, we cannot find that!");
     }

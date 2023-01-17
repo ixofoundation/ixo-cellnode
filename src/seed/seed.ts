@@ -102,10 +102,8 @@ const seedPublics = async () => {
             await prisma.public.create({
                 data: {
                     key: pub.key,
-                    cid: "",
-                    extension: "",
                     contentType: pub.contentType,
-                    data: Buffer.from(pub.data.$binary.base64),
+                    data: pub.data.$binary.base64,
                 },
             });
         }

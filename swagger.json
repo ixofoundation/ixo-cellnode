@@ -38,6 +38,54 @@
                 }
             }
         },
+        "/storage/store": {
+            "post": {
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "body",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "contentType",
+                        "in": "body",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/storage/retrieve/:cid": {
+            "get": {
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "cid",
+                        "in": "path",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/public/:key": {
             "get": {
                 "description": "",

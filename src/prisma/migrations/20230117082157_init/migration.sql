@@ -13,12 +13,19 @@ CREATE TABLE "Capability" (
 -- CreateTable
 CREATE TABLE "Public" (
     "key" TEXT NOT NULL,
-    "cid" TEXT NOT NULL,
-    "extension" TEXT NOT NULL,
     "contentType" TEXT NOT NULL,
-    "data" BYTEA,
+    "data" TEXT NOT NULL,
 
     CONSTRAINT "Public_pkey" PRIMARY KEY ("key")
+);
+
+-- CreateTable
+CREATE TABLE "Storage" (
+    "cid" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "ipfs" TEXT NOT NULL,
+
+    CONSTRAINT "Storage_pkey" PRIMARY KEY ("cid")
 );
 
 -- CreateTable

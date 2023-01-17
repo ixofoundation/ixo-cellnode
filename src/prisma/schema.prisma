@@ -26,10 +26,14 @@ model Capability {
 
 model Public {
   key         String @id
-  cid         String
-  extension   String
   contentType String
-  data        Bytes?
+  data        String
+}
+
+model Storage {
+  cid  String @id
+  name String
+  ipfs String
 }
 
 model Transaction {

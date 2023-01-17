@@ -7,6 +7,7 @@ import { RequestRouter } from "./routes/RequestRouter";
 import { QueryRouter } from "./routes/QueryRouter";
 import { PublicRouter } from "./routes/PublicRouter";
 import * as PublicHandler from "./handlers/PublicHandler";
+import * as StorageHandler from "./handlers/Web3StorageHandler";
 import { getCapabilities } from "./handlers/CapabilityHandler";
 import swaggerUi from "swagger-ui-express";
 const swaggerFile = require(`${__dirname}/../../swagger.json`);
@@ -78,6 +79,19 @@ class App {
         });
 
         this.express.get("/public/:key", PublicHandler.getPublic);
+
+        this.express.post("/storage/store", async (req, res) => {
+            const file = await StorageHandler.store(
+                req.body.name,
+                req.body.contentType,
+                req.body.data,
+            );
+            res.json(file);
+        });
+        this.express.get("/storage/retrieve/:cid", async (req, res) => {
+            const file = await StorageHandler.retrieve(req.params.cid);
+            res.json(file);
+        });
 
         this.express.use("/api/request", new RequestRouter().router);
         this.express.use("/api/query", new QueryRouter().router);
