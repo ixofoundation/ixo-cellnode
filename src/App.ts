@@ -8,6 +8,7 @@ import { QueryRouter } from "./routes/QueryRouter";
 import { PublicRouter } from "./routes/PublicRouter";
 import * as PublicHandler from "./handlers/PublicHandler";
 import * as StorageHandler from "./handlers/Web3StorageHandler";
+import { checkDuplicate } from "./handlers/ClaimHandler";
 import { getCapabilities } from "./handlers/CapabilityHandler";
 import swaggerUi from "swagger-ui-express";
 const swaggerFile = require(`${__dirname}/../../swagger.json`);
@@ -103,6 +104,11 @@ class App {
                 req.body.userDid,
             );
             res.json(capabilities);
+        });
+
+        this.express.post("/claims/duplicate", async (req, res) => {
+            const exists = await checkDuplicate(req.body.items);
+            res.json({ duplicate: exists });
         });
     }
 }

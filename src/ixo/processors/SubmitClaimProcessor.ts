@@ -23,7 +23,7 @@ export class SubmitClaimProcessor extends AbstractHandler {
                 const sanitizedData = xss.sanitize(obj);
                 const checkDuplicate = await prisma.claim.findFirst({ 
                     where: {
-                        items: sanitizedData.items
+                        items: JSON.parse(sanitizedData.items)
                     },
                 });
                 if (checkDuplicate) {

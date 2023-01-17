@@ -38,6 +38,24 @@
                 }
             }
         },
+        "/claims/duplicate": {
+            "post": {
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "items",
+                        "in": "body",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/storage/store": {
             "post": {
                 "description": "",
