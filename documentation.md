@@ -62,6 +62,8 @@ RPC endpoint, refer to [api.md](/api.md)
 
 ##### Description:
 
+Check if a claim with the same items column already exists
+
 ##### Parameters
 
 | Name  | Located in | Description | Required | Schema |
@@ -79,6 +81,8 @@ RPC endpoint, refer to [api.md](/api.md)
 #### POST
 
 ##### Description:
+
+Upload a file to web3.storage
 
 ##### Parameters
 
@@ -100,6 +104,8 @@ RPC endpoint, refer to [api.md](/api.md)
 
 ##### Description:
 
+Get the IPFS link for a web3.storage file
+
 ##### Parameters
 
 | Name | Located in | Description | Required | Schema |
@@ -117,6 +123,8 @@ RPC endpoint, refer to [api.md](/api.md)
 #### GET
 
 ##### Description:
+
+Get an uploaded file
 
 ##### Parameters
 
@@ -136,10 +144,14 @@ RPC endpoint, refer to [api.md](/api.md)
 
 ##### Description:
 
+Upload a file
+
 ##### Parameters
 
-| Name | Located in | Description | Required | Schema |
-| ---- | ---------- | ----------- | -------- | ------ |
+| Name        | Located in | Description | Required | Schema |
+| ----------- | ---------- | ----------- | -------- | ------ |
+| contentType | body       |             | Yes      | string |
+| data        | body       |             | Yes      | string |
 
 ##### Responses
 
@@ -153,10 +165,13 @@ RPC endpoint, refer to [api.md](/api.md)
 
 ##### Description:
 
+Get an uploaded file
+
 ##### Parameters
 
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ------ |
+| key  | body       |             | Yes      | string |
 
 ##### Responses
 
@@ -169,6 +184,8 @@ RPC endpoint, refer to [api.md](/api.md)
 #### GET
 
 ##### Description:
+
+Get all transactions
 
 ##### Parameters
 
@@ -187,6 +204,8 @@ RPC endpoint, refer to [api.md](/api.md)
 
 ##### Description:
 
+Get all capabilities
+
 ##### Parameters
 
 | Name | Located in | Description | Required | Schema |
@@ -203,6 +222,8 @@ RPC endpoint, refer to [api.md](/api.md)
 #### POST
 
 ##### Description:
+
+Get capabilities by project and user DID
 
 ##### Parameters
 

@@ -1,61 +1,98 @@
 # Cell Node (Elysian Release)
 
-![GitHub contributors](https://img.shields.io/github/contributors/ixofoundation/ixo-blocksync) ![GitHub repo size](https://img.shields.io/github/repo-size/ixofoundation/ixo-blocksync) ![Lines of code](https://img.shields.io/tokei/lines/github/ixofoundation/ixo-blocksync?style=plastic) ![Docker Pulls](https://img.shields.io/docker/pulls/northroomza/ixo-blocksync) ![Twitter Follow](https://img.shields.io/twitter/follow/ixoworld?style=social)
+![GitHub contributors](https://img.shields.io/github/contributors/ixofoundation/ixo-cellnode) ![GitHub repo size](https://img.shields.io/github/repo-size/ixofoundation/ixo-cellnode) ![Lines of code](https://img.shields.io/tokei/lines/github/ixofoundation/ixo-cellnode?style=plastic) ![Docker Pulls](https://img.shields.io/docker/pulls/northroomza/ixo-cellnode) ![Twitter Follow](https://img.shields.io/twitter/follow/ixoworld?style=social)
 
-![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white)![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB)![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white)![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB)![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white)![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 
-Instructions to set up the Elysian release of the Cell Node.  
+Elysian release of Cellnode
 This runs a Node.js app using [Express 4](http://expressjs.com/) in a dockerized container.
 
-## Running Elysian
+## Documentation
 
-Make sure you have [Docker](https://docker.com/) installed.
+-   [Endpoints](/documentation.md)
+-   [RPC](/api.md#cell-node-api)
 
-```sh
-git clone https://github.com/ixofoundation/ixo-cellnode.git # or clone your own fork
+## Run
+
+### From Source
+
+Requirements
+
+-   [PostgreSQL](https://www.postgresql.org/download/)
+-   [Memcached](https://memcached.org/downloads)
+
+```bash
+git clone https://github.com/ixofoundation/ixo-cellnode.git
 cd ixo-cellnode/
-npm install
-cd bin
-./start.sh
-
-***********************************
-* ELYSIAN START                   *
-***********************************
-
-Creating db ... done
-Creating cache ... done
-Creating mq    ... done
-Creating pol   ... done
-Creating cli   ... done
-Creating app   ... done
-Starting db ... done
-Starting mq ... done
-Starting cache ... done
-Starting pol ... done
-Starting app ... done
-Starting Elysian ...done
-Attaching to app
-app      | register handler.createProject
-app      | register handler.createAgent
-app      | register handler.updateAgentStatus
-app      | register handler.submitClaim
-app      | register handler.evaluateClaim
-app      | register handler.listClaims
-app      | register handler.listAgents
-app      | (node:17) [DEP0010] DeprecationWarning: crypto.createCredentials is deprecated. Use tls.createSecureContext instead.
-app      | (node:17) [DEP0011] DeprecationWarning: crypto.Credentials is deprecated. Use tls.SecureContext instead.
-app      | Memcache connected
-app      | MongoDB connected
-app      | App listening on port 5000
-app      | RabbitMQ connected
-
-***********************************
-* ELYSIAN START COMPLETE          *
-***********************************
-
 ```
 
-Handlers are registered according to the capability loaded from the configuration file from the /bin folder. Template defines where the schema template directory can be found and the allow determines who has access to specified capability.
+Copy `.env.example` to `.env` and configure. If this step is skipped, ixo-cellnode will use `.env.example` as the configuration by default.
+
+-   Create a database called Cellnode
+
+```bash
+npm install
+npx prisma migrate reset
+npx prisma generate
+npm run build
+npm start
+```
+
+---
+
+### Using Docker (with Compose)
+
+Requirements
+
+-   [Docker](https://docs.docker.com/engine/install/)
+-   [Docker Compose](https://docs.docker.com/compose/install/)
+
+```bash
+git clone https://github.com/ixofoundation/ixo-cellnode.git
+cd ixo-cellnode/
+```
+
+Copy `.env.example` to `.env` and configure. If this step is skipped, ixo-cellnode will use `.env.example` as the configuration by default. Don't use quotations when assigning env vars for docker. Delete the seed folder in src/seed/\* if you do not plan to import data from json. Create a role(e.g. app_user) in the DB for postgress to work.
+
+```bash
+docker build -t ixofoundation/ixo-cellnode:latest .
+docker compose up -d
+```
+
+---
+
+###Akash
+[![Akash](https://raw.githubusercontent.com/ixofoundation/ixo-cellnode/master/akash%20button.svg)](https://github.com/ixofoundation/ixo-cellnode/blob/master/akash.deploy.yaml)
+
+---
+
+### Seeding the Database with Previous MongoDB Data
+
+-   Export all collections as JSON from the Cellnode MongoDB database
+-   Place the resulting JSON files within the `src/seed/json_exports` directory
+-   Configure `DATABASE_URL` in `.env` with the correct username, password and host
+
+Local PostgreSQL
+
+-   Create a database called Cellnode
+
+```bash
+npx prisma migrate reset
+npx prisma generate
+npx ts-node src/seed/seed.ts
+```
+
+Docker PostgreSQL
+
+```bash
+docker build .
+npx prisma generate
+npx ts-node src/seed/seed.ts
+```
+
+## Configuration
+
+Handlers are registered according to the capability loaded from the [configuration file](/config.json). Template defines where the schema template directory can be found and the allow determines who has access to specified capability.
 
 ```
 {
@@ -95,56 +132,3 @@ Handlers are registered according to the capability loaded from the configuratio
 	]
 }
 ```
-
-```
-./stop.sh
-
-***********************************
-* ELYSIAN SHUTDOWN                *
-***********************************
-
-Stopping app   ... done
-Stopping pol   ... done
-Stopping mq    ... done
-Stopping cache ... done
-Stopping db    ... done
-Going to remove app, cli, pol, mq, cache, db
-Are you sure? [yN] y
-Removing app   ... done
-Removing cli   ... done
-Removing pol   ... done
-Removing mq    ... done
-Removing cache ... done
-Removing db    ... done
-
-***********************************
-* ELYSIAN SHUTDOWN COMPLETE       *
-***********************************
-
-
-```
-
-To secure the Mongo DB:
-
-```
-docker exec -ti db /bin/bash
-mongod
-use admin
-db.createUser({user: "<admin username>", pwd: "<admin password>", roles: [ { role: "userAdminAnyDatabase", db: "admin" } ]})
-
-use admin
-db.auth("<admin username>", "<admin password>" )
-
-mongo --port 27017 -u "<admin username>" -p "<admin password>" --authenticationDatabase "admin"
-
-use elysian
-db.createUser({user: "<username>", pwd: "<password>", roles: [{role: "readWrite", db: "elysian"}]})
-```
-
-## Documentation
-
-API documentation can be found [here](api.md).
-
-## License
-
--   **MIT** : http://opensource.org/licenses/MIT
