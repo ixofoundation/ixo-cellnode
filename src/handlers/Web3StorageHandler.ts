@@ -1,4 +1,4 @@
-import { Web3Storage } from "web3.storage";
+import { Web3Storage, File } from "web3.storage";
 import { prisma } from "../prisma/prisma_client";
 
 const token = process.env.WEB3STORAGE_TOKEN || "";
@@ -9,7 +9,7 @@ export const store = async (
     contentType: string,
     data: string,
 ) => {
-    const buffer = Buffer.from(data);
+    const buffer = Buffer.from(data, "base64");
     const blob = new Blob([buffer], { type: contentType });
     const file = new File([blob], name, { type: contentType });
     const cid = await client.put([file]);
