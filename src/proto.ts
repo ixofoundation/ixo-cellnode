@@ -1,69 +1,35 @@
-import { Ed25519, sha256 } from "@cosmjs/crypto";
-import { toUtf8, Bech32, toBase64 } from "@cosmjs/encoding";
-import { makeSignBytes } from "@cosmjs/proto-signing";
-import { decode } from "bs58";
-import sovrin from "sovrin-did";
-
+import { AccountData, DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
+import { generateSecpDid } from "@ixo/impactxclient-sdk/main/utils/did";
 import { createSigningClient, createQueryClient } from "@ixo/impactxclient-sdk";
+import base58 from "bs58";
 
-const getEdClient = (mnemonic: string) => {
-    const didDoc = sovrin.fromSeed(sha256(toUtf8(mnemonic)).slice(0, 32));
+const getSecpClient = async (mnemonic: string) => {
+    const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
+        prefix: "ixo",
+    });
+    const account = (await wallet.getAccounts())[0];
 
-    const edClient = {
+    const secpClient = {
         mnemonic,
-        didDoc,
+        didDoc: "",
         didPrefix: "did:ixo:",
-        did: "did:ixo:" + didDoc.did,
+        did: generateSecpDid(base58.encode(account.pubkey), "ixo"),
 
         async getAccounts() {
-            return [
-                {
-                    algo: "ed25519-sha-256",
-                    pubkey: Uint8Array.from(decode(didDoc.verifyKey)),
-                    address: Bech32.encode(
-                        "ixo",
-                        sha256(decode(didDoc.verifyKey)).slice(0, 20),
-                    ),
-                },
-            ];
+            return (await wallet.getAccounts()) as AccountData[];
         },
 
         async signDirect(signerAddress: any, signDoc: any) {
-            const account = (await this.getAccounts()).find(
-                ({ address }) => address === signerAddress,
-            );
-            if (!account)
-                throw new Error(`Address ${signerAddress} not found in wallet`);
-
-            const keypair = await Ed25519.makeKeypair(
-                sha256(toUtf8(mnemonic)).slice(0, 32),
-            );
-            const signBytes = makeSignBytes(signDoc);
-            const signatureArray = await Ed25519.createSignature(
-                signBytes,
-                keypair,
-            );
-            const signatureBase64 = toBase64(signatureArray.slice(0, 64));
-
-            return {
-                signed: signDoc,
-                signature: {
-                    signature: signatureBase64,
-                    pub_key: {
-                        type: "tendermint/PubKeyEd25519",
-                        value: toBase64(account.pubkey),
-                    },
-                },
-            };
+            return await wallet.signDirect(signerAddress, signDoc);
         },
     };
 
-    return edClient;
+    return secpClient;
 };
 
 const RPC = process.env.RPC_URL || "";
 const MNEMONIC = process.env.MNEMONIC || "";
-const oldSigner: any = getEdClient(MNEMONIC);
+const oldSigner: any = getSecpClient(MNEMONIC);
 
 type messages = [{ typeUrl: string; value: any }];
 type fee = { amount: [{ denom: string; amount: string }]; gas: string };
