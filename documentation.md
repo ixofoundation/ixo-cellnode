@@ -76,6 +76,26 @@ Check if a claim with the same items column already exists
 | ---- | ----------- |
 | 200  | OK          |
 
+### /claims/batch
+
+#### POST
+
+##### Description:
+
+Submit a batch of claims
+
+##### Parameters
+
+| Name   | Located in | Description | Required | Schema |
+| ------ | ---------- | ----------- | -------- | ------ |
+| claims | body       |             | Yes      | [ {} ] |
+
+##### Responses
+
+| Code | Description |
+| ---- | ----------- |
+| 200  | OK          |
+
 ### /storage/store
 
 #### POST

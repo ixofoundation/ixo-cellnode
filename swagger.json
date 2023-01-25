@@ -56,6 +56,24 @@
                 }
             }
         },
+        "/claims/batch": {
+            "post": {
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "claims",
+                        "in": "body",
+                        "required": true,
+                        "type": "array"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/storage/store": {
             "post": {
                 "description": "",

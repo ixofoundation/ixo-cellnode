@@ -1,4 +1,12 @@
 -- CreateTable
+CREATE TABLE "ClaimQueue" (
+    "id" SERIAL NOT NULL,
+    "request" JSONB,
+
+    CONSTRAINT "ClaimQueue_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Capability" (
     "id" SERIAL NOT NULL,
     "projectDid" TEXT NOT NULL,
