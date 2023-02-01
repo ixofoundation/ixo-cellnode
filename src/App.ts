@@ -8,7 +8,11 @@ import { QueryRouter } from "./routes/QueryRouter";
 import { PublicRouter } from "./routes/PublicRouter";
 import * as PublicHandler from "./handlers/PublicHandler";
 import * as StorageHandler from "./handlers/Web3StorageHandler";
-import { checkDuplicate, createBatch } from "./handlers/ClaimHandler";
+import {
+    checkDuplicate,
+    createBatch,
+    listUnprocessed,
+} from "./handlers/ClaimHandler";
 import { getCapabilities } from "./handlers/CapabilityHandler";
 import swaggerUi from "swagger-ui-express";
 const swaggerFile = require(`${__dirname}/../../swagger.json`);
@@ -113,6 +117,11 @@ class App {
 
         this.express.post("/claims/batch", async (req, res) => {
             res.json(await createBatch(req.body.claims));
+        });
+
+        this.express.get("/claims/unprocessed", async (req, res) => {
+            const claims = await listUnprocessed();
+            res.json(claims);
         });
     }
 }

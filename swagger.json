@@ -74,6 +74,17 @@
                 }
             }
         },
+        "/claims/unprocessed": {
+            "get": {
+                "description": "",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/storage/store": {
             "post": {
                 "description": "",

@@ -96,6 +96,25 @@ Submit a batch of claims
 | ---- | ----------- |
 | 200  | OK          |
 
+### /claims/unprocessed
+
+#### GET
+
+##### Description:
+
+Returns all claims in queue
+
+##### Parameters
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ------ |
+
+##### Responses
+
+| Code | Description |
+| ---- | ----------- |
+| 200  | OK          |
+
 ### /storage/store
 
 #### POST

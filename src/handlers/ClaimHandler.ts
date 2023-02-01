@@ -28,6 +28,14 @@ export const createBatch = async (claims: any) => {
     }
 };
 
+export const listUnprocessed = async () => {
+    try {
+        return prisma.claimQueue.findMany();
+    } catch (error) {
+        return { error: error.toString() };
+    }
+};
+
 cron.schedule("* /5 * * * *", async () => {
     const claims = await prisma.claimQueue.findMany({ take: 50 });
     await prisma.claimQueue.deleteMany({
