@@ -32,7 +32,7 @@ model Capability {
 model Public {
   key         String @id
   contentType String
-  data        String
+  data        Bytes
 }
 
 model Storage {

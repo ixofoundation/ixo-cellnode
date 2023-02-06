@@ -257,7 +257,7 @@ const seedPublics = async () => {
                     data: {
                         key: pub.key,
                         contentType: pub.contentType,
-                        data: pub.data.$binary.base64,
+                        data: Buffer.from(pub.data.$binary.base64, "base64"),
                     },
                 });
             } catch (error) {

@@ -9,7 +9,7 @@ export const createPublic = async (contentType: string, data: string) => {
             data: {
                 key: key,
                 contentType: contentType,
-                data: data,
+                data: Buffer.from(data, "base64"),
             },
         });
     } catch (error) {
