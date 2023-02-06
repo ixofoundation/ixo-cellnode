@@ -36,7 +36,7 @@ export const listUnprocessed = async () => {
     }
 };
 
-cron.schedule("* /5 * * * *", async () => {
+cron.schedule("0 */5 * * * *", async () => {
     const claims = await prisma.claimQueue.findMany({ take: 50 });
     await prisma.claimQueue.deleteMany({
         where: {
