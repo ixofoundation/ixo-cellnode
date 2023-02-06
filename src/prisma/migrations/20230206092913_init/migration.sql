@@ -65,6 +65,7 @@ CREATE TABLE "Wallet" (
 
 -- CreateTable
 CREATE TABLE "Agent" (
+    "id" SERIAL NOT NULL,
     "agentDid" TEXT NOT NULL,
     "projectDid" TEXT NOT NULL,
     "email" TEXT NOT NULL,
