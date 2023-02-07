@@ -83,6 +83,10 @@ class App {
             res.send("API Running");
         });
 
+        this.express.post("/public/createpublic", async (req, res) => {
+            const pub = await PublicHandler.createPublic(req.body);
+            res.json(pub);
+        });
         this.express.get("/public/:key", PublicHandler.getPublic);
 
         this.express.post("/storage/store", async (req, res) => {

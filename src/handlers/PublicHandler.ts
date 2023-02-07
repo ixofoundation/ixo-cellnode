@@ -8,7 +8,7 @@ const validator = require("validator");
 const fileTypes = process.env.FILE_TYPES || [""];
 
 export const createPublic = async (args: any) => {
-    const buf = Buffer.from(args.data);
+    const buf = Buffer.from(args.data, "base64");
     const file = await fileTypeFromBuffer(buf);
     const mime = file?.mime.toString() || "";
     if (!fileTypes.includes(mime)) {
