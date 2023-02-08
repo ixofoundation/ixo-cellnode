@@ -246,25 +246,40 @@ const seedProjectStatuses = async () => {
 };
 
 let publicsErrors = 0;
-const seedPublics = async () => {
+const seedPublics = async (files: string[]) => {
     try {
-        const publics = JSON.parse(
-            readFileSync("src/seed/json_exports/publics.json").toString(),
-        );
-        for (const pub of publics) {
-            try {
-                await prisma.public.create({
-                    data: {
-                        key: pub.key,
-                        contentType: pub.contentType,
-                        data: Buffer.from(pub.data.$binary.base64, "base64"),
-                    },
-                });
-            } catch (error) {
-                console.log(error);
-                publicsErrors++;
+        if (files.length > 0) {
+            for (const file of files) {
+                try {
+                    const publics = JSON.parse(
+                        readFileSync(
+                            "src/seed/json_exports/" + file,
+                        ).toString(),
+                    );
+                    for (const pub of publics) {
+                        try {
+                            await prisma.public.create({
+                                data: {
+                                    key: pub.key,
+                                    contentType: pub.contentType,
+                                    data: Buffer.from(
+                                        pub.data.$binary.base64,
+                                        "base64",
+                                    ),
+                                },
+                            });
+                        } catch (error) {
+                            console.log(error);
+                            publicsErrors++;
+                        }
+                    }
+                } catch (error) {
+                    console.log(error);
+                    publicsErrors++;
+                }
             }
         }
+        return;
     } catch (error) {
         console.log(error);
         publicsErrors++;
@@ -389,7 +404,13 @@ const countRecords = async () => {
 // seedAgents();
 // seedAgentStatuses();
 // seedClaims();
-// seedPublics();
+// seedPublics([
+//     "chunk0.json",
+//     "chunk1500.json",
+//     "chunk3000.json",
+//     "chunk4500.json",
+//     "chunk6000.json",
+// ]);
 // seedTransactions();
 // seedWallets();
 // seedEvaluateClaims();
