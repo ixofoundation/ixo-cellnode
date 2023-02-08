@@ -1,17 +1,13 @@
 import * as PublicService from "../services/PublicService";
 import { dateTimeLogger } from "../logger/Logger";
 import { TransactionError } from "../error/TransactionError";
-const { fileTypeFromBuffer } = require("file-type");
 
 const validator = require("validator");
 
 const fileTypes = process.env.FILE_TYPES || [""];
 
 export const createPublic = async (args: any) => {
-    const buf = Buffer.from(args.data, "base64");
-    const file = await fileTypeFromBuffer(buf);
-    const mime = file?.mime.toString() || "";
-    if (!fileTypes.includes(mime)) {
+    if (!fileTypes.includes(args.contentType)) {
         return "Invalid File Type";
     }
     return PublicService.createPublic(args.contentType, args.data);
