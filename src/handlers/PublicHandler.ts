@@ -32,9 +32,13 @@ export const fetchPublic = async (args: any) => {
 };
 
 export const getPublic = async (req: any, res: any) => {
-    const obj = await fetchPublic(req.params);
-    if (obj) {
-        res.json(obj);
+    const img = await fetchPublic(req.params);
+    if (img) {
+        res.writeHead(200, {
+            "Content-Type": "image/png",
+            "Content-Length": img.data.length,
+        });
+        res.end(img.data);
     } else {
         res.status(404).send("Sorry, we cannot find that!");
     }
