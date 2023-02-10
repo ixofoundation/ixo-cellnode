@@ -258,14 +258,16 @@ const seedPublics = async (files: string[]) => {
                     );
                     for (const pub of publics) {
                         try {
+                            const buf = Buffer.from(
+                                pub.data.$binary.base64,
+                                "base64",
+                            );
+                            const data = buf.toString();
                             await prisma.public.create({
                                 data: {
                                     key: pub.key,
                                     contentType: pub.contentType,
-                                    data: Buffer.from(
-                                        pub.data.$binary.base64,
-                                        "base64",
-                                    ),
+                                    data: data,
                                 },
                             });
                         } catch (error) {

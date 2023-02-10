@@ -22,7 +22,7 @@ CREATE TABLE "Capability" (
 CREATE TABLE "Public" (
     "key" TEXT NOT NULL,
     "contentType" TEXT NOT NULL,
-    "data" BYTEA NOT NULL,
+    "data" TEXT NOT NULL,
 
     CONSTRAINT "Public_pkey" PRIMARY KEY ("key")
 );
