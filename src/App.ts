@@ -103,7 +103,7 @@ class App {
         });
         this.express.get("/storage/retrieve/:cid", async (req, res) => {
             const file = await StorageHandler.retrieve(req.params.cid);
-            res.json(file);
+            res.redirect("https://" + file?.ipfs);
         });
 
         this.express.use("/api/request", new RequestRouter().router);
