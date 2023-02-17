@@ -16,6 +16,12 @@ export const store = async (
         wrapWithDirectory: false,
         name: name,
     });
+    const exists = await prisma.storage.findFirst({
+        where: {
+            cid: cid,
+        },
+    });
+    if (exists) return exists;
     return prisma.storage.create({
         data: {
             cid: cid,
