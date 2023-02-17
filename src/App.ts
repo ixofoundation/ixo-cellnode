@@ -94,12 +94,16 @@ class App {
         this.express.get("/public/:key", PublicHandler.getPublic);
 
         this.express.post("/storage/store", async (req, res) => {
-            const file = await StorageHandler.store(
-                req.body.name,
-                req.body.contentType,
-                req.body.data,
-            );
-            res.json(file);
+            try {
+                const file = await StorageHandler.store(
+                    req.body.name,
+                    req.body.contentType,
+                    req.body.data,
+                );
+                res.json(file);
+            } catch (error) {
+                res.json({ error: error.toString() });
+            }
         });
         this.express.get("/storage/retrieve/:cid", async (req, res) => {
             const file = await StorageHandler.retrieve(req.params.cid);

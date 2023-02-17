@@ -1,4 +1,4 @@
-import { Web3Storage, File } from "web3.storage";
+import { Web3Storage, File, Blob } from "web3.storage";
 import { prisma } from "../prisma/prisma_client";
 
 const token = process.env.WEB3STORAGE_TOKEN || "";
@@ -12,12 +12,15 @@ export const store = async (
     const buffer = Buffer.from(data, "base64");
     const blob = new Blob([buffer], { type: contentType });
     const file = new File([blob], name, { type: contentType });
-    const cid = await client.put([file]);
+    const cid = await client.put([file], {
+        wrapWithDirectory: false,
+        name: name,
+    });
     return prisma.storage.create({
         data: {
             cid: cid,
             name: name,
-            ipfs: `${cid}.ipfs.w3s.link/${name}`,
+            ipfs: `${cid}.ipfs.w3s.link`,
         },
     });
 };
