@@ -6,6 +6,7 @@ import {QueryRouter} from './routes/QueryRouter';
 import {PublicRouter} from './routes/PublicRouter';
 import {PublicHandler} from './handlers/PublicHandler';
 import { getCapabilities } from './handlers/CapabilityHandler';
+import { generateClaims } from './generateClaims';
 
 const compression = require('compression');
 
@@ -50,6 +51,11 @@ class App {
       const capabilities = await getCapabilities(req.body.projectDid, req.body.userDid);
       res.json(capabilities);
     });
+
+    this.express.get('/api/claims/generate/:amount', async (req, res) => {
+      const claims = generateClaims(+req.params.amount)
+      res.json(claims)
+    })
   }
 
 }
