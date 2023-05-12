@@ -1,40 +1,36 @@
-import { Web3Storage, File, Blob } from "web3.storage";
-import { prisma } from "../prisma/prisma_client";
+import { Web3Storage, File, Blob } from 'web3.storage';
+import { prisma } from '../prisma/prisma_client';
 
-const token = process.env.WEB3STORAGE_TOKEN || "";
+const token = process.env.WEB3STORAGE_TOKEN || '';
 const client = new Web3Storage({ token: token });
 
-export const store = async (
-    name: string,
-    contentType: string,
-    data: string,
-) => {
-    const buffer = Buffer.from(data, "base64");
-    const blob = new Blob([buffer], { type: contentType });
-    const file = new File([blob], name, { type: contentType });
-    const cid = await client.put([file], {
-        wrapWithDirectory: false,
-        name: name,
-    });
-    const exists = await prisma.storage.findFirst({
-        where: {
-            cid: cid,
-        },
-    });
-    if (exists) return exists;
-    return prisma.storage.create({
-        data: {
-            cid: cid,
-            name: name,
-            ipfs: `${cid}.ipfs.w3s.link`,
-        },
-    });
+export const store = async (name: string, contentType: string, data: string) => {
+	const buffer = Buffer.from(data, 'base64');
+	const blob = new Blob([buffer], { type: contentType });
+	const file = new File([blob], name, { type: contentType });
+	const cid = await client.put([file], {
+		wrapWithDirectory: false,
+		name: name,
+	});
+	const exists = await prisma.storage.findFirst({
+		where: {
+			cid: cid,
+		},
+	});
+	if (exists) return exists;
+	return prisma.storage.create({
+		data: {
+			cid: cid,
+			name: name,
+			ipfs: `${cid}.ipfs.w3s.link`,
+		},
+	});
 };
 
 export const retrieve = async (cid: string) => {
-    return prisma.storage.findFirst({
-        where: {
-            cid: cid,
-        },
-    });
+	return prisma.storage.findFirst({
+		where: {
+			cid: cid,
+		},
+	});
 };

@@ -1,13 +1,13 @@
-FROM node:18.14
+FROM --platform=linux/amd64 node:18.14
 
 # Create app directory
 WORKDIR /app
 
-# Copy files
-COPY package*.json ./
+# Install app dependencies
+COPY package.json yarn.lock ./
 
 # Install app dependencies and build
-RUN yarn
+RUN yarn --pure-lockfile --production && yarn cache clean
 
 COPY . .
 
@@ -18,4 +18,4 @@ RUN yarn build
 EXPOSE 5000
 
 # Start
-CMD ["npm", "start"]
+CMD ["yarn", "start"]
