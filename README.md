@@ -1,13 +1,24 @@
-# Cell Node (Elysian Release)
-
-![GitHub contributors](https://img.shields.io/github/contributors/ixofoundation/ixo-cellnode) ![GitHub repo size](https://img.shields.io/github/repo-size/ixofoundation/ixo-cellnode) ![Lines of code](https://img.shields.io/tokei/lines/github/ixofoundation/ixo-cellnode?style=plastic) ![Docker Pulls](https://img.shields.io/docker/pulls/northroomza/ixo-cellnode) ![Twitter Follow](https://img.shields.io/twitter/follow/ixoworld?style=social)
-
-![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB)![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white)![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
-
-Elysian release of Cellnode
-This runs a Node.js app using [Express 4](http://expressjs.com/) in a dockerized container.
+# IXO CellNode
 
 ## Documentation
+
+![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB)![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white)![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)![GraphQL](https://img.shields.io/badge/-GraphQL-E10098?style=for-the-badge&logo=graphql&logoColor=white)
+
+![Twitter Follow](https://img.shields.io/twitter/follow/ixoworld?style=social)
+![Medium](https://img.shields.io/badge/Medium-12100E?style=for-the-badge&logo=medium&logoColor=white)
+
+Instructions to set up the current v2 release of IXO CellNode.  
+This runs a Node.js app using [Express 4](http://expressjs.com/) in a dockerized container.
+
+---
+
+## Run this on Akash!
+
+[![Akash](https://raw.githubusercontent.com/ixofoundation/ixo-cellnode/master/akash%20button.svg)](https://github.com/ixofoundation/ixo-cellnode/blob/master/akash.deploy.yaml)
+
+---
+
+## Running Cellnode
 
 - [Endpoints](/documentation.md)
 - [RPC](/api.md#cell-node-api)
