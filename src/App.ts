@@ -124,6 +124,10 @@ class App {
 			const claims = await listUnprocessed();
 			res.json(claims);
 		});
+
+		// "proxy" fallback so clients dont have to use /public/cid to get files but just /cid
+		// this route handles 404 if doc not found
+		this.express.get('/:key', PublicHandler.getPublic);
 	}
 }
 
