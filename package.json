@@ -13,7 +13,10 @@
 		"build": "tsc",
 		"dev": "npx nodemon",
 		"seed": "npx ts-node src/seed/seed.ts",
-		"swagger-gen": "npx ts-node ./src/swagger.ts"
+		"swagger-gen": "npx ts-node ./src/swagger.ts",
+		"prisma:dev": "npx prisma migrate dev",
+		"prisma:reset": "npx prisma migrate reset",
+		"prisma:generate": "npx prisma generate"
 	},
 	"author": "brennon.hampton@gmail.com",
 	"license": "MIT",
