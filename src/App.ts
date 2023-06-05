@@ -37,6 +37,7 @@ class App {
 	private middleware(): void {
 		const schema = buildSchemaSync({ resolvers });
 
+		this.express.set('trust proxy', process.env.TRUST_PROXY || 1);
 		this.express.use(cors());
 		this.express.use(compression({ threshold: 0 }));
 		this.express.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
