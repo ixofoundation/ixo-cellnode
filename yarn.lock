@@ -4485,7 +4485,7 @@ postgraphile-core@4.13.0:
     graphile-build-pg "4.13.0"
     tslib "^2.0.1"
 
-postgraphile@^4.12.11:
+postgraphile@^4.13.0:
   version "4.13.0"
   resolved "https://registry.yarnpkg.com/postgraphile/-/postgraphile-4.13.0.tgz#ed8cb05e6919e09d4a90bd8d9db6941eb3ce7690"
   integrity sha512-p2VqUnsECd1XrucylK1iosvKEn96J8CWeMVWzxF7b6G21jmaETvFe2CO2q4+dKY5DFCVEF2O9pEfmUfYCKl5+A==
