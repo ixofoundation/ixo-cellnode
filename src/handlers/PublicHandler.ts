@@ -8,7 +8,7 @@ export const createPublic = async (args: any) => {
 	if (!fileTypes.includes(args.contentType)) {
 		return 'Invalid File Type';
 	}
-	return PublicService.createPublic(args.contentType, args.data);
+	return PublicService.createPublic(args.contentType, args.data, args.key);
 };
 
 export const fetchPublic = async (args: any) => {
