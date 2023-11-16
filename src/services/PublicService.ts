@@ -4,7 +4,20 @@ import Hash from 'ipfs-only-hash';
 // const { v5: uuidv5 } = require('uuid');
 // const uuidv5CellnodeNamespace = 'de5047f7-9e83-43c8-85a6-0d19a89c665e';
 
-export const createPublic = async (contentType: string, data: string) => {
+export const createPublic = async (contentType: string, data: string, key?: string) => {
+	// Temporarily store data in db if key is provided, unsafe as can be overwritten by anyone
+	if (key) {
+		const keyStartWithTemp = key.startsWith('temp');
+		if (!keyStartWithTemp) return "key must start with 'temp'";
+
+		const base64Data = Buffer.from(data).toString('base64');
+		return await prisma.public.upsert({
+			where: { key: key },
+			update: { contentType: contentType, data: base64Data },
+			create: { key: key, contentType: contentType, data: base64Data },
+		});
+	}
+
 	// remove data encoding format eg: "data:*/*;base64," from data
 	const endOfPrefix = data.indexOf(',');
 	const cleanData = data.slice(endOfPrefix + 1);
