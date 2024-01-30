@@ -1,6 +1,4 @@
-import * as PublicService from '../services/PublicService';
-import { dateTimeLogger } from '../logger/Logger';
-import { TransactionError } from '../error/TransactionError';
+import * as PublicService from '../services/PublicService.js';
 
 const fileTypes = process.env.FILE_TYPES || [''];
 
@@ -17,10 +15,10 @@ export const fetchPublic = async (args: any) => {
 		if (res) {
 			return res;
 		} else {
-			throw new TransactionError('Record not found');
+			throw new Error('Record not found');
 		}
 	} catch (error) {
-		console.log(dateTimeLogger(' image fetch error ' + error, true));
+		console.error(' image fetch error ' + error);
 		return;
 	}
 };
