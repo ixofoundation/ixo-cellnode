@@ -1,8 +1,6 @@
 name: Node.js CI PR
 on:
   pull_request:
-    branches-ignore:
-      develop, test, main
 
 jobs:
   call-ci-workflow:
