@@ -1,0 +1,16 @@
+{
+  "branches": [
+    "main",
+    {
+      "name": "develop",
+      "channel": "alpha",
+      "prerelease": true
+    },
+    {
+      "name": "test",
+      "channel": "beta",
+      "prerelease": true
+    }
+  ],
+  "ci": true
+}
