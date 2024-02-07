@@ -1,4 +1,4 @@
-name: Node.js CI Build and Release
+name: Build and Release
 on:
   pull_request:
     types:
@@ -9,7 +9,7 @@ on:
       - master
 
 jobs:
-  call-ci-workflow:
+  build-and-release:
     uses: ixofoundation/ixo-github-actions/.github/workflows/node-ci-build.yml@main
     with:
       commit_sha: ${{ github.event.pull_request.merge_commit_sha }}
