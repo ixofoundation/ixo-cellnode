@@ -1,16 +1,13 @@
 name: Build and Release
 on:
-  pull_request:
-    types:
-      - closed
+  push:
     branches:
-      - develop
-      - test
       - master
+      - test
+      - develop
 
 jobs:
   build-and-release:
     uses: ixofoundation/ixo-github-actions/.github/workflows/node-ci-build.yml@main
     with:
-      commit_sha: ${{ github.event.pull_request.merge_commit_sha }}
-      current_branch: ${{ github.event.pull_request.base.ref }}
+      commit_sha: ${{ github.sha }}
