@@ -1,0 +1,7 @@
+name: Pull Request Build and Test
+on:
+  pull_request:
+
+jobs:
+  call-ci-workflow:
+    uses: ixofoundation/ixo-github-actions/.github/workflows/node-ci-pr.yml@main
