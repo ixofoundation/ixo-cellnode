@@ -1,6 +1,6 @@
 {
   "name": "ixo-cellnode",
-  "version": "0.3.0-develop.3",
+  "version": "0.3.0-develop.4",
   "description": "ixo service to create a project data store and more",
   "repository": "https://github.com/ixofoundation/ixo-cellnode",
   "main": "App.ts",
