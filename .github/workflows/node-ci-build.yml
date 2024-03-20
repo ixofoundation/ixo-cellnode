@@ -11,3 +11,10 @@ jobs:
     with:
       commit_sha: ${{ github.sha }}
     secrets: inherit
+  deploy-main:
+    name: 'Main deployment'
+    if: github.ref == 'refs/heads/develop' #testing
+    environment: main
+    needs: build-and-release
+    uses: ixofoundation/ixo-github-actions/.github/workflows/node-ci-deploy.yml@main
+    secrets: inherit
