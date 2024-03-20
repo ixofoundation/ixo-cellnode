@@ -38,7 +38,12 @@
         "presetConfig": true
       }
     ],
-    "@semantic-release/release-notes-generator",
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "presetConfig": true
+      }
+    ],
     [
       "@semantic-release/npm",
       {
