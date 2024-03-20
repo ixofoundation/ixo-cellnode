@@ -35,7 +35,7 @@
     "ipfs-only-hash": "^4.0.0",
     "jayson": "^2.1.2",
     "node": "^18.15.0",
-    "semantic-release": "18",
+    "semantic-release": "22",
     "ts-node": "^10.9.1",
     "tslib": "^2.4.1",
     "typedoc": "^0.23.19",
