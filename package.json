@@ -23,7 +23,6 @@
   "license": "MIT",
   "dependencies": {
     "@prisma/client": "^4.5.0",
-    "@semantic-release/git": "^10.0.1",
     "@web3-storage/w3up-client": "^12.2.1",
     "body-parser": "^1.19.0",
     "compression": "^1.7.4",
@@ -35,7 +34,6 @@
     "ipfs-only-hash": "^4.0.0",
     "jayson": "^2.1.2",
     "node": "^18.15.0",
-    "semantic-release": "22",
     "ts-node": "^10.9.1",
     "tslib": "^2.4.1",
     "typedoc": "^0.23.19",
@@ -43,11 +41,13 @@
     "web3.storage": "^4.4.0"
   },
   "devDependencies": {
+    "@semantic-release/git": "^10.0.1",
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.21",
     "@types/node": "^18.15.10",
     "conventional-changelog-conventionalcommits": "^7.0.2",
-    "prisma": "^4.5.0"
+    "prisma": "^4.5.0",
+    "semantic-release": "22"
   },
   "prisma": {
     "schema": "src/prisma/schema.prisma"
