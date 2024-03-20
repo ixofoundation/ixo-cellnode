@@ -8,6 +8,9 @@
   "directories": {
     "test": "test"
   },
+  "release": {
+    "analyzeCommits": "semantic-release-conventional-commits"
+  },
   "scripts": {
     "start": "node ./build/dist/server.js",
     "dropdb": "node dist/dropdb.js",
